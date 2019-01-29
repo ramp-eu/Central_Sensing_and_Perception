@@ -1,0 +1,8 @@
+<launch>
+
+    <node name="map2gm" pkg="maptogridmap" type="map2gm" >
+        <param name="cell_size" type="double" value="2" />
+    </node>
+
+</launch>
+

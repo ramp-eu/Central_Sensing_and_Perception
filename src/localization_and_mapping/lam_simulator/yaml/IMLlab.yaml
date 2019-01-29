@@ -1,0 +1,7 @@
+image: bitmaps/smartface_topologie_entwurf.png
+resolution: 0.007
+origin: [0, 0, 0.000000]
+negate: 0
+occupied_thresh: 0.165
+free_thresh: 0.001
+

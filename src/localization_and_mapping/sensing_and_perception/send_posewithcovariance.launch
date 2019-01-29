@@ -1,0 +1,8 @@
+<launch>
+    <!-- Run FIROS -->  
+    <node name="firos" pkg="firos" type="core.py" />
+
+     <!--- Run pubPoseWithCovariance node from sensing_and_perception package-->
+     <node name="publishPoseWithCovariance" pkg="sensing_and_perception" type="pubPoseWithCovariance" output="screen" />	
+    
+</launch>

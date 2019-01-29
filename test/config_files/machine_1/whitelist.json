@@ -1,0 +1,9 @@
+{
+    "map": {
+        "subscriber": ["realtopology","nodes","realmap","edges"],
+        "publisher": ["do_serve"]
+    },
+    "robot_opil_v1": {
+        "subscriber": ["pose_channel"]
+    }
+}

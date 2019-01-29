@@ -1,0 +1,21 @@
+{
+  "environment": "fof_lab",
+
+  "fof_lab": {
+    "server": {
+        "address"   : "161.53.68.212",
+        "port"      : 10100
+    },
+    "contextbroker": {
+        "address"   : "161.53.68.95",
+        "port"      : 1026,
+        "subscription": {
+          "throttling": "PT0S",
+          "subscription_length": "P1D",
+          "subscription_refresh_delay": 0.5
+        }
+    },
+    "log_level": "INFO",
+    "interface": "enx00e04c6820db"
+  }
+}

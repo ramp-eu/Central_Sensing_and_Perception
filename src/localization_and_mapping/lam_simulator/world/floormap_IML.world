@@ -1,0 +1,76 @@
+
+
+# the size of a pixel in Stage's underlying raytrace model in meters
+#resolution     0.056668
+resolution 0.01
+
+interval_sim 100  # milliseconds per update step
+#interval_real 100 # real-time milliseconds per update step
+
+# defines Pioneer-like robots
+include "elements/pioneer.inc"
+
+# defines 'map' object used for floorplans
+include "elements/map.inc"
+include "elements/sick2.inc"
+#size [60 20]
+#gui_disable 0
+
+#window( size [ 1024.000 691.000 ] center [-8.369 3.704] scale 37.021 )
+window( size [ 569 392 ] center [3.287 4.369] scale 19.013 )
+
+
+floorplan( 
+bitmap "elements/smartface_topologie_entwurf.png"
+#map_resolution     0.068 
+  pose [24.6995 8.078 0.000 0.000] 
+  size [49.399 16.156 0.800] 
+  name "IMLlab"
+)
+
+
+# create a robot
+omnirob
+(
+ name "zeleni"
+ color "red"
+ pose [5.891 4.522 0.000 0.000]
+sicklaser(
+pose [0.400 0.000 0.000 0.000]
+#pose [0.3 0.1 0 45]
+ # ctrl "lasernoise"  # uncomment this line to run a laser noise generator
+)
+localization_origin [ 0 0 0 0 ]
+)
+
+
+
+# create a robot
+#pioneer2dx
+#(
+#  name "active"
+# color "red"
+# pose [0 2 0 0]
+#  pose [-11.017 4.447 0 -539.089]
+#  sicklaser(   
+     # ctrl "lasernoise"  # uncomment this line to run a laser noise generator
+# )
+#  localization "gps"
+# localization_origin [ 0 0 0 0 ]
+#)
+
+
+
+
+
+define box model
+(
+  size [0.300 0.500 0.500]
+  laser_return 1 
+  obstacle_return 1
+  gui_nose 0
+)
+
+box( pose [ -2.538 1.380 0.000 180.000 ] color "green")
+
+

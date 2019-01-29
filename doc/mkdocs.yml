@@ -1,0 +1,15 @@
+site_name: OPIL - Sensing & perception
+nav:
+    - Home: index.md
+    - Getting Started: start.md
+    - User & Programmers Manual: 
+        - Introduction: user/introduction.md
+        - Interfaces: user/interfaces.md
+        - API Walkthrough: user/api.md
+    - Installation & Administration:
+        - Introduction: install/introduction.md
+        - Installation: install/install.md
+        - Deinstallation: install/deinstall.md
+        - Upgrading from previous versions: install/upgrade.md
+    - Deprecated Functionality: deprecated.md
+theme: readthedocs
