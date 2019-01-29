@@ -32,12 +32,12 @@ terminal 1: roslaunch maptogridmap startmapserver.launch
 ```
 terminal 2: roslaunch maptogridmap startmaptogridmap.launch
 ```
-(put in firos/config all json files from OPIL/config_files/machine_1)
+(put in firos/config all json files from test/config_files/machine_1)
 ```
 terminal 3: rosrun firos core.py 
 ```
 machine 2:
-(put all json files in firos/config from OPIL/config_files/machine_2 and put package maptogridmap on machine 2 to have needed messages defined)
+(put all json files in firos/config from test/config_files/machine_2 and put package maptogridmap on machine 2 to have needed messages defined)
 ```
 terminal 1: rosrun firos core.py
 echo /map/nodes and /map/edges topics
@@ -45,7 +45,7 @@ echo /map/nodes and /map/edges topics
 
 # pose test - sending pose with covarianace
 machine 1:
-(put in firos/config all json files from OPIL/config_files/machine_1)
+(put in firos/config all json files from test/config_files/machine_1)
 * Example with the MURAPLAST factory floorplan:
 ```
 terminal 1: roslaunch lam_simulator amcl_test_muraplast.launch
@@ -67,7 +67,7 @@ terminal 2: rosrun sensing_and_perception pubPoseWithCovariance
 terminal 3: rosrun firos core.py 
 ```
 machine 2:
-(put in firos/config all json files from OPIL/config_files/machine_2)
+(put in firos/config all json files from test/config_files/machine_2)
 ```
 terminal 1: roscore
 terminal 2: rosrun firos core.py 
