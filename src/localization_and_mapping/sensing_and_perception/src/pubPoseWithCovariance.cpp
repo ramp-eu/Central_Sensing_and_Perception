@@ -3,6 +3,12 @@
 #include "nav_msgs/Odometry.h"
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <tf/transform_listener.h>
+#include <sstream>
+
+using namespace std;
+int robotId;
+
+std::stringstream ss;
 
 class pubOdomWithCovariance {
     private:
@@ -16,7 +22,8 @@ class pubOdomWithCovariance {
     
     public:
     pubOdomWithCovariance () {
-        posePub = n.advertise<geometry_msgs::PoseWithCovarianceStamped>("/robot_opil_v1/pose_channel", 1);
+		ss << robotId;			
+        posePub = n.advertise<geometry_msgs::PoseWithCovarianceStamped>("/robot_"+ss.str()+"/pose_channel", 1);
         
         refreshCovariance = n.subscribe("/amcl_pose",1, &pubOdomWithCovariance::refreshCovarianceCallback, this);
         poseSub = n.subscribe("/odom",1, &pubOdomWithCovariance::refreshPoseCallback, this);
@@ -52,6 +59,14 @@ class pubOdomWithCovariance {
 
 
 int main(int argc, char **argv) {
+
+	if(argc < 2){
+	  	ROS_ERROR("Robot ID MUST be specified!");
+		  return -1;	
+	}
+	robotId = atoi(argv[1]); 
+	ROS_INFO("Hello, I am robot %d",robotId);
+
     ros::init(argc, argv, "PoseWithCovariance");
     
     pubOdomWithCovariance publishOdometryWithCovarianve;

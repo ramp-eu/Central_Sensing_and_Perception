@@ -3,7 +3,7 @@
         "publisher": ["realtopology","nodes","realmap","edges"],
 	"subscriber": ["do_serve"]
     },
-    "robot_opil_v1": {
+    "robot_0": {
         "publisher": ["pose_channel"]
     }
 }

@@ -1,8 +1,7 @@
 <launch>
-    <!-- Run FIROS -->  
-    <node name="firos" pkg="firos" type="core.py" />
 
      <!--- Run pubPoseWithCovariance node from sensing_and_perception package-->
-     <node name="publishPoseWithCovariance" pkg="sensing_and_perception" type="pubPoseWithCovariance" output="screen" />	
-    
+     <!-- Put args="1" if you are testing the robot with the id number 1 -->
+     <node name="publishPoseWithCovariance" pkg="sensing_and_perception" type="pubPoseWithCovariance" output="screen" args="0"/>	
+
 </launch>

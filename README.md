@@ -63,21 +63,21 @@ machine 1:
 * Example with the MURAPLAST factory floorplan:
 ```
 terminal 1: roslaunch lam_simulator amcl_test_muraplast.launch
-terminal 2: rosrun sensing_and_perception pubPoseWithCovariance
+terminal 2: roslaunch sensing_and_perception send_posewithcovariance.launch 
 terminal 3: rosrun firos core.py 
 ```
 
 * Example with the ICENT lab floorplan in Zagreb review meeting demo:
 ```
 terminal 1: roslaunch lam_simulator AndaOmnidriveamcltestZagrebdemo.launch
-terminal 2: rosrun sensing_and_perception pubPoseWithCovariance 
+terminal 2: roslaunch sensing_and_perception send_posewithcovariance.launch 
 terminal 3: rosrun firos core.py 
 ```
 
 * Example with the IML lab floorplan:
 ```
 terminal 1: roslaunch lam_simulator IMLamcltest.launch
-terminal 2: rosrun sensing_and_perception pubPoseWithCovariance 
+terminal 2: roslaunch sensing_and_perception send_posewithcovariance.launch 
 terminal 3: rosrun firos core.py 
 ```
 machine 2:
@@ -86,8 +86,8 @@ machine 2:
 terminal 1: roscore
 terminal 2: rosrun firos core.py 
 ```
-now you can echo also on machine_2 /robot_opil_v1/pose_channel:
+now you can echo also on machine_2 /robot_0/pose_channel:
 ```
-rostopic echo /robot_opil_v1/pose_channel
+rostopic echo /robot_0/pose_channel
 ```
 

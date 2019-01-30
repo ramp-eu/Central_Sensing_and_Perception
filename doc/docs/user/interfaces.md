@@ -20,19 +20,19 @@ There are three example maps that can be started in the simulator Stage:
 * Example with the MURAPLAST factory floorplan:
 ```
 terminal 1: roslaunch lam_simulator amcl_test_muraplast.launch
-terminal 2: rosrun sensing_and_perception pubPoseWithCovariance
+terminal 2: roslaunch sensing_and_perception send_posewithcovariance.launch 
 ```
 
 * Example with the ICENT lab floorplan in Zagreb review meeting demo:
 ```
 terminal 1: roslaunch lam_simulator AndaOmnidriveamcltestZagrebdemo.launch
-terminal 2: rosrun sensing_and_perception pubPoseWithCovariance 
+terminal 2: roslaunch sensing_and_perception send_posewithcovariance.launch 
 ```
 
 * Example with the IML lab floorplan:
 ```
 terminal 1: roslaunch lam_simulator IMLamcltest.launch
-terminal 2: rosrun sensing_and_perception pubPoseWithCovariance 
+terminal 2: roslaunch sensing_and_perception send_posewithcovariance.launch 
 ```
 
 
@@ -59,7 +59,8 @@ It is not yet used that something is being sent to IO from OCB. There are two re
 To send the topics through firos to Physical IO json files need to be set properly inside the firos/config folder and firos needs to be running.
 
 ## firos config json files explained between machine 1 and machine 2
-On machine 1 all topics that are being sent through context broker need to be "subscriber", and that are being received from the context broker need to be "publisher". Topics are listed under ids and here we have "map" id and "robot_opil_v1" id.
+On machine 1 all topics that are being sent through context broker need to be "subscriber", and that are being received from the context broker need to be "publisher". Topics are listed under ids and here we have "map" id and "robot_0" id.
+TODO: explain the numbering robot_0, robot_1, etc. and correct config files with respect to machines
 
 ### robots.json
 ```
@@ -91,7 +92,7 @@ On machine 1 all topics that are being sent through context broker need to be "s
                 }
        }
    },
-   "robot_opil_v1":{
+   "robot_0":{
         "topics": {
 	    "pose_channel": {
                 "msg": "geometry_msgs.msg.PoseWithCovarianceStamped",
@@ -109,7 +110,7 @@ On machine 1 all topics that are being sent through context broker need to be "s
         "subscriber": ["realtopology","nodes","realmap","edges"],
         "publisher": ["do_serve"]
     },
-    "robot_opil_v1": {
+    "robot_0": {
         "subscriber": ["pose_channel"]
     }
 }

@@ -73,9 +73,16 @@ A standard ROS message is used for sending the pose of the AGV:
 	geometry_msgs.msg.PoseWithCovarianceStamped
 	
 To be able to send this message, two modules needs to be started: the AMCL package and the sensing_and_perception package. The AMCL package provides localization of the AGV inside a given map using the odometry and laser sensors. The sensing_and_perception package combines the covariance calculated by the AMCL package and the the global pose in the map frame as a result of a combination of odometry and AMCL localization with the laser.
-First launch AMCL localization (run amcl_test_muraplast.launch in lam_simulator/launch folder).
-Second use and adapt the config files in firos_config inside the localization_and_mapping metapackage.
-Third start firos and pose publishing with send_posewithcovariance.launch.
+Since this topic will be send through firos to OCB, the unique robot id needs to be set in the lauch file through _args_, e.g. 0, 1, 2, ... In this example launch file send_posewithcovariance.launch you can see that the id of the robot is set to 0:
+```
+<launch>
+
+     <!--- Run pubPoseWithCovariance node from sensing_and_perception package-->
+     <!-- Put args="1" if you are testing the robot with the id number 1 -->
+     <node name="publishPoseWithCovariance" pkg="sensing_and_perception" type="pubPoseWithCovariance" output="screen" args="0"/>	
+
+</launch>
+```
 
 Example with the MURAPLAST factory floorplan:
 ```
@@ -93,6 +100,14 @@ Example with the IML lab floorplan:
 ```
 terminal 1: roslaunch lam_simulator IMLamcltest.launch
 terminal 2: roslaunch sensing_and_perception send_posewithcovariance.launch 
+```
+As the result you can echo the topic /robot_0/pose_channel:
+```
+rostopic echo /robot_0/pose_channel
+```
+If you want to send this topic through firos, use and adapt the config files in firos_config inside the localization_and_mapping metapackage and start firos by typeing:
+```
+rosrun firos core.py 
 ```
 
 #SLAM
@@ -145,9 +160,9 @@ occupied_thresh: 0.65
 free_thresh: 0.196
 ```
 
-The Stage's world file should have defined size of the floorplan and pose of the floorplan which defines the coordinate frame. There is a parameter for map resolution but it is ignored. Put the right size of the floorplan by calculating resolution*numpixels and put the origin to half of it. 
+The Stage's world file should have defined size of the floorplan and pose of the floorplan which defines the coordinate frame. There is a parameter for a map resolution but it is ignored. Put the right size of the floorplan by calculating resolution*numpixels_col x resolution*numpixels_row and put the origin to half of it. 
 
-Here is the example for the IML lab floorplan. The size of the map in pixels is 7057 x 2308 and the size of the pixel is 0.007 m (this is the resolution in IMLlab.yaml file) so the Stage world file looks as follows:
+Here is the example for the IML lab floorplan. The size of the map in pixels is 7057 x 2308 and the size of the pixel (resolution) is 0.007 m (the resolution is written in IMLlab.yaml file) so the Stage world file looks as follows:
 
 ```
 floorplan( 
@@ -164,6 +179,16 @@ Maybe you need to set the treshold of the image to have all the obstacle visible
 #Map updates
 
 TODO: put text and examples
+First start the AMCL localization in the known map and the simulator Stage in which laser data are simulated.
+Then start the package maptogridmap for topology creation, where new laser readings are compared to the cells of the gridmap.
+Then start the package sensing_and_perception which publishes the robot pose.
+Then run the _l2pc.py_ program that converts the laser data to global and publishes the topic /global_points.
+
+```
+terminal 1: roslaunch lam_simulator AndaOmnidriveamcltestZagrebdemo.launch
+terminal 2: python l2pc.py
+terminal 3: roslaunch maptogridmap startmaptogridmap.launch
+```
 
 # Examples
 ## Testing if ROS topics for Nodes and Edges are sent to Orion Context Broker:
@@ -193,10 +218,10 @@ terminal 4: roslaunch lam_simulator AndaOmnidriveamcltestZagrebdemo.launch
 ```
 This starts stage simulator and amcl localization. 
 ```
-terminal 5: rosrun sensing_and_perception pubPoseWithCovariance
+terminal 5: roslaunch sensing_and_perception send_posewithcovariance.launch 
 ```
 Now you can refresh firefox on http://OPIL_SERVER_IP:1026/v2/entities.
-There should be under id "robot_opil_v1" with topic "pose_channel".
+There should be under id "robot_0" with topic "pose_channel".
 Simply move the robot in stage by dragging it with the mouse and refresh the firefox to see the update of pose_channel.
 
 
@@ -210,7 +235,7 @@ Now you are able to echo all ros topics:
 ```
 rostopic echo /map/nodes
 rostopic echo /map/edges
-rostopic echo /robot_opil_v1/pose_channel
+rostopic echo /robot_0/pose_channel
 ```
 * Example output for the IML map - Nodes
 
@@ -503,7 +528,7 @@ uuid: [35051bf1-1f7d-4748-b2c2-72002a9bcd0a, 81848666-9bdf-480d-a44c-a0219d23180
 ```
 * Example output for the IML map - Pose with covariance
 ```
-$rostopic echo /robot_opil_v1/pose_channel 
+$rostopic echo /robot_0/pose_channel 
 header: 
   seq: 76
   stamp: 
