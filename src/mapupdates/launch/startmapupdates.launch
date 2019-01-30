@@ -1,0 +1,8 @@
+<launch>
+
+    <node name="mapup" pkg="mapupdates" type="mapup" >
+        <param name="cell_size" type="double" value="0.1" />
+    </node>
+
+</launch>
+

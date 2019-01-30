@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.4.6)
-project(maptogridmap)
+project(mapupdates)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++0x")
 #set the default path for built executables to the "bin" directory
@@ -19,14 +19,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 add_message_files(
   FILES
-  Gridmap.msg
-  GridmapCell.msg
-  Nodes.msg
-  Edges.msg
-)
-add_service_files(
-  FILES
-  GetMap.srv
+  NewObstacles.msg
 )
 
 generate_messages(
@@ -44,10 +37,10 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   include
 )
-
-add_executable(map2gm src/main.cpp src/gmap.cpp)
-target_link_libraries(map2gm ${catkin_LIBRARIES})
-add_dependencies(map2gm maptogridmap_generate_messages_cpp)
+#src/LaserScanToPointCloud.cpp 
+add_executable(mapup src/main.cpp src/gmap.cpp)
+target_link_libraries(mapup ${catkin_LIBRARIES})
+add_dependencies(mapup mapupdates_generate_messages_cpp)
 
 
 

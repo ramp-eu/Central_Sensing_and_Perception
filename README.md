@@ -24,7 +24,7 @@ mkdocs serve
 
 # quick start
 
-* put all from src folder to your src folder of your catkin workspace or create a new one by typing catkin_init_workspace() in src folder
+* put all from src folder to your src folder of your catkin workspace or create a new one by typing catkin_init_workspace in src folder
 ```
 cd ..
 catkin_make

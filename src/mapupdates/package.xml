@@ -1,11 +1,11 @@
 <package>
-  <name>maptogridmap</name>
+  <name>mapupdates</name>
   <version>0.0.1</version>
-  <description>maptogridmap</description>
+  <description>mapupdates</description>
   <maintainer email="marija.seder@gmail.com">marija</maintainer>
   <license>BSD</license>
 
-  <url>http://ros.org/wiki/maptogridmap</url>
+  <url>http://ros.org/wiki/mapupdates</url>
   
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>roscpp</build_depend>

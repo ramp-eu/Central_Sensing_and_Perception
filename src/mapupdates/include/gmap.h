@@ -6,11 +6,6 @@
 #include "nav_msgs/GetMap.h"
 
 #include <visualization_msgs/Marker.h>
-#include <maptogridmap/Gridmap.h>
-#include <maptogridmap/GridmapCell.h>
-#include <maptogridmap/GetMap.h>
-#include <maptogridmap/Nodes.h>
-#include <maptogridmap/Edges.h>
 #include <mapupdates/NewObstacles.h>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid.hpp>

@@ -180,14 +180,15 @@ Maybe you need to set the treshold of the image to have all the obstacle visible
 
 TODO: put text and examples
 First start the AMCL localization in the known map and the simulator Stage in which laser data are simulated.
-Then start the package maptogridmap for topology creation, where new laser readings are compared to the cells of the gridmap.
-Then start the package sensing_and_perception which publishes the robot pose.
+Then start the package mapupdates where new laser readings are compared to the cells of the gridmap.
 Then run the _l2pc.py_ program that converts the laser data to global and publishes the topic /global_points.
+And finaly start maptogridmap to visualize new obstacles and see topology updates.
 
 ```
 terminal 1: roslaunch lam_simulator AndaOmnidriveamcltestZagrebdemo.launch
 terminal 2: python l2pc.py
-terminal 3: roslaunch maptogridmap startmaptogridmap.launch
+terminal 3: roslaunch mapupdates startmapupdates.launch
+terminal 4: roslaunch maptogridmap startmaptogridmap.launch
 ```
 
 # Examples
