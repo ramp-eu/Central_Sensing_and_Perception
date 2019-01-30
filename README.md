@@ -11,16 +11,26 @@ some functionalities in maptogridmap package:
 * mux_topics - sends the map on the whitelisted topic only when master requests
 * show_map - shows map published on the whitelisted topic
 config_files for firos:
-* In test/config_files there are firos config jsons for machine_1 ubuntu and machine_2 ubuntu tested at ICENT that you need to copy to firos/config folder on each computer a different ones. Now machine_1 consists of nodes, edges and pose with covariance to be sent to machine_2 (which is in our test the opil server).
 
-examples and prepared launch files:
-* put these packages to your src folder of your catkin workspace or create a new one by typing catkin_init_workspace() in src folder
+In test folder there are firos config files:
+* In config_files there are firos config jsons for machine_1 ubuntu and machine_2 ubuntu tested at ICENT that you need to copy to firos/config folder on each computer a different ones. Now machine_1 consists of nodes, edges and pose with covariance to be sent to machine_2 (which is in our test the opil server).
+
+In doc folder there is mkdocs documentation:
+* to view the documentation go to doc folder in terminal and type:
+```
+mkdocs serve
+```
+* view the documentation in web browser on http://127.0.0.1:8000/
+
+# quick start
+
+* put all from src folder to your src folder of your catkin workspace or create a new one by typing catkin_init_workspace() in src folder
 ```
 cd ..
 catkin_make
 ```
 
-reqired package map_server
+* reqired package map_server
 
 # topology test - sending nodes and edges
 machine 1:
@@ -40,7 +50,11 @@ machine 2:
 (put all json files in firos/config from test/config_files/machine_2 and put package maptogridmap on machine 2 to have needed messages defined)
 ```
 terminal 1: rosrun firos core.py
-echo /map/nodes and /map/edges topics
+```
+now you can echo also on machine_2 /map/nodes and /map/edges topics:
+```
+rostopic echo /map/nodes
+rostopic echo /map/edges
 ```
 
 # pose test - sending pose with covarianace
@@ -71,5 +85,9 @@ machine 2:
 ```
 terminal 1: roscore
 terminal 2: rosrun firos core.py 
+```
+now you can echo also on machine_2 /robot_opil_v1/pose_channel:
+```
+rostopic echo /robot_opil_v1/pose_channel
 ```
 
