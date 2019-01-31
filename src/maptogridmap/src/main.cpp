@@ -123,7 +123,7 @@ int main(int argc, char** argv)
   ros::Publisher nodes_pub = nh.advertise<maptogridmap::Nodes>("map/nodes",1);
   ros::Publisher edges_pub = nh.advertise<maptogridmap::Edges>("map/edges",1);
 //  ros::Publisher newObstacles_pub = nh.advertise<maptogridmap::NewObstacles>("map/newObstacles",1); 
-  ros::Subscriber gmu_sub = nh.subscribe("/map/newObstacles",1,newObstaclesCallback);
+  ros::Subscriber gmu_sub = nh.subscribe("/robot_0/newObstacles",1,newObstaclesCallback);
 
 //  ros::Subscriber read_global_points = nh.subscribe("/global_points", 1, globalPointsCallback);
   ros::ServiceServer service = nh.advertiseService("grid_map", mapCallback);

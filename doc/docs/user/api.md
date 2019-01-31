@@ -179,6 +179,38 @@ Maybe you need to set the treshold of the image to have all the obstacle visible
 #Map updates
 
 TODO: put text and examples
+The map updates are the downsampled laser points to the fine resolution grid, e.g. 0.1 m cell size, which are not mapped in the initial map. The message that is returned is the simple array of coordinates (x,y) at the cell centre of the fine resolution grid:
+
+NewObstacles.msg
+
+	Header header # standard ROS header
+	float64[] x		# x coordinate of the cell centre
+	float64[] y		# y coordinate of the cell centre
+	
+The package _mapupdates_ creates the fine gridmap for keeping track of mapped and unmapped obstacles that needs to be run at the AGV computer.
+It is important to set the robot id as args of the package, as is the example here:
+```
+<launch>
+
+    <node name="mapup" pkg="mapupdates" type="mapup" output="screen" args="0" >
+        <param name="cell_size" type="double" value="0.1" />
+    </node>
+
+</launch>
+```
+The topic that is returned contains the robot ID, e.g. if set to 0 the topic will be /robot_0/newObstacles and the example of the echo of it is:
+```
+$rostopic echo /robot_0/newObstacles
+header: 
+  seq: 438
+  stamp: 
+    secs: 53
+    nsecs: 600000000
+  frame_id: "map"
+x: [1.55, 0.6500000000000001, 0.6500000000000001, 0.6500000000000001, 0.6500000000000001, 0.7500000000000001, 0.7500000000000001, 0.6500000000000001, 1.1500000000000001, 1.1500000000000001, 1.35, 1.35, 1.9500000000000002, 2.05, 2.05, 0.25, 0.55, 0.25, 0.25, 0.25, 0.25, 0.25, 0.35000000000000003, 0.7500000000000001, 0.6500000000000001, 0.7500000000000001, 0.7500000000000001, 0.7500000000000001, 0.7500000000000001, 0.7500000000000001, 1.1500000000000001, 1.7500000000000002, 2.05, 2.05, 2.05, 2.05, 2.05, 2.05, 2.25, 2.45, 2.55, 3.05, 3.05, 2.85, 2.75, 2.85, 2.85, 2.85, 3.05, 3.25, 3.25, 3.35, 3.45, 3.55, 3.65, 3.95, 3.95, 4.05, 4.15, 4.25, 4.55, 4.8500000000000005, 4.95, 4.95, 5.05, 5.15, 5.15, 5.25, 5.45, 6.3500000000000005, 6.45, 6.65, 6.75, 6.75, 6.95, 7.15, 7.25, 7.95, 8.15, 8.250000000000002, 8.250000000000002, 8.250000000000002, 8.450000000000001, 8.450000000000001, 8.250000000000002, 8.350000000000001, 8.850000000000001, 8.450000000000001, 8.450000000000001, 9.250000000000002, 9.350000000000001, 9.450000000000001, 9.55, 8.55, 8.65, 9.15, 9.250000000000002, 9.650000000000002, 9.750000000000002, 9.750000000000002, 9.750000000000002, 8.55, 8.55, 8.55, 8.55, 8.65, 8.55, 8.250000000000002, 8.05, 8.05, 8.15, 8.15, 8.250000000000002, 9.750000000000002, 9.750000000000002, 10.150000000000002, 9.950000000000001, 12.850000000000001, 12.750000000000002, 12.650000000000002, 10.05, 10.05, 10.05, 9.850000000000001, 8.65, 8.55, 8.450000000000001, 8.450000000000001, 8.350000000000001, 8.250000000000002, 0.0, 0.0, 8.05, 7.3500000000000005, 7.15, 7.15, 7.15, 7.05, 6.95, 6.8500000000000005, 6.45, 6.25, 5.75, 5.65, 5.55, 5.45, 5.3500000000000005, 5.25, 4.95, 4.55, 2.05, 1.9500000000000002, 2.35, 2.35, 2.75, 3.05, 3.05, 2.85, 2.85, 2.85, 2.75, 1.55, 1.55, 1.55, 1.4500000000000002, 0.25, 0.25, 1.05, 1.2500000000000002, 1.35, 1.55, 1.55]
+y: [4.25, 4.05, 3.95, 3.85, 3.75, 3.75, 3.65, 3.55, 3.65, 3.55, 3.55, 3.45, 3.55, 3.55, 3.45, 2.95, 2.85, 2.65, 2.55, 2.45, 2.35, 2.25, 2.25, 2.25, 2.15, 2.15, 2.05, 1.9500000000000002, 1.85, 1.7500000000000002, 1.7500000000000002, 1.7500000000000002, 1.7500000000000002, 1.6500000000000001, 1.55, 1.4500000000000002, 1.35, 1.2500000000000002, 1.35, 1.35, 1.2500000000000002, 1.35, 1.2500000000000002, 0.9500000000000001, 0.6500000000000001, 0.6500000000000001, 0.55, 0.45, 0.45, 0.45, 0.35000000000000003, 0.35000000000000003, 0.35000000000000003, 0.35000000000000003, 0.35000000000000003, 0.25, 0.15000000000000002, 0.15000000000000002, 0.25, 0.15000000000000002, 0.35000000000000003, 1.05, 1.05, 0.9500000000000001, 1.05, 0.8500000000000001, 0.7500000000000001, 0.45, 0.35000000000000003, 0.45, 0.45, 0.45, 0.35000000000000003, 1.2500000000000002, 1.2500000000000002, 1.1500000000000001, 1.05, 0.45, 0.45, 0.35000000000000003, 0.45, 0.55, 0.35000000000000003, 0.55, 1.05, 1.05, 0.45, 1.05, 1.1500000000000001, 0.25, 0.25, 0.25, 0.25, 1.6500000000000001, 1.7500000000000002, 1.85, 1.85, 1.85, 1.7500000000000002, 1.85, 1.9500000000000002, 3.25, 3.35, 3.45, 3.55, 3.55, 3.85, 3.95, 4.55, 4.65, 4.65, 4.75, 4.8500000000000005, 5.05, 5.15, 5.55, 5.55, 6.8500000000000005, 6.95, 6.95, 6.8500000000000005, 7.15, 7.3500000000000005, 7.3500000000000005, 7.3500000000000005, 7.3500000000000005, 7.3500000000000005, 7.45, 7.45, 7.45, 0.0, 0.0, 7.45, 7.15, 7.15, 7.25, 7.3500000000000005, 7.3500000000000005, 7.3500000000000005, 7.3500000000000005, 5.65, 5.55, 5.55, 5.55, 5.55, 5.55, 5.65, 5.65, 5.65, 5.65, 6.95, 6.95, 6.55, 6.45, 6.25, 5.95, 5.8500000000000005, 5.8500000000000005, 5.75, 5.65, 5.55, 5.8500000000000005, 5.75, 5.65, 5.55, 5.75, 5.65, 5.25, 4.95, 4.75, 4.65, 4.55]
+``` 
+
 First start the AMCL localization in the known map and the simulator Stage in which laser data are simulated.
 Then start the package mapupdates where new laser readings are compared to the cells of the gridmap.
 Then run the _l2pc.py_ program that converts the laser data to global and publishes the topic /global_points.
@@ -189,6 +221,29 @@ terminal 1: roslaunch lam_simulator AndaOmnidriveamcltestZagrebdemo.launch
 terminal 2: python l2pc.py
 terminal 3: roslaunch mapupdates startmapupdates.launch
 terminal 4: roslaunch maptogridmap startmaptogridmap.launch
+```
+To read the topic in your own package you need to subscribe to it, include the header of the message, and write a message callback (as is the case in the maptogridmap package).
+
+* subscribe to a topic /robot_0/newObstacles
+```
+  ros::Subscriber gmu_sub = nh.subscribe("/robot_0/newObstacles",1,newObstaclesCallback);
+
+```
+* include the header of the message in your header file or in the cpp where you are writting the message callback:
+```
+#include <mapupdates/NewObstacles.h>
+```
+* write a message callback (in this example we just rewrite the array of new obstacles to a global variable that is used in the main program):
+```
+void newObstaclesCallback(const mapupdates::NewObstaclesConstPtr& msg)
+{
+	pointx.clear();
+	pointy.clear();
+	for (int i =0; i<msg->x.size(); i++){
+		pointx.push_back(msg->x[i]);
+		pointy.push_back(msg->y[i]);
+	}
+}
 ```
 
 # Examples

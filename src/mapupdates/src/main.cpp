@@ -4,6 +4,9 @@ static boost::uuids::random_generator mUUIDGen;
 GridMapCell *GMC;
 std::vector<float> pointx, pointy;
 int cycle_number;
+#include <sstream>
+
+using namespace std;
 
 class VisualizationPublisherGM
 {
@@ -106,15 +109,25 @@ void globalPointsCallback(const mapupdates::NewObstaclesConstPtr& msg)
 int main(int argc, char** argv)
 {
   
-  ros::init(argc, argv, "mapupdates");
+  int robotId=0;
+	if(argc < 2){
+	  	ROS_ERROR("You did not specify the Robot ID, default ID 0 is used!");
+//		  return -1;	
+	}else{
+		robotId = atoi(argv[1]); 
+	}
+	std::stringstream ss;
+  ss << robotId;			
+	ROS_INFO("Hello, I am robot %d",robotId);
+	ros::init(argc, argv, "mapupdates");
   ros::NodeHandle nh;
   
-  ros::Publisher newObstacles_pub = nh.advertise<mapupdates::NewObstacles>("map/newObstacles",1); 
+  ros::Publisher newObstacles_pub = nh.advertise<mapupdates::NewObstacles>("/robot_"+ss.str()+"/newObstacles",1); 
   ros::Subscriber read_global_points = nh.subscribe("/global_points", 1, globalPointsCallback);
   VisualizationPublisherGM visualGM(nh);
   nav_msgs::GetMap map;
   ros::service::call("static_map",map);
-	double cellsize=0.1;
+  double cellsize=0.1;
   nh.getParam("/mapup/cell_size", cellsize);
  
   double resolution=map.response.map.info.resolution;
@@ -160,6 +173,7 @@ int main(int argc, char** argv)
 //    gmobstacles.x.clear();
 //    gmobstacles.y.clear();
     gmobstacles.header.stamp = ros::Time::now();
+    gmobstacles.header.frame_id = "map";
 	for(int i = 0; i<pointx.size(); i++){
 		ii=(int)floor(pointx[i]/cellsize);
 		jj=(int)floor(pointy[i]/cellsize);
