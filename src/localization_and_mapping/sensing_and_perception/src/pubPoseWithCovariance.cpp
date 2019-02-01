@@ -13,20 +13,20 @@ std::stringstream ss;
 class pubOdomWithCovariance {
     private:
     ros::NodeHandle n;
-    ros::Publisher posePub;
     ros::Subscriber refreshCovariance;
     ros::Subscriber poseSub;
-    geometry_msgs::PoseWithCovarianceStamped PoseWCS;
     
     float current_x, current_y, current_theta;
     
     public:
+    ros::Publisher posePub;
+    geometry_msgs::PoseWithCovarianceStamped PoseWCS;
     pubOdomWithCovariance () {
 		ss << robotId;			
         posePub = n.advertise<geometry_msgs::PoseWithCovarianceStamped>("/robot_"+ss.str()+"/pose_channel", 1);
         
         refreshCovariance = n.subscribe("/amcl_pose",1, &pubOdomWithCovariance::refreshCovarianceCallback, this);
-        poseSub = n.subscribe("/odom",1, &pubOdomWithCovariance::refreshPoseCallback, this);
+//        poseSub = n.subscribe("/odom",1, &pubOdomWithCovariance::refreshPoseCallback, this);
     }
     
     void refreshPoseCallback(const nav_msgs::Odometry &msg) {
@@ -66,12 +66,31 @@ int main(int argc, char **argv) {
 	}
 	robotId = atoi(argv[1]); 
 	ROS_INFO("Hello, I am robot %d",robotId);
+  ros::init(argc, argv, "PoseWithCovariance");
+	ros::NodeHandle nh;
+  
+  pubOdomWithCovariance publishOdometryWithCovariance;
+  tf::TransformListener tf_listener;
+  tf::StampedTransform transform;
+  double yaw, pitch, roll, tfx, tfy;
+  tf_listener.waitForTransform("map", "/base_link", ros::Time::now(), ros::Duration(3.0));
 
-    ros::init(argc, argv, "PoseWithCovariance");
+  ros::Rate rate(10.0);
+
+  while (nh.ok()) {
+    ros::spinOnce(); 
+    tf_listener.lookupTransform("map", "/base_link", ros::Time(0), transform);	
+		transform.getBasis().getRPY(roll, pitch, yaw);
+		publishOdometryWithCovariance.PoseWCS.header.stamp = ros::Time::now();
+    publishOdometryWithCovariance.PoseWCS.header.frame_id = "map";
+    publishOdometryWithCovariance.PoseWCS.pose.pose.position.x = transform.getOrigin().x();
+    publishOdometryWithCovariance.PoseWCS.pose.pose.position.y = transform.getOrigin().y();
+    publishOdometryWithCovariance.PoseWCS.pose.pose.position.z = 0;
+    publishOdometryWithCovariance.PoseWCS.pose.pose.orientation = tf::createQuaternionMsgFromYaw(yaw);
+		publishOdometryWithCovariance.posePub.publish(publishOdometryWithCovariance.PoseWCS);
     
-    pubOdomWithCovariance publishOdometryWithCovarianve;
-    
-    ros::spin();
-    
+ 	  rate.sleep();
+  }
+   
     return 0;
 }
