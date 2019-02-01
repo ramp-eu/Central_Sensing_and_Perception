@@ -50,4 +50,5 @@ opil-MODULENAME.l4ms.eu:
         		launch/                  # Launch files for MURAPLAST floorplan and for ICENT floorplan
         	sensing_and_perception/      # The ROS package that creates a pose message to be send through firos
         maptogridmap/                    # The ROS package for topology creation and map updates
+        mapupdates/                      # The ROS package for calculating map updates from the laser readings
         maplistener/                     # The ROS package for visualization of ROS topics

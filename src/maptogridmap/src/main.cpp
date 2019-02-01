@@ -3,8 +3,8 @@
 static boost::uuids::random_generator mUUIDGen;
 GridMapCell *GMC;
 maptogridmap::GetMap::Response map_resp_;
-std::vector<float> pointx, pointy;
 int cycle_number;
+mapupdates::NewObstacles obstacles;
 
 class VisualizationPublisherGM
 {
@@ -39,7 +39,7 @@ public:
     gridmapvs.color.b = 0.;
     gridmapvs.color.a = 1.0;
       
-	globalpoints_pub=nh_.advertise<visualization_msgs::Marker>("/globalpoints_marker",10);
+	globalpoints_pub=nh_.advertise<visualization_msgs::Marker>("/newobstacles_marker",10);
 
     glp.header.frame_id = target_frame_;
     glp.header.stamp = ros::Time::now();
@@ -54,7 +54,7 @@ public:
     glp.color.b = 0.8;
     glp.color.a = 1.0;
 
-	graphvs_pub=nh_.advertise<visualization_msgs::Marker>("/graph_marker",10);
+	graphvs_pub=nh_.advertise<visualization_msgs::Marker>("/nodes_marker",10);
 
     graphvs.header.frame_id = target_frame_;
     graphvs.header.stamp = ros::Time::now();
@@ -69,7 +69,7 @@ public:
     graphvs.color.b = 0.8;
     graphvs.color.a = 1.0;
     
-  	stc_pub=nh_.advertise<visualization_msgs::Marker>("/spanningtree_marker",10);
+  	stc_pub=nh_.advertise<visualization_msgs::Marker>("/edges_marker",10);
 
   	stc.header.frame_id = target_frame_;
     stc.header.stamp = ros::Time::now();
@@ -105,11 +105,11 @@ bool mapCallback(maptogridmap::GetMap::Request  &req, maptogridmap::GetMap::Resp
 void newObstaclesCallback(const mapupdates::NewObstaclesConstPtr& msg)
 {
 //	std::cout << msg->x.size()<<std::endl;
-	pointx.clear();
-	pointy.clear();
+	obstacles.x.clear();
+	obstacles.y.clear();
 	for (int i =0; i<msg->x.size(); i++){
-		pointx.push_back(msg->x[i]);
-		pointy.push_back(msg->y[i]);
+		obstacles.x.push_back(msg->x[i]);
+		obstacles.y.push_back(msg->y[i]);
 	}
 }
 
@@ -122,10 +122,8 @@ int main(int argc, char** argv)
   ros::Publisher gmap_pub = nh.advertise<maptogridmap::Gridmap>("map/topology",1);
   ros::Publisher nodes_pub = nh.advertise<maptogridmap::Nodes>("map/nodes",1);
   ros::Publisher edges_pub = nh.advertise<maptogridmap::Edges>("map/edges",1);
-//  ros::Publisher newObstacles_pub = nh.advertise<maptogridmap::NewObstacles>("map/newObstacles",1); 
   ros::Subscriber gmu_sub = nh.subscribe("/robot_0/newObstacles",1,newObstaclesCallback);
 
-//  ros::Subscriber read_global_points = nh.subscribe("/global_points", 1, globalPointsCallback);
   ros::ServiceServer service = nh.advertiseService("grid_map", mapCallback);
   VisualizationPublisherGM visualGM(nh);
   nav_msgs::GetMap map;
@@ -167,7 +165,6 @@ int main(int argc, char** argv)
 //	maptogridmap::GridmapCell gmcell;
 	maptogridmap::Gridmap gm;
 	maptogridmap::Nodes gmnode;
-//	maptogridmap::NewObstacles gmobstacles; 
 	maptogridmap::Edges gmedge;
 	gm.info.width=sizex;
 	gm.info.height=sizey;
@@ -178,7 +175,6 @@ int main(int argc, char** argv)
   gmnode.header=gm.header;
   gmnode.info=gm.info;
   gmedge.header=gm.header;
-//  gmobstacles.header=gm.header;
 	map_resp_.map.header=gm.header;
   map_resp_.map.info=gm.info;
 			for (int i=0; i<sizex; i++){
@@ -211,40 +207,70 @@ int main(int argc, char** argv)
 	gmap_pub.publish(gm);
 	nodes_pub.publish(gmnode);
 	edges_pub.publish(gmedge);
-//	newObstacles_pub.publish(gmobstacles); 
 	//map_resp_.map.gmc=gm.gmc;
 
   ros::Rate rate(10.0);
   cycle_number=0;
+  int update_nodes_edges;
 
   while (nh.ok()) {
     cycle_number++;
-//    gmobstacles.x.clear();
-//    gmobstacles.y.clear();
-//    gmobstacles.header.stamp = ros::Time::now();
-	for(int i = 0; i<pointx.size(); i++){
-		ii=(int)floor(pointx[i]/cellsize);
-		jj=(int)floor(pointy[i]/cellsize);
-		if (ii>0 && jj>0 && ii<sizex && jj<sizey){
-//			if ((gmap[ii][jj].occupancy==0) && (gmap[ii][jj].visited!=cycle_number))
-			if ((gmap[ii][jj].occupancy==0))
-			{
-//				std::cout <<pointx[i]<<" "<<pointy[i]<<std::endl;
-//				gmobstacles.x.push_back(gmap[ii][jj].x);
-//				gmobstacles.y.push_back(gmap[ii][jj].y);
-//				gmap[ii][jj].visited = cycle_number;
-				gmap[ii][jj].occupancy = 1;
+    update_nodes_edges = 0;
+		for(int i = 0; i<obstacles.x.size(); i++){
+			ii=(int)floor(obstacles.x[i]/cellsize);
+			jj=(int)floor(obstacles.y[i]/cellsize);
+			if (ii>0 && jj>0 && ii<sizex && jj<sizey){
+	//			if ((gmap[ii][jj].occupancy==0) && (gmap[ii][jj].visited!=cycle_number))
+				if ((gmap[ii][jj].occupancy==0))
+				{
+	//				std::cout <<pointx[i]<<" "<<pointy[i]<<std::endl;
+					gmap[ii][jj].occupancy = 1;
+					gm.occupancy[ii*sizey+jj] = 1;
+					update_nodes_edges = 1;
+				}
+			}	
+		}
+
+		if (update_nodes_edges){
+			gmnode.x.clear();
+			gmnode.y.clear();	
+			gmnode.uuid.clear();
+			gmnode.name.clear();
+			for (int i=0; i<sizex; i++){
+						for (int j=0; j<sizey; j++){
+								gmap[i][j].visited=0;
+				        if (gmap[i][j].occupancy==0){
+				        	gmnode.x.push_back(gmap[i][j].x);
+				        	gmnode.y.push_back(gmap[i][j].y);
+				        	gmnode.name.push_back(gmap[i][j].name);
+				        	gmnode.uuid.push_back(gmap[i][j].uuid);
+				        }
+						}
 			}
-		}	
-	}
-	gmap_pub.publish(gm);
-	nodes_pub.publish(gmnode);
-	edges_pub.publish(gmedge);
-//	newObstacles_pub.publish(gmobstacles); 
+			GMC->createEdges();
+			gmedge.uuid_src.clear();
+			gmedge.uuid_dest.clear();
+			gmedge.uuid.clear();
+			gmedge.name.clear();
+			for(int i=0; i<GMC->edges.size(); i++){
+						gmedge.uuid_src.push_back(gmap[GMC->edges[i].xs][GMC->edges[i].ys].uuid);
+						gmedge.uuid_dest.push_back(gmap[GMC->edges[i].xg][GMC->edges[i].yg].uuid);
+						boost::uuids::uuid lUUID=mUUIDGen();
+						gmedge.uuid.push_back(boost::uuids::to_string(lUUID));
+						gmedge.name.push_back("edge_"+std::to_string(GMC->edges[i].xs*sizey+GMC->edges[i].ys)+"_"+std::to_string(GMC->edges[i].xg*sizey+GMC->edges[i].yg));
+			}	
+		}
+
+		gmnode.header.stamp = ros::Time::now();
+		gm.header.stamp = ros::Time::now();
+		gmedge.header.stamp = ros::Time::now();
+		gmap_pub.publish(gm);
+		nodes_pub.publish(gmnode);
+		edges_pub.publish(gmedge);
 
     ros::spinOnce(); 
 
-	visualGM.visualizationduringmotion();	
+		visualGM.visualizationduringmotion();	
     
     
 	  rate.sleep();
@@ -314,9 +340,9 @@ void VisualizationPublisherGM::visualizationduringmotion(){
 		
 			}
 			//points from newObstacles
-			for(int i = 0; i<pointx.size(); i++){
-				p.x = pointx[i];
-				p.y = pointy[i];
+			for(int i = 0; i<obstacles.x.size(); i++){
+				p.x = obstacles.x[i];
+				p.y = obstacles.y[i];
 				glp.points.push_back(p);
 			}
 			globalpoints_pub.publish(glp);

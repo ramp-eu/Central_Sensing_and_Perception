@@ -1,7 +1,5 @@
 Deprecated features are features that SP stil supports but that are not maintained or evolved any longer, or will be used in the future. In particular:
 
-* **maplistener** - part of the package containing test of calling a service getMap for getting the gridmap created in maptogridmap - everything is visualized in rviz. This is not used anymore since service calls are not supported with firos.
-* **maptogridmap** - part of the package containing service calls for gridmap - GetMap.
 
 # Sending larger data on demand - a service mockup
 Since there is no service call supported yet in firos, topic _do_serve_ is used as a service mockup. On another machine that wants to obtain the data, on topic _do_serve_ needs to be sent value "true" or 1. Large data are a) map topic created with _map_server_ from PNG or PGM file and b) gridmap topic created from the map by resampling to cells of size given by the parameter _cell_size_.

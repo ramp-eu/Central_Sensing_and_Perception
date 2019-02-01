@@ -12,6 +12,9 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <iostream>
 #include <string>
+#include <tf/transform_listener.h>
+#include <sensor_msgs/LaserScan.h>
+
 
 struct I_point{
 	int  x, y, th;

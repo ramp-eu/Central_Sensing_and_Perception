@@ -17,6 +17,12 @@ Edges.msg
 	string[] uuid_dest	# unique id of a destination node of the edge
 	string[] name	# e.g. edge_0_1
 	string[] uuid	# unique id of an edge
+	
+The creation of topology is started by launching the map_server package followed by launching the maptogridmap package which is explained in more details in the following text:
+```
+terminal 1: roslaunch maptogridmap startmapserver.launch
+terminal 2: roslaunch maptogridmap startmaptogridmap.launch
+```
  
 ## Creation of Nodes in maptogridmap package
 Nodes are all free cells of rectangular square size that does not contain any obstacle within it. The obstacles are readed from the map PNG or PGM file loaded by calling the map_server node. There are three maps prepared in startmapserver.launch, where MURAPLAST florplan is uncommented and IML lab and ICENT lab are commented for the later usage.
@@ -64,7 +70,90 @@ Edges are pairs of neighbor nodes. Neighbors are defined between two nodes which
 Values of Edges are the source node's uuid, named as _uuid_src_, the destination node's uuid, named as _uuid_dest_, the name of the edge in the form of "edge_0_1" meaning that two nodes with names "vertex_0" and "vertex_1" are connected with the edge, and the edge's uuid. 
 The message that is sent through firos can be found here: maptogridmap/msg/Edges.msg
 
+## Writing a simple listener explaining the maplistener package
 
+To read the topic in your own package you need to subscribe to it, include the header of the message, and write a message callback. The example is taken from maplistener/src/main.cpp.
+
+* subscribe to a topics /map/nodes and /map/edges 
+```
+ 	nodes_sub = nh_.subscribe("map/nodes",1,&VisualizationPublisherGML::nodesCallback, this);
+ 	edges_sub = nh_.subscribe("map/edges",1,&VisualizationPublisherGML::edgesCallback, this);
+
+```
+* include the header of the message in your header file or in the cpp where you are writting the message callback:
+```
+#include <maptogridmap/Nodes.h>
+#include <maptogridmap/Edges.h>
+```
+* write a message callback for nodes and edges and save the values in the global variable gmnode that needs to be saved for obtaining the coordinates of edges
+```
+maptogridmap::Nodes gmnode;
+void VisualizationPublisherGML::nodesCallback(const maptogridmap::NodesConstPtr& gmMsg)
+{
+  graphvs.points.clear();
+  geometry_msgs::Point p; 
+	gmnode.x.clear();
+	gmnode.y.clear();
+	gmnode.name.clear();
+	gmnode.uuid.clear();
+	for (int i=0; i<gmMsg->x.size(); i++){
+		p.x=gmMsg->x[i];
+		p.y=gmMsg->y[i];
+		graphvs.points.push_back(p);
+		gmnode.x.push_back(gmMsg->x[i]);
+		gmnode.y.push_back(gmMsg->y[i]);
+		gmnode.name.push_back(gmMsg->name[i]);
+		gmnode.uuid.push_back(gmMsg->uuid[i]);
+	}
+}
+void VisualizationPublisherGML::edgesCallback(const maptogridmap::EdgesConstPtr& gmMsg)
+{
+  stc.points.clear();
+  geometry_msgs::Point p; 
+  int foundsrcdest;
+	for (int i=0; i<gmMsg->name.size(); i++){
+		foundsrcdest=0;
+		for (int j=0; j<gmnode.name.size(); j++){
+			if (gmnode.uuid[j]==gmMsg->uuid_src[i]){
+				p.x=gmnode.x[j];
+				p.y=gmnode.y[j];
+				stc.points.push_back(p);
+				foundsrcdest++;
+				if (foundsrcdest==2)
+					break;
+			}
+			if (gmnode.uuid[j]==gmMsg->uuid_dest[i]){
+				p.x=gmnode.x[j];
+				p.y=gmnode.y[j];
+				stc.points.push_back(p);
+				foundsrcdest++;
+				if (foundsrcdest==2)
+					break;
+			}
+		}
+	}
+}
+```
+* add in CMakeLists.txt of your package the line _maptogridmap_ in find_package function otherwise the compiler will complain it can not find the header file:
+```
+find_package(catkin REQUIRED COMPONENTS
+  std_msgs
+  nav_msgs
+  geometry_msgs
+  message_generation
+  roscpp
+  tf
+  maptogridmap
+  mapupdates
+)
+```
+You can test how subscribed topics are visualized in rviz by typing:
+```
+terminal 1: roslaunch maptogridmap startmapserver.launch
+terminal 2: roslaunch maptogridmap startmaptogridmap.launch
+terminal 3: rosrun maplistener mapls
+```
+The nodes are visualized with the marker topic /nodes_markerListener, while the edges are visualized with the marker topic /edges_markerListener.
 
 # <a name="poswithcov">Pose with covariance</a>
 
@@ -178,8 +267,11 @@ Maybe you need to set the treshold of the image to have all the obstacle visible
 
 #Map updates
 
-TODO: put text and examples
-The map updates are the downsampled laser points to the fine resolution grid, e.g. 0.1 m cell size, which are not mapped in the initial map. The message that is returned is the simple array of coordinates (x,y) at the cell centre of the fine resolution grid:
+The map updates are the downsampled laser points to the fine resolution grid, e.g. 0.1 m cell size, which are not mapped in the initial map.
+It is supposed that there is no moving obstacles in the environment, only the static ones that are not mapped in the initial map.
+So if you move the green box in the Stage simulator the trail of the obstacle will be mapped and also remembered in the list of new obstacles.
+By now, the list of new obstacles is never reset. This should be changed when taking into account dynamic obstacles.
+The message that is returned is the simple array of coordinates (x,y) of all unmapped obstacles which are snapped to the fine resolution grid points:
 
 NewObstacles.msg
 
@@ -187,13 +279,14 @@ NewObstacles.msg
 	float64[] x		# x coordinate of the cell centre
 	float64[] y		# y coordinate of the cell centre
 	
-The package _mapupdates_ creates the fine gridmap for keeping track of mapped and unmapped obstacles that needs to be run at the AGV computer.
-It is important to set the robot id as args of the package, as is the example here:
+The package _mapupdates_ creates the fine gridmap for keeping track of mapped and unmapped obstacles that needs to be run at the AGV computer. It is connected to the laser sensor on the AGV computer and it is important to set the right topic for the laser.
+It is also important to set the robot id as args of the package, as is the example here:
 ```
 <launch>
 
     <node name="mapup" pkg="mapupdates" type="mapup" output="screen" args="0" >
         <param name="cell_size" type="double" value="0.1" />
+        <param name="scan_topic" value="/base_scan" />
     </node>
 
 </launch>
@@ -212,15 +305,13 @@ y: [4.25, 4.05, 3.95, 3.85, 3.75, 3.75, 3.65, 3.55, 3.65, 3.55, 3.55, 3.45, 3.55
 ``` 
 
 First start the AMCL localization in the known map and the simulator Stage in which laser data are simulated.
-Then start the package mapupdates where new laser readings are compared to the cells of the gridmap.
-Then run the _l2pc.py_ program that converts the laser data to global and publishes the topic /global_points.
-And finaly start maptogridmap to visualize new obstacles and see topology updates.
+Then start the package mapupdates where new laser readings are compared to the cells of the gridmap. The package mapupdates converts the local laser readings to a global coordinate frame which can be visualized in rviz. This is used to test if the transformation is done correctly and marker points from topic /globalpoints_marker should be aligned in rviz over the simulated laser scan data.
+And finaly, start maptogridmap to visualize the new obstacles and topology updates. The package maptogridmap is subscribed to topic /robot_0/newObstacles and checks if points belong to the free grid cell and changes its occupancy accordingly. Nodes and edges are updated too. 
 
 ```
 terminal 1: roslaunch lam_simulator AndaOmnidriveamcltestZagrebdemo.launch
-terminal 2: python l2pc.py
-terminal 3: roslaunch mapupdates startmapupdates.launch
-terminal 4: roslaunch maptogridmap startmaptogridmap.launch
+terminal 2: roslaunch mapupdates startmapupdates.launch
+terminal 3: roslaunch maptogridmap startmaptogridmap.launch
 ```
 To read the topic in your own package you need to subscribe to it, include the header of the message, and write a message callback (as is the case in the maptogridmap package).
 
@@ -233,17 +324,31 @@ To read the topic in your own package you need to subscribe to it, include the h
 ```
 #include <mapupdates/NewObstacles.h>
 ```
-* write a message callback (in this example we just rewrite the array of new obstacles to a global variable that is used in the main program):
+* write a message callback (in this example we just rewrite the global variable obstacles that is used in the main program):
 ```
+mapupdates::NewObstacles obstacles;	#global variable
 void newObstaclesCallback(const mapupdates::NewObstaclesConstPtr& msg)
 {
-	pointx.clear();
-	pointy.clear();
+	obstacles.x.clear();
+	obstacles.y.clear();
 	for (int i =0; i<msg->x.size(); i++){
-		pointx.push_back(msg->x[i]);
-		pointy.push_back(msg->y[i]);
+		obstacles.x.push_back(msg->x[i]);
+		obstacles.y.push_back(msg->y[i]);
 	}
 }
+```
+* maybe you also need to add in CMakeLists.txt of your package the line _mapupdates_ in find_package function otherwise the compiler will complain ti can not find the header file:
+```
+find_package(catkin REQUIRED COMPONENTS
+  std_msgs
+  nav_msgs
+  geometry_msgs
+  message_generation
+  roscpp
+  tf
+  maptogridmap
+  mapupdates
+)
 ```
 
 # Examples

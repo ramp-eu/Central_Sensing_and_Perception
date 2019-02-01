@@ -22,6 +22,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   tf
   maptogridmap
+  mapupdates
 )
 
 
@@ -32,8 +33,9 @@ include_directories(
   include
 )
 
-#add_executable(mapls src/main.cpp)
+add_executable(mapls src/main.cpp)
 #target_link_libraries(mapls ${maptogridmap_LIBRARIES} ${catkin_LIBRARIES})
+target_link_libraries(mapls ${catkin_LIBRARIES})
 
 
 

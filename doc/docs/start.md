@@ -2,16 +2,20 @@
 
 ## Overview
 
-In src folder there are three ROS packages:
+In src folder there are four ROS packages:
 
 
 ## maptogridmap package
 
 A ROS package for creating gridmap with desired cell size from map_server and publish custom created ROS messages to topics /map/topology, /map/nodes and /map/edges.
 
+## mapupdates package
+
+A ROS package for creating map local updates for the gridmap, nodes and edges from the laser readings to topics /robot_0/newObstacles, /robot_1/newObstacles, ...
+
 ## maplistener package
 
-A ROS package for listening the topic realtopology and realmap sent through firos.
+A ROS package for listening the topic realtopology and realmap sent through firos, and testing subscribers to all created topics and visualizing them in rviz.
 
 
 ## localization_and_mapping metapackage

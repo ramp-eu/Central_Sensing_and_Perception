@@ -38,7 +38,7 @@ include_directories(
   include
 )
 #src/LaserScanToPointCloud.cpp 
-add_executable(mapup src/main.cpp src/gmap.cpp)
+add_executable(mapup src/main.cpp src/mapupd.cpp)
 target_link_libraries(mapup ${catkin_LIBRARIES})
 add_dependencies(mapup mapupdates_generate_messages_cpp)
 
