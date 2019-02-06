@@ -186,6 +186,7 @@ int main(int argc, char** argv)
             if (gmap[i][j].occupancy==0){
             	gmnode.x.push_back(gmap[i][j].x);
             	gmnode.y.push_back(gmap[i][j].y);
+            	gmnode.theta.push_back(0);
             	gmnode.name.push_back(gmap[i][j].name);
 //            	boost::uuids::uuid lUUID=mUUIDGen();
             	gmnode.uuid.push_back(gmap[i][j].uuid);
@@ -234,6 +235,7 @@ int main(int argc, char** argv)
 		if (update_nodes_edges){
 			gmnode.x.clear();
 			gmnode.y.clear();	
+			gmnode.theta.clear();
 			gmnode.uuid.clear();
 			gmnode.name.clear();
 			for (int i=0; i<sizex; i++){
@@ -242,6 +244,7 @@ int main(int argc, char** argv)
 				        if (gmap[i][j].occupancy==0){
 				        	gmnode.x.push_back(gmap[i][j].x);
 				        	gmnode.y.push_back(gmap[i][j].y);
+				        	gmnode.theta.push_back(0);
 				        	gmnode.name.push_back(gmap[i][j].name);
 				        	gmnode.uuid.push_back(gmap[i][j].uuid);
 				        }

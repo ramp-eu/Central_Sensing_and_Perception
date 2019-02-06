@@ -7,7 +7,8 @@ Nodes.msg
 	nav_msgs/MapMetaData info	# number of cells in x and y directions of the gridmap, the size of the cell
 	float64[] x	# x coordinate of the cell centre
 	float64[] y	# y coordinate of the cell centre
-	string[] name	# e.g. vertex_0
+	float64[] theta # orientation of the node used for annotations
+	string[] name	# e.g. vertex_0 or annotation name
 	string[] uuid	# unique id of a node
 	
 Edges.msg
@@ -64,6 +65,8 @@ The size of the cell is given by the parameter in startmaptogridmap.launch:
 ```
 
 In this example it is set to 0.2m. Values that are presented in context broker are coordinates of the cell center (x,y), a name of the node in the form of "vertex_0" and the node's uuid. The message that is sent through firos can be found here: maptogridmap/msg/Nodes.msg
+
+TODO: explain why theta is used and how annotations are written in nodes
 
 ## Creation of Edges in maptogridmap package
 Edges are pairs of neighbor nodes. Neighbors are defined between two nodes which have their centres' coordinates distanced for _cell_size_. The edges are bidirectional, meaning two neighbor nodes n and m forms the edge (n,m) and (m,n) which are identical.
