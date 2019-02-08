@@ -5,6 +5,7 @@ GridMapCell *GMC;
 maptogridmap::GetMap::Response map_resp_;
 int cycle_number;
 mapupdates::NewObstacles obstacles;
+maptogridmap::Nodes annotations;
 
 class VisualizationPublisherGM
 {
@@ -113,6 +114,138 @@ void newObstaclesCallback(const mapupdates::NewObstaclesConstPtr& msg)
 	}
 }
 
+void readAnnotations(std::string annotation_file)
+{
+	FILE	*F;
+	char rdLine[36]="";
+	char *line;
+	char *word;
+
+	char * cstr = new char [annotation_file.length()+1];
+  std::strcpy (cstr, annotation_file.c_str());
+  char * p = strsep (&cstr,"\n");
+  while (p!=0)
+  {
+    std::cout << p << '\n';
+    line = &p[0];
+    std::cout << line << '\n';
+    p = strsep(&cstr,"\n");
+
+		if (line[0] == '#' || line[0] == '\n')
+		{
+			std::cout << "comment or empty row "<<std::endl;
+			if (p==NULL)
+				std::cout << "zasto" <<'\n';
+			continue;
+		}
+		if (line[0] == '['){
+			std::cout << "annotation" <<std::endl;
+			word = strtok(line,"]");
+			if (word != NULL){
+				std::cout << word <<std::endl;
+			}
+			word = &word[1];
+			if (word != NULL){
+				std::cout << word <<std::endl;
+				annotations.name.push_back(word);
+				continue;
+			}
+		}
+		word = strtok (line,"=");
+		if (word == NULL){
+			std::cout << "no input" <<std::endl;
+			continue;
+		}
+		if (word != NULL){
+			std::cout << word <<std::endl;
+			if (strcmp(word,"point_x ")==0){
+				word = strtok (NULL," ");
+				if (word!= NULL){
+					std::cout << word <<std::endl;
+					annotations.x.push_back(atof(word));
+				}
+			}
+			if (strcmp(word,"point_y ")==0){
+				word = strtok (NULL," ");
+				if (word!= NULL){
+					std::cout << word <<std::endl;
+					annotations.y.push_back(atof(word));
+				}
+			}
+			if (strcmp(word,"theta ")==0){
+				word = strtok (NULL," ");
+				if (word!= NULL){
+					std::cout << word <<std::endl;
+					annotations.theta.push_back(atof(word));
+				}
+			}
+		}    
+		
+  }
+
+//this stays for debugging when running the code from the devel/lib/maptogridmap	
+	if ( (F = fopen("annotations.ini","r")) == NULL ){
+		std::cout << "no file to read "<<std::endl;
+	}else{
+		while (fgets(rdLine,35,F) != NULL)
+		{
+			line=&rdLine[0];
+//			std::cout << line <<std::endl;
+			if (line[0] == '#' || line[0] == '\n')
+			{
+				std::cout << "comment or empty row "<<std::endl;
+				continue;
+			}
+			if (line[0] == '['){
+				std::cout << "annotation" <<std::endl;
+				word = strtok(line,"]");
+				if (word != NULL){
+					std::cout << word <<std::endl;
+				}
+				word = &word[1];
+				if (word != NULL){
+					std::cout << word <<std::endl;
+					annotations.name.push_back(word);
+					continue;
+				}
+			}
+			word = strtok (line,"=");
+			if (word == NULL){
+				std::cout << "no input" <<std::endl;
+				continue;
+			}
+//			validconv = 0;
+			if (word != NULL){
+				std::cout << word <<std::endl;
+				if (strcmp(word,"point_x ")==0){
+					word = strtok (NULL," ");
+					if (word!= NULL){
+						std::cout << word <<std::endl;
+						annotations.x.push_back(atof(word));
+					}
+				}
+				if (strcmp(word,"point_y ")==0){
+					word = strtok (NULL," ");
+					if (word!= NULL){
+						std::cout << word <<std::endl;
+						annotations.y.push_back(atof(word));
+					}
+				}
+				if (strcmp(word,"theta ")==0){
+					word = strtok (NULL," ");
+					if (word!= NULL){
+						std::cout << word <<std::endl;
+						annotations.theta.push_back(atof(word));
+					}
+				}
+			}
+		}
+		fclose(F);
+	}
+	std::cout << annotations <<std::endl;
+	
+}
+
 int main(int argc, char** argv)
 {
   
@@ -128,9 +261,12 @@ int main(int argc, char** argv)
   VisualizationPublisherGM visualGM(nh);
   nav_msgs::GetMap map;
   ros::service::call("static_map",map);
-	double cellsize=0.1;
+	double cellsize=2.;
   nh.getParam("/map2gm/cell_size", cellsize);
- 
+  std::string annotation_file;
+  nh.getParam("/map2gm/annotation_file", annotation_file);
+	std::cout << annotation_file <<std::endl; 
+  
   double resolution=map.response.map.info.resolution;
   int width=map.response.map.info.width;
   int height=map.response.map.info.height;
@@ -162,6 +298,9 @@ int main(int argc, char** argv)
 //	GMC->spanningTree(13,13);
 	GMC->createEdges();
 	
+	//read annotations from file
+	readAnnotations(annotation_file);
+	
 //	maptogridmap::GridmapCell gmcell;
 	maptogridmap::Gridmap gm;
 	maptogridmap::Nodes gmnode;
@@ -184,9 +323,17 @@ int main(int argc, char** argv)
             gm.y.push_back(gmap[i][j].y);
             gm.occupancy.push_back(gmap[i][j].occupancy);
             if (gmap[i][j].occupancy==0){
+            	for (int k=0; k<annotations.x.size(); k++){
+            		if ((fabs(annotations.x[k]-gmap[i][j].x)<cellsize/2) && (fabs(annotations.y[k]-gmap[i][j].y)<cellsize/2)){
+            			gmap[i][j].x=annotations.x[k];
+            			gmap[i][j].y=annotations.y[k];
+            			gmap[i][j].theta=annotations.theta[k];
+            			gmap[i][j].name=annotations.name[k];
+            		}
+            	}
             	gmnode.x.push_back(gmap[i][j].x);
             	gmnode.y.push_back(gmap[i][j].y);
-            	gmnode.theta.push_back(0);
+            	gmnode.theta.push_back(gmap[i][j].theta);
             	gmnode.name.push_back(gmap[i][j].name);
 //            	boost::uuids::uuid lUUID=mUUIDGen();
             	gmnode.uuid.push_back(gmap[i][j].uuid);
@@ -244,7 +391,7 @@ int main(int argc, char** argv)
 				        if (gmap[i][j].occupancy==0){
 				        	gmnode.x.push_back(gmap[i][j].x);
 				        	gmnode.y.push_back(gmap[i][j].y);
-				        	gmnode.theta.push_back(0);
+		            	gmnode.theta.push_back(gmap[i][j].theta);
 				        	gmnode.name.push_back(gmap[i][j].name);
 				        	gmnode.uuid.push_back(gmap[i][j].uuid);
 				        }
@@ -314,27 +461,20 @@ void VisualizationPublisherGM::visualizationduringmotion(){
 			gridmapvs_pub.publish(gridmapvs);
 			graphvs_pub.publish(graphvs);
 
-			if(GMC->spanningpath.size()>0){
-				int temp_length=GMC->spanningpath.size();
-				for(int pathLength=0; pathLength<temp_length;pathLength++){
-			        	p.x = GMC->spanningpath[pathLength].x*cellsize+0.5*cellsize;
-	    					p.y = GMC->spanningpath[pathLength].y*cellsize+0.5*cellsize;
 
-    					stc.points.push_back(p);
-				}
-			//publish path			
-			stc_pub.publish(stc);
-		
-			}
 //edges
 			if(GMC->edges.size()>0){
 				int temp_length=GMC->edges.size();
 				for(int pathLength=0; pathLength<temp_length;pathLength++){
-			        	p.x = GMC->edges[pathLength].xs*cellsize+0.5*cellsize;
-	    				p.y = GMC->edges[pathLength].ys*cellsize+0.5*cellsize;
+//			        	p.x = GMC->edges[pathLength].xs*cellsize+0.5*cellsize;
+//	    				p.y = GMC->edges[pathLength].ys*cellsize+0.5*cellsize;
+	    				p.x = gmap[GMC->edges[pathLength].xs][GMC->edges[pathLength].ys].x;
+	    				p.y = gmap[GMC->edges[pathLength].xs][GMC->edges[pathLength].ys].y;
     					stc.points.push_back(p);
-			        	p.x = GMC->edges[pathLength].xg*cellsize+0.5*cellsize;
-	    				p.y = GMC->edges[pathLength].yg*cellsize+0.5*cellsize;
+//			        	p.x = GMC->edges[pathLength].xg*cellsize+0.5*cellsize;
+//	    				p.y = GMC->edges[pathLength].yg*cellsize+0.5*cellsize;
+	    				p.x = gmap[GMC->edges[pathLength].xg][GMC->edges[pathLength].yg].x;
+	    				p.y = gmap[GMC->edges[pathLength].xg][GMC->edges[pathLength].yg].y;
     					stc.points.push_back(p);
     					
 				}

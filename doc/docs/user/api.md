@@ -58,15 +58,68 @@ The size of the cell is given by the parameter in startmaptogridmap.launch:
 <launch>
 
     <node name="map2gm" pkg="maptogridmap" type="map2gm" >
-        <param name="cell_size" type="double" value="0.2" />
+        <param name="cell_size" type="double" value="1.0" />
+        <param name="annotation_file" textfile="$(find maptogridmap)/launch/annotations.ini" />
     </node>
 
 </launch>
 ```
 
-In this example it is set to 0.2m. Values that are presented in context broker are coordinates of the cell center (x,y), a name of the node in the form of "vertex_0" and the node's uuid. The message that is sent through firos can be found here: maptogridmap/msg/Nodes.msg
+In this example it is set to 1.0m. Values that are presented in context broker are coordinates of the cell center (x,y), a name of the node in the form of "vertex_0" and the node's uuid. The message that is sent through firos can be found here: maptogridmap/msg/Nodes.msg
 
 TODO: explain why theta is used and how annotations are written in nodes
+
+Annotations can be loaded from file annotations.ini put as a parameter textfile inside the startmaptogridmap.launch file. In this example the first three annotations were used in Zagreb demo in Task planner, and additional P1 is put as an example:
+```
+[loadingArea]
+# coordinates
+point_x = 3.75
+point_y = 2.51
+theta = 0
+
+[unloadingArea]
+# coordinates
+point_x = 6.4
+point_y = 2.51
+theta = 0 
+
+[waitingArea]
+# coordinates
+point_x = 6.9
+point_y = 4.3
+theta = 90
+
+[P1]
+# coordinates
+point_x = 2.9
+point_y = 4.6
+theta = 30
+```
+The annotations are saved under the variable of type maptogridmap::Nodes inside of the maptogridmap package so that it can change the values of the computed nodes from gridmap cells:
+```
+x[]
+  x[0]: 3.75
+  x[1]: 6.4
+  x[2]: 6.9
+  x[3]: 2.9
+y[]
+  y[0]: 2.51
+  y[1]: 2.51
+  y[2]: 4.3
+  y[3]: 4.6
+theta[]
+  theta[0]: 0
+  theta[1]: 0
+  theta[2]: 90
+  theta[3]: 30
+name[]
+  name[0]: loadingArea
+  name[1]: unloadingArea
+  name[2]: waitingArea
+  name[3]: P1
+```
+These four annotations change the coordinates of the cell centre of the grid map (but only free cells) and also change the name to the annotation name. The result can be seen in [topic /map/nodes.](#exampleannot)
+
 
 ## Creation of Edges in maptogridmap package
 Edges are pairs of neighbor nodes. Neighbors are defined between two nodes which have their centres' coordinates distanced for _cell_size_. The edges are bidirectional, meaning two neighbor nodes n and m forms the edge (n,m) and (m,n) which are identical.
@@ -401,6 +454,174 @@ rostopic echo /map/nodes
 rostopic echo /map/edges
 rostopic echo /robot_0/pose_channel
 ```
+* <a name="exampleannot">Example output for the ICENT map - Nodes with loaded annotations</a>
+<!--* Example output for the ICENT map - Nodes-->
+
+```
+$rostopic echo /map/nodes
+header: 
+  seq: 104
+  stamp: 
+    secs: 65
+    nsecs: 300000000
+  frame_id: "map"
+info: 
+  map_load_time: 
+    secs: 0
+    nsecs:         0
+  resolution: 1.0
+  width: 14
+  height: 8
+  origin: 
+    position: 
+      x: 0.0
+      y: 0.0
+      z: 0.0
+    orientation: 
+      x: 0.0
+      y: 0.0
+      z: 0.0
+      w: 0.0
+x: [1.5, 2.5, 2.5, 2.9, 3.5, 3.75, 3.5, 3.5, 3.5, 3.5, 4.5, 4.5, 4.5, 4.5, 4.5, 5.5, 5.5, 5.5, 5.5, 6.4, 6.5, 6.9, 7.5, 7.5, 7.5, 7.5, 7.5, 8.5, 8.5, 9.5, 10.5, 11.5, 11.5, 11.5, 11.5, 11.5, 11.5, 11.5, 12.5, 12.5, 12.5, 12.5, 12.5, 13.5, 13.5, 13.5, 13.5, 13.5, 13.5, 13.5]
+y: [2.5, 2.5, 3.5, 4.6, 1.5, 2.51, 3.5, 4.5, 5.5, 6.5, 1.5, 2.5, 3.5, 4.5, 6.5, 1.5, 2.5, 3.5, 4.5, 2.51, 3.5, 4.3, 2.5, 3.5, 4.5, 5.5, 6.5, 5.5, 6.5, 6.5, 1.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 0.5, 1.5, 2.5, 3.5, 4.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 7.5]
+theta: [0.0, 0.0, 0.0, 30.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 90.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+name: [vertex_10, vertex_18, vertex_19, P1, vertex_25, loadingArea, vertex_27, vertex_28,
+  vertex_29, vertex_30, vertex_33, vertex_34, vertex_35, vertex_36, vertex_38, vertex_41,
+  vertex_42, vertex_43, vertex_44, unloadingArea, vertex_51, waitingArea, vertex_58,
+  vertex_59, vertex_60, vertex_61, vertex_62, vertex_69, vertex_70, vertex_78, vertex_81,
+  vertex_88, vertex_89, vertex_90, vertex_91, vertex_92, vertex_93, vertex_94, vertex_96,
+  vertex_97, vertex_98, vertex_99, vertex_100, vertex_104, vertex_105, vertex_106,
+  vertex_107, vertex_108, vertex_109, vertex_111]
+uuid: [57c319ef-5830-4035-bfd4-bb4852bf7f3e, c83f8271-c67c-48df-b654-b69930846891, 15818a4b-6749-4d8f-a550-15a6291b9d28,
+  70536798-2680-43f8-a415-64d70dd249dd, 4931ab8c-9f2f-4913-8768-98edbd75f543, 6cf2954e-dafa-45f1-ba21-3a4f64909153,
+  1173257d-2ece-4dd1-98ba-9d762201b592, c33bc043-55da-4689-aec4-d82ec4a31197, 89f004df-c2fd-43cf-bb61-6d7bf83d50ea,
+  757ac47e-33b3-4acf-ad85-81c431667806, 0ca96b41-e949-426b-afab-c183e7be1ff2, 9b369197-9275-4db4-8b8b-5ebabaa7b833,
+  3e29ca55-bb7d-4b91-a9c9-4f5cbfff29cb, 275b3195-152f-4659-8b96-9e4683a1af91, 172086aa-5067-4f74-9a65-318872d9f9e6,
+  97fddd32-361e-4c8c-b1a6-c99eab4da583, 9b2a0e09-14df-4667-858a-4395dcc85170, 123f665a-5cab-41bf-a872-bf998f647f5c,
+  d27810f6-689a-47b6-a5c9-d5462baa9dd9, 2c2be0b8-a750-499f-89bb-83c178a0809b, d4c709ab-fa4a-4b87-9f43-269af26f436a,
+  6416975f-747f-439e-9bea-987c7e5ba9cc, 4bd3cc9d-c3c1-468a-934f-430a2863fbc7, 80c3750b-536a-464f-bd79-f2356ef68f58,
+  a3d23430-38ed-42c4-8d9e-2d638a1697bd, 01fd7093-4716-45d2-8e8b-6ddeb04f5caf, 715e4b36-134b-4c0d-83ee-398585d2c296,
+  d98e4e0f-7be1-40c4-b355-01d8edee2919, 0a660726-83cb-4b09-99f3-57df923b46a2, 2f543486-e47d-48e7-89bd-08743d509c55,
+  06619538-37af-47ec-a642-657642f0eca4, 192b0899-c1d4-4458-a9b8-c4da5fc51ba6, dbbc46e7-93f7-492a-b758-d92a398f4e65,
+  3d187492-0862-44dd-b28e-2d6e53b7ede4, a5aa74ab-9949-4a69-951b-1192eb9f04f3, a0178b30-50ef-4d69-9b32-f4e6a4bd8a11,
+  51190db8-d13b-4838-8a09-452d9f46c030, e62dd631-99aa-40eb-8001-11b720823bb1, eff5f5a0-54db-4f38-a35e-75ef77abe4b9,
+  3f1d9f14-9c96-421e-ab47-169007dd4fae, d8c89d2c-9a69-4dbf-a113-9c9d0d5a9bd4, d3a54686-f687-4791-845f-71111f390770,
+  36a0a772-fe64-46aa-8f12-252dba151445, d0b5b5fb-5242-4bbc-b893-ced7727b334c, 2883a9ef-d003-4446-b634-929e055b8465,
+  0625388d-b9c9-4c28-8b73-bd3637f686f4, fd27eca8-6744-4a75-be29-e9a0adf189c0, 28023451-3b2c-4b4e-9d07-171d3eb2acc4,
+  ff9fa735-260f-4ec3-b2a4-9896ef14fc27, e014d0b0-1130-4e02-b402-1aab060a9a10]
+```
+
+* Example output for the ICENT map - Edges
+
+```
+$rostopic echo /map/edges
+header: 
+  seq: 4893
+  stamp: 
+    secs: 544
+    nsecs: 200000000
+  frame_id: "map"
+uuid_src: [57c319ef-5830-4035-bfd4-bb4852bf7f3e, c83f8271-c67c-48df-b654-b69930846891, c83f8271-c67c-48df-b654-b69930846891,
+  15818a4b-6749-4d8f-a550-15a6291b9d28, 15818a4b-6749-4d8f-a550-15a6291b9d28, 70536798-2680-43f8-a415-64d70dd249dd,
+  4931ab8c-9f2f-4913-8768-98edbd75f543, 4931ab8c-9f2f-4913-8768-98edbd75f543, 6cf2954e-dafa-45f1-ba21-3a4f64909153,
+  6cf2954e-dafa-45f1-ba21-3a4f64909153, 1173257d-2ece-4dd1-98ba-9d762201b592, 1173257d-2ece-4dd1-98ba-9d762201b592,
+  c33bc043-55da-4689-aec4-d82ec4a31197, c33bc043-55da-4689-aec4-d82ec4a31197, 89f004df-c2fd-43cf-bb61-6d7bf83d50ea,
+  757ac47e-33b3-4acf-ad85-81c431667806, 0ca96b41-e949-426b-afab-c183e7be1ff2, 0ca96b41-e949-426b-afab-c183e7be1ff2,
+  9b369197-9275-4db4-8b8b-5ebabaa7b833, 9b369197-9275-4db4-8b8b-5ebabaa7b833, 3e29ca55-bb7d-4b91-a9c9-4f5cbfff29cb,
+  3e29ca55-bb7d-4b91-a9c9-4f5cbfff29cb, 275b3195-152f-4659-8b96-9e4683a1af91, 97fddd32-361e-4c8c-b1a6-c99eab4da583,
+  9b2a0e09-14df-4667-858a-4395dcc85170, 9b2a0e09-14df-4667-858a-4395dcc85170, 123f665a-5cab-41bf-a872-bf998f647f5c,
+  123f665a-5cab-41bf-a872-bf998f647f5c, d27810f6-689a-47b6-a5c9-d5462baa9dd9, 2c2be0b8-a750-499f-89bb-83c178a0809b,
+  2c2be0b8-a750-499f-89bb-83c178a0809b, d4c709ab-fa4a-4b87-9f43-269af26f436a, d4c709ab-fa4a-4b87-9f43-269af26f436a,
+  6416975f-747f-439e-9bea-987c7e5ba9cc, 4bd3cc9d-c3c1-468a-934f-430a2863fbc7, 80c3750b-536a-464f-bd79-f2356ef68f58,
+  a3d23430-38ed-42c4-8d9e-2d638a1697bd, 01fd7093-4716-45d2-8e8b-6ddeb04f5caf, 01fd7093-4716-45d2-8e8b-6ddeb04f5caf,
+  715e4b36-134b-4c0d-83ee-398585d2c296, d98e4e0f-7be1-40c4-b355-01d8edee2919, 0a660726-83cb-4b09-99f3-57df923b46a2,
+  06619538-37af-47ec-a642-657642f0eca4, 192b0899-c1d4-4458-a9b8-c4da5fc51ba6, dbbc46e7-93f7-492a-b758-d92a398f4e65,
+  dbbc46e7-93f7-492a-b758-d92a398f4e65, 3d187492-0862-44dd-b28e-2d6e53b7ede4, 3d187492-0862-44dd-b28e-2d6e53b7ede4,
+  a5aa74ab-9949-4a69-951b-1192eb9f04f3, a5aa74ab-9949-4a69-951b-1192eb9f04f3, a0178b30-50ef-4d69-9b32-f4e6a4bd8a11,
+  a0178b30-50ef-4d69-9b32-f4e6a4bd8a11, 51190db8-d13b-4838-8a09-452d9f46c030, eff5f5a0-54db-4f38-a35e-75ef77abe4b9,
+  3f1d9f14-9c96-421e-ab47-169007dd4fae, 3f1d9f14-9c96-421e-ab47-169007dd4fae, d8c89d2c-9a69-4dbf-a113-9c9d0d5a9bd4,
+  d8c89d2c-9a69-4dbf-a113-9c9d0d5a9bd4, d3a54686-f687-4791-845f-71111f390770, d3a54686-f687-4791-845f-71111f390770,
+  36a0a772-fe64-46aa-8f12-252dba151445, d0b5b5fb-5242-4bbc-b893-ced7727b334c, 2883a9ef-d003-4446-b634-929e055b8465,
+  0625388d-b9c9-4c28-8b73-bd3637f686f4, fd27eca8-6744-4a75-be29-e9a0adf189c0, 28023451-3b2c-4b4e-9d07-171d3eb2acc4]
+uuid_dest: [c83f8271-c67c-48df-b654-b69930846891, 6cf2954e-dafa-45f1-ba21-3a4f64909153, 15818a4b-6749-4d8f-a550-15a6291b9d28,
+  1173257d-2ece-4dd1-98ba-9d762201b592, 70536798-2680-43f8-a415-64d70dd249dd, c33bc043-55da-4689-aec4-d82ec4a31197,
+  0ca96b41-e949-426b-afab-c183e7be1ff2, 6cf2954e-dafa-45f1-ba21-3a4f64909153, 9b369197-9275-4db4-8b8b-5ebabaa7b833,
+  1173257d-2ece-4dd1-98ba-9d762201b592, 3e29ca55-bb7d-4b91-a9c9-4f5cbfff29cb, c33bc043-55da-4689-aec4-d82ec4a31197,
+  275b3195-152f-4659-8b96-9e4683a1af91, 89f004df-c2fd-43cf-bb61-6d7bf83d50ea, 757ac47e-33b3-4acf-ad85-81c431667806,
+  172086aa-5067-4f74-9a65-318872d9f9e6, 97fddd32-361e-4c8c-b1a6-c99eab4da583, 9b369197-9275-4db4-8b8b-5ebabaa7b833,
+  9b2a0e09-14df-4667-858a-4395dcc85170, 3e29ca55-bb7d-4b91-a9c9-4f5cbfff29cb, 123f665a-5cab-41bf-a872-bf998f647f5c,
+  275b3195-152f-4659-8b96-9e4683a1af91, d27810f6-689a-47b6-a5c9-d5462baa9dd9, 9b2a0e09-14df-4667-858a-4395dcc85170,
+  2c2be0b8-a750-499f-89bb-83c178a0809b, 123f665a-5cab-41bf-a872-bf998f647f5c, d4c709ab-fa4a-4b87-9f43-269af26f436a,
+  d27810f6-689a-47b6-a5c9-d5462baa9dd9, 6416975f-747f-439e-9bea-987c7e5ba9cc, 4bd3cc9d-c3c1-468a-934f-430a2863fbc7,
+  d4c709ab-fa4a-4b87-9f43-269af26f436a, 80c3750b-536a-464f-bd79-f2356ef68f58, 6416975f-747f-439e-9bea-987c7e5ba9cc,
+  a3d23430-38ed-42c4-8d9e-2d638a1697bd, 80c3750b-536a-464f-bd79-f2356ef68f58, a3d23430-38ed-42c4-8d9e-2d638a1697bd,
+  01fd7093-4716-45d2-8e8b-6ddeb04f5caf, d98e4e0f-7be1-40c4-b355-01d8edee2919, 715e4b36-134b-4c0d-83ee-398585d2c296,
+  0a660726-83cb-4b09-99f3-57df923b46a2, 0a660726-83cb-4b09-99f3-57df923b46a2, 2f543486-e47d-48e7-89bd-08743d509c55,
+  dbbc46e7-93f7-492a-b758-d92a398f4e65, dbbc46e7-93f7-492a-b758-d92a398f4e65, 3f1d9f14-9c96-421e-ab47-169007dd4fae,
+  3d187492-0862-44dd-b28e-2d6e53b7ede4, d8c89d2c-9a69-4dbf-a113-9c9d0d5a9bd4, a5aa74ab-9949-4a69-951b-1192eb9f04f3,
+  d3a54686-f687-4791-845f-71111f390770, a0178b30-50ef-4d69-9b32-f4e6a4bd8a11, 36a0a772-fe64-46aa-8f12-252dba151445,
+  51190db8-d13b-4838-8a09-452d9f46c030, e62dd631-99aa-40eb-8001-11b720823bb1, 3f1d9f14-9c96-421e-ab47-169007dd4fae,
+  2883a9ef-d003-4446-b634-929e055b8465, d8c89d2c-9a69-4dbf-a113-9c9d0d5a9bd4, 0625388d-b9c9-4c28-8b73-bd3637f686f4,
+  d3a54686-f687-4791-845f-71111f390770, fd27eca8-6744-4a75-be29-e9a0adf189c0, 36a0a772-fe64-46aa-8f12-252dba151445,
+  28023451-3b2c-4b4e-9d07-171d3eb2acc4, 2883a9ef-d003-4446-b634-929e055b8465, 0625388d-b9c9-4c28-8b73-bd3637f686f4,
+  fd27eca8-6744-4a75-be29-e9a0adf189c0, 28023451-3b2c-4b4e-9d07-171d3eb2acc4, ff9fa735-260f-4ec3-b2a4-9896ef14fc27]
+name: [edge_10_18, edge_18_26, edge_18_19, edge_19_27, edge_19_20, edge_20_28, edge_25_33,
+  edge_25_26, edge_26_34, edge_26_27, edge_27_35, edge_27_28, edge_28_36, edge_28_29,
+  edge_29_30, edge_30_38, edge_33_41, edge_33_34, edge_34_42, edge_34_35, edge_35_43,
+  edge_35_36, edge_36_44, edge_41_42, edge_42_50, edge_42_43, edge_43_51, edge_43_44,
+  edge_44_52, edge_50_58, edge_50_51, edge_51_59, edge_51_52, edge_52_60, edge_58_59,
+  edge_59_60, edge_60_61, edge_61_69, edge_61_62, edge_62_70, edge_69_70, edge_70_78,
+  edge_81_89, edge_88_89, edge_89_97, edge_89_90, edge_90_98, edge_90_91, edge_91_99,
+  edge_91_92, edge_92_100, edge_92_93, edge_93_94, edge_96_97, edge_97_105, edge_97_98,
+  edge_98_106, edge_98_99, edge_99_107, edge_99_100, edge_100_108, edge_104_105, edge_105_106,
+  edge_106_107, edge_107_108, edge_108_109]
+uuid: [54d7fef2-4b84-4af3-817e-1372eb7ce426, c85274d8-e8a4-4381-998d-5d2b29cdac07, 7fd651fa-5658-4dfb-b077-e43cac0e0947,
+  dd35b234-3d93-473e-a3e1-e36c2a548ab0, f2b0062c-2e84-4e3b-a012-4a3d34c6fcec, 25d00572-22a1-4b78-b708-6ad77e1ad571,
+  2faeb79f-f610-4094-abe5-ec3c497adac7, dab00789-1795-4e4a-a501-5e2f6a4a52dd, d59148f3-045f-4e46-b1bf-9a2b562e14f2,
+  c5fc202f-ad70-4ee0-97f4-2497ec3a0e31, f438e348-3107-4d89-ad80-c3191537ac85, a970bafc-0136-4f9c-ba88-4a2ae7217be8,
+  6633880a-a907-4713-ab97-8c26d3ee6595, 1339b945-2149-421f-b2f6-14f7babc4693, a4bf69f8-e2c8-447d-8f7e-56772e69ae5f,
+  b4fd8305-45ba-4590-a736-8197bbe5cff3, 166f6e14-489d-469b-96fd-b52c67698750, fdf95d41-7573-4c01-8c02-67dec3e70932,
+  b993d323-6b0e-4a21-b2bf-3a2a234386cc, 6ad0a7aa-4a9f-4c62-9a7b-d54fd060a938, adaf3199-30fe-42cb-9972-db8e05385499,
+  0c1666af-acd9-4641-9280-580be1765365, b76bef74-4c10-4ba7-9261-1d856301656d, de491bf0-6ea8-4347-a109-30b87a6dddad,
+  8694d196-d938-4fc8-812d-9c58a58c96bc, f01155be-5153-4a70-939b-98186d7a9e7b, 9e6162da-b6ba-4b51-af75-5e71577dac7d,
+  bddf9946-26ac-4dde-b8b5-f5f8458c8a38, 73d10460-c5ad-4bb0-bc14-c3a544b01994, b63fce9a-2053-4f09-9d9d-4aee8cfab15d,
+  9ff8cc1f-d497-402f-9164-8abed94506d0, c5815d3c-821f-4c35-9e2a-c824fe9d94d9, 103ec47e-04ac-44fc-bc60-58b7898cfd5f,
+  4ea77d01-1585-4982-bf00-971dec77451f, a0df856c-50bc-4a9a-abc5-149bc2f733d3, 95d8888d-0994-46ef-9205-a02c0ad0dd41,
+  8520780f-5258-42f1-9cca-5d0448ea58c3, f2276c4e-e22e-4352-a76d-9f244e9f6e9e, 09f8210b-c372-4d4c-83a3-f86b84bcd13b,
+  9c1cdbb9-7d7f-43e4-a751-a1410151c840, b8c71526-63ea-49bb-bd1b-d5af1801bcf4, 3d3711cd-ef0f-4543-b852-2cfb3f178bbd,
+  158fd367-7d20-42d2-bfdd-6c118d30aebf, 1388dd39-086f-40d6-9a5b-e824397bef70, bfc57036-421e-48c7-80e2-90e967d6f355,
+  7da849ab-4965-465d-af76-18e141b81256, 2a4aeb78-0186-4416-9b87-31369d5396f2, abee7eec-8a3c-4f97-b239-6d34c954e488,
+  fc8b61aa-50c1-435a-86a2-27b9eb74e165, 83ca153c-dde5-4752-a868-57f5f599d758, f1fad6f3-8b69-4ee5-861b-64a9205a10d6,
+  3b8685e6-e917-4c50-9358-a2b196c2ebd3, 0536b4d1-e337-44ac-bfaf-e4100ae90a23, 792a5bef-64ea-46ff-8386-69e93db3aa33,
+  e583e7cf-084a-41b2-8810-dd461c695ffe, e1e966ea-050f-4c36-8a1b-c187a50b8d25, ee3fb5bc-a2b5-4c8e-9cbf-243fb8ebc023,
+  45a6b2f7-2911-4576-b80d-931a705b2718, 2b03d23d-69b5-4a68-b312-fbd401c21e7b, f35f74fd-d6ae-479d-8833-8a502047ec93,
+  6fbd5fa7-c1bd-493d-9a41-02a5e377df79, 5369a3da-b5f5-4726-b095-2e77c372eb4b, 6919e25a-b105-4517-90bf-9e92549cb706,
+  4fbf645f-330e-4cc3-8d8e-d5330269b4e5, 12855305-90fd-46be-b5cf-93d669e5c9e8, 8c0d54c1-f40b-4612-82c9-5190bbf54d3a]
+```
+
+* Example output for the ICENT map - Pose with covariance
+```
+$rostopic echo /robot_0/pose_channel
+header: 
+  seq: 221
+  stamp: 
+    secs: 667
+    nsecs: 200000000
+  frame_id: "map"
+pose: 
+  pose: 
+    position: 
+      x: 5.89260851198
+      y: 4.54273166596
+      z: 0.0
+    orientation: 
+      x: 0.0
+      y: 0.0
+      z: 0.000341716300675
+      w: 0.999999941615
+  covariance: [0.2280276789742004, 0.00121444362006784, 0.0, 0.0, 0.0, 0.0, 0.00121444362006784, 0.2095520253272909, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.06568863093933444]
+```
+
 * Example output for the IML map - Nodes
 
 ```
