@@ -1,52 +1,184 @@
 # Workflow
-* Pose of the AGV is calculated inside the RAN module (level 1 of OPIL).
-* Map updates are calculated at the level 1, where laser sensor data are received.
-* Topology is calculated in the level 3 of OPIL from the map file.
-* There is no service calls implemented yet in firos so map is not transmited through firos. Each module should have its own copy of map file (from CAD or as SLAM result).
-* Only map updates are sent through firos, which are calculated from the new sensor readings that hit the free grid cells. 
-* TODO: Map merging is done from map updates of more robots into one gridmap.
-* Global map creation from initial map and map updates is not done in this version (OPIL v2). Since there is no replanning in TP in v2, the map updates are only used for visualization in HMI.
-* HMI should have the map file as RAN, and ability to present map updates over the initial map. 
+* Local SP is on every AGV next to RAN
+* Central SP is on the OPIL server
+* Pose of the AGV is calculated in the Local SP
+* Map updates are calculated in the Local SP from the laser sensor data
+* Topology is calculated in the Central SP from the map file
+* There is no service calls implemented yet in firos so map is not transmited through firos. Each module (Local SP on every AGV, Central SP and HMI) should have its own copy of map file (from CAD or as a SLAM result).
+* Map updates are sent through firos, which are calculated from the new sensor readings that hit the free grid cells
+* Map merging is done in the Central SP from map updates of one Local SP (one AGV) into one global gridmap from which the updated topology is calculated (later it will be from more Local SPs, i.e., AGVs)
+* HMI should have the initial map file, and ability to present map updates over the initial map 
 
-# RAN machine with SP as part of it
-The main reason having SP as part of RAN is to have high-rate closed navigation loop when relying on laser data and odometry attached for pose calculation, with no delay introduced when using the large data flow (lasers) through wifi. 
+# RAN (or AGV's) computer with the Local SP
+The main reason having the Local SP on the AGV's computer is to have high-rate closed navigation loop when relying on laser data and odometry for pose calculation, with no delay introduced when using the large data flow (lasers) through wifi. 
 
 ## Pose with covariance of the AGV
-To start SP inside RAN you should use _lam_simulator_ ROS package, which contains prepared launch files with AMCL localization and tests in the simulator Stage.
-Afterwards, use _sensing_and_perception_ ROS package, which publish AGV's pose with covariance. 
+To start the Local SP on the AGV's computer you should use _lam_simulator_ ROS package, which contains prepared launch files with AMCL localization and tests in the simulator Stage.
+Afterwards, use _sensing_and_perception_ ROS package to publish AGV's pose with covariance. 
 AMCL is a standard ROS package that publishes the tf_tree transformations so any navigation package (like move_base) can be attached to this node in a standard way.
-There are three example maps that can be started in the simulator Stage:
-
-* Example with the MURAPLAST factory floorplan:
-```
-terminal 1: roslaunch lam_simulator amcl_test_muraplast.launch
-terminal 2: roslaunch sensing_and_perception send_posewithcovariance.launch 
-```
-
-* Example with the ICENT lab floorplan in Zagreb review meeting demo:
+Here is an example how to start simulated robot:
 ```
 terminal 1: roslaunch lam_simulator AndaOmnidriveamcltestZagrebdemo.launch
 terminal 2: roslaunch sensing_and_perception send_posewithcovariance.launch 
 ```
 
-* Example with the IML lab floorplan:
+To test different example maps repeat the commands from Section [Pose with covariance](api.md#poswithcov).
+The successful transmission of data can be seen as example in [topic /robot_0/pose_channel](api.md#examplepose).
+
+## Map updates collected at the AGV (laser data)
+
+To start the calculation of local map updates at the AGV you should start the _mapupdates_ ROS package.
+First start the AMCL localization in the known map and connect to your robot's laser data (or use the simulator Stage in which laser data are simulated).
+Then start the package mapupdates. This is an example with the simulator Stage:
 ```
-terminal 1: roslaunch lam_simulator IMLamcltest.launch
-terminal 2: roslaunch sensing_and_perception send_posewithcovariance.launch 
+terminal 1: roslaunch lam_simulator AndaOmnidriveamcltestZagrebdemo.launch
+terminal 2: roslaunch mapupdates startmapupdates.launch
 ```
+More detailed explanations and examples can be seen in Section [Map updates](api.md#mapupdates).
+
+## Sending the map updates and pose with covariance from AGV with ID name robot_0 through firos
+
+For sending the topics through firos, robots.json and whitelist.json should look like this:
+### robots.json
+```
+{
+	"robot_0":{
+		"topics": {
+			"pose_channel": {
+				"msg": "geometry_msgs.msg.PoseWithCovarianceStamped",
+				"type": "subscriber"
+			},
+			"newObstacles": {
+				"msg": "mapupdates.msg.NewObstacles",
+				"type": "subscriber"
+			}
+		}
+	}
+}
+```
+### whitelist.json
+```
+{
+    "robot_0": {
+        "subscriber": ["pose_channel","newObstacles"]
+    }
+}
+```
+You can find the firos config files in test/config_files/Local_SP_computer.
+
+# OPIL server computer with the Central SP
+
+The Central SP on the OPIL server calculates the topology and merges the local map updates from the Local SP on an AGV.
+
+## Topology calculation at the Central SP
+
+To start the calculation of the topology, a map_server needs to be started first, that takes a PNG or PGM file of the map, and then the maptogridmap package:
+```
+terminal 1: roslaunch maptogridmap startmapserver.launch 
+terminal 2: roslaunch maptogridmap startmaptogridmap.launch
+```
+More detailed explanations and examples can be seen in Section [Topology](api.md#topology).
 
 
-## Map updates at Level 1 (laser data)
+## Topology update from the local map updates from the Local SP
 
-TODO: explain how map updates are calculated from laser data
+For this mapupdates needs to be started on a Local SP. New obstacles are merged and new topology is calculated if maptogridmap is running.
 
-# SP machine
+## Sending the topology through firos for TP and HMI and receiving the map updates from AGV with ID name robot_0
 
-TODO: explain how topology is created
+For sending the topology and receiving the map updates through firos, robots.json and whitelist.json should look like this:
+### robots.json
+```
+{
+	"map":{
+		"topics": {
+			"nodes": {
+				"msg": "maptogridmap.msg.Nodes",
+				"type": "subscriber"
+			},
+			"edges": {
+				"msg": "maptogridmap.msg.Edges",
+				"type": "subscriber"
+			}
+		}
+	},
+	"robot_0":{
+		"topics": {
+			"newObstacles": {
+				"msg": "mapupdates.msg.NewObstacles",
+				"type": "publisher"
+			}
+		}
+	}
+}
+```
+### whitelist.json
+```
+{
+    "map": {
+        "subscriber": ["nodes","edges"],
+        "publisher": []
+    },
+    "robot_0": {
+        "subscriber": [],
+        "publisher": ["newObstacles"]
+    }
+}
+```
+You can find the firos config files in test/config_files/Central_SP_computer.
 
-# HMI machine
+# TP receiving topology and pose with covariance through firos
 
-TODO: explain how map file needs to exist there and how map updates will be received
+For receiving the topology topics from the Central SP, the packages _maptogridmap_ and _mapupdates_ needs to be in your src folder because of the defined ROS messages that will be received through firos.
+
+For receiving the topics through firos, robots.json and whitelist.json should look like this:
+### robots.json
+```
+{
+   "map":{
+       "topics": {
+            	"nodes": {
+                	"msg": "maptogridmap.msg.Nodes",
+                	"type": "publisher"
+
+            	},
+            	"edges": {
+                	"msg": "maptogridmap.msg.Edges",
+                	"type": "publisher"
+
+            	}
+       }
+   }
+   "robot_0":{
+       "topics": {
+            	"pose_channel": {
+                		"msg": "geometry_msgs.msg.PoseWithCovarianceStamped",
+                		"type": "publisher"
+            	}
+       }
+   }
+}
+```
+### whitelist.json
+```
+{
+    "map": {
+        "publisher": ["nodes","edges"],
+        "subscriber": []
+    },
+    "robot_0": {
+        "publisher": ["pose_channel"]
+    }
+}
+```
+Start firos and write a subscriber for the topics as suggested in Section [Writing a simple listener explaining the maplistener package](api.md#writelis).
+You can find the firos config files in test/config_files/TP_HMI_computer.
+
+# HMI receiving topology and pose with covariance through firos
+
+It should be the same as for TP.
+
+TODO: explain how map file needs to exist there and how map updates will be received, put here the entities from OCB.
 
 #Interconnection between machines
 
@@ -54,12 +186,17 @@ TODO: explain how map file needs to exist there and how map updates will be rece
 To send the topics to Orion Context Broker json files needs to be set properly inside the firos/config folder and firos needs to be running.
 
 ## Towards Physical IO
-TODO: this is sent directly from Level 1, not through OCB
-It is not yet used that something is being sent to IO from OCB. There are two reasons: a) the map is too big; b) there is no service call so AMCL can not work.
-To send the topics through firos to Physical IO json files need to be set properly inside the firos/config folder and firos needs to be running.
+
+This direction is not yet used, meaning that something is being sent to IO from OCB. There are two reasons: a) the map is too big; b) there is no service call so AMCL can not work.
+
+But, in general, to send the topics through firos to Physical IO json files need to be set properly inside the firos/config folder and firos needs to be running.
 
 ## firos config json files explained between machine 1 and machine 2
+
+TODO: this example is old, now Local_SP_computer, Central_SP_computer and TP_HMI_computer are used.
+
 On machine 1 all topics that are being sent through context broker need to be "subscriber", and that are being received from the context broker need to be "publisher". Topics are listed under ids and here we have "map" id and "robot_0" id.
+
 TODO: explain the numbering robot_0, robot_1, etc. and correct config files with respect to machines
 
 ### robots.json

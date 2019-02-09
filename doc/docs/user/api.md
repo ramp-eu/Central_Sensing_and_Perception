@@ -1,4 +1,4 @@
-#Topology
+# <a name="topology">Topology</a>
 The topology that needs to be send to Task Planner is composed of nodes and edges. In the future it will be a single graph message, but since firos is not supporting arrays of custom ROS messages it is divided into two ROS messages: nodes and edges.
 
 Nodes.msg
@@ -26,7 +26,7 @@ terminal 2: roslaunch maptogridmap startmaptogridmap.launch
 ```
  
 ## Creation of Nodes in maptogridmap package
-Nodes are all free cells of rectangular square size that does not contain any obstacle within it. The obstacles are readed from the map PNG or PGM file loaded by calling the map_server node. There are three maps prepared in startmapserver.launch, where MURAPLAST florplan is uncommented and IML lab and ICENT lab are commented for the later usage.
+Nodes are all free cells of rectangular square size that does not contain any obstacle within it. The obstacles are read from the map PNG or PGM file loaded by calling the map_server node. There are three maps prepared in startmapserver.launch, where MURAPLAST florplan is uncommented and IML lab and ICENT lab are commented out for the later usage.
 
 ```
 <launch>
@@ -58,18 +58,18 @@ The size of the cell is given by the parameter in startmaptogridmap.launch:
 <launch>
 
     <node name="map2gm" pkg="maptogridmap" type="map2gm" >
-        <param name="cell_size" type="double" value="1.0" />
+        <param name="cell_size" type="double" value="2.0" />
         <param name="annotation_file" textfile="$(find maptogridmap)/launch/annotations.ini" />
     </node>
 
 </launch>
 ```
 
-In this example it is set to 1.0m. Values that are presented in context broker are coordinates of the cell center (x,y), a name of the node in the form of "vertex_0" and the node's uuid. The message that is sent through firos can be found here: maptogridmap/msg/Nodes.msg
+In this example it is set to 2.0m since the floorplan is quite big. ICENT lab is much smaller so 1.2m cell size gives better results. Values that are presented in context broker are coordinates of the cell center (x,y) or coordinates of the manual annotation (loaded from a file), theta as an orientation of the annotated place in the map (default is 0), a name of the node in the form of "vertex_0" or annotated name, and the node's uuid. The message that is sent through firos can be found here: maptogridmap/msg/Nodes.msg.
 
-TODO: explain why theta is used and how annotations are written in nodes
+### Annotations
 
-Annotations can be loaded from file annotations.ini put as a parameter textfile inside the startmaptogridmap.launch file. In this example the first three annotations were used in Zagreb demo in Task planner, and additional P1 is put as an example:
+Annotations can be loaded from file annotations.ini located in maptogridmap/launch folder, which is put as a parameter textfile inside the startmaptogridmap.launch file. In this example the first three annotations were used in Zagreb demo in Task planner, and P1 is put as an additional example:
 ```
 [loadingArea]
 # coordinates
@@ -118,7 +118,7 @@ name[]
   name[2]: waitingArea
   name[3]: P1
 ```
-These four annotations change the coordinates of the cell centre of the grid map (but only free cells) and also change the name to the annotation name. The result can be seen in [topic /map/nodes.](#exampleannot)
+These four annotations change the coordinates of the cell centre of the grid map (but only free cells) and also change the name to the annotation name, e.g., loadingArea, unloadingArea, etc. The result can be seen in [topic /map/nodes.](#exampleannot)
 
 
 ## Creation of Edges in maptogridmap package
@@ -126,7 +126,7 @@ Edges are pairs of neighbor nodes. Neighbors are defined between two nodes which
 Values of Edges are the source node's uuid, named as _uuid_src_, the destination node's uuid, named as _uuid_dest_, the name of the edge in the form of "edge_0_1" meaning that two nodes with names "vertex_0" and "vertex_1" are connected with the edge, and the edge's uuid. 
 The message that is sent through firos can be found here: maptogridmap/msg/Edges.msg
 
-## Writing a simple listener explaining the maplistener package
+## <a name="writelis">Writing a simple listener explaining the maplistener package</a>
 
 To read the topic in your own package you need to subscribe to it, include the header of the message, and write a message callback. The example is taken from maplistener/src/main.cpp.
 
@@ -210,6 +210,11 @@ terminal 2: roslaunch maptogridmap startmaptogridmap.launch
 terminal 3: rosrun maplistener mapls
 ```
 The nodes are visualized with the marker topic /nodes_markerListener, while the edges are visualized with the marker topic /edges_markerListener.
+The package maplistener also subscribes to map updates for which you first need to have localization (AMCL) and laser readings (from simulator Stage) as explained in the Section [Map updates](#mapupdates):
+```
+terminal 4: roslaunch lam_simulator AndaOmnidriveamcltestZagrebdemo.launch
+terminal 5: roslaunch mapupdates startmapupdates.launch
+```
 
 # <a name="poswithcov">Pose with covariance</a>
 
@@ -250,9 +255,9 @@ As the result you can echo the topic /robot_0/pose_channel:
 ```
 rostopic echo /robot_0/pose_channel
 ```
-If you want to send this topic through firos, use and adapt the config files in firos_config inside the localization_and_mapping metapackage and start firos by typeing:
+If you want to send this topic through firos, use and adapt the config files in firos_config inside the localization_and_mapping metapackage (or from test/config_files/machine_1) and start firos by typing:
 ```
-rosrun firos core.py 
+terminal 3: rosrun firos core.py 
 ```
 
 #SLAM
@@ -318,10 +323,10 @@ bitmap "elements/smartface_topologie_entwurf.png"
   name "IMLlab"
 )
 ```
-Maybe you need to set the treshold of the image to have all the obstacle visible also in rviz, as was the case with this png file, since Stage has different tresholds for occupied pixels.
+Maybe you need to set the threshold of the image to have all the obstacle visible also in rviz, as was the case with this png file, since Stage has different thresholds for occupied pixels.
 
 
-#Map updates
+# <a name="mapupdates">Map updates</a>
 
 The map updates are the downsampled laser points to the fine resolution grid, e.g. 0.1 m cell size, which are not mapped in the initial map.
 It is supposed that there is no moving obstacles in the environment, only the static ones that are not mapped in the initial map.
@@ -406,6 +411,27 @@ find_package(catkin REQUIRED COMPONENTS
   mapupdates
 )
 ```
+Another example of subscribing to a topic /robot_0/newObstacles is in _maplistener_ package:
+```
+newobs_sub = nh_.subscribe("/robot_0/newObstacles",1,&VisualizationPublisherGML::newObstaclesCallback, this);
+```
+* write a message callback for visualizing the marker topic /newobstacles_markerListener in rviz:
+```
+void VisualizationPublisherGML::newObstaclesCallback(const mapupdates::NewObstaclesConstPtr& msg)
+{
+  glp.points.clear();
+  geometry_msgs::Point p; 
+	for (int i =0; i<msg->x.size(); i++){
+		p.x=msg->x[i];
+		p.y=msg->y[i];
+		glp.points.push_back(p);
+	}
+}
+```
+* start maplistener to see the marker topic in rviz:
+```
+terminal 4: rosrun maplistener mapls
+```
 
 # Examples
 ## Testing if ROS topics for Nodes and Edges are sent to Orion Context Broker:
@@ -422,8 +448,12 @@ On machine 1 start:
 ```
 terminal 1: roslaunch maptogridmap startmapserver.launch
 terminal 2: roslaunch maptogridmap startmaptogridmap.launch
-terminal 3: rosrun firos core.py (put in firos/config all json files from OPIL/config_files/machine_1)
 ```
+If you want to send the topics through firos, you need to put in firos/config all json files from test/config_files/machine_1:
+```
+terminal 3: rosrun firos core.py
+```
+
 Refresh firefox on http://OPIL_SERVER_IP:1026/v2/entities. There should be under id "map" topics "nodes" and "edges" with their values.
 
 
@@ -443,9 +473,11 @@ Simply move the robot in stage by dragging it with the mouse and refresh the fir
 
 
 ## Testing if topics for Nodes, Edges, and PoseWithCovariance are received on machine_2 through firos
+If you want to receive the topics through firos, you need to put in firos/config all json files from test/config_files/machine_2:
+
 ```
 terminal 1: roscore
-terminal 2: rosrun firos core.py (put in firos/config all json files from OPIL/config_files/machine_2)
+terminal 2: rosrun firos core.py
 ```
 _maptogridmap_ package needs to be on the machine_2 - it is not important that the source code is in there but only that msg files and CMakeLists.txt compiling them are there.
 Now you are able to echo all ros topics:
@@ -599,7 +631,8 @@ uuid: [54d7fef2-4b84-4af3-817e-1372eb7ce426, c85274d8-e8a4-4381-998d-5d2b29cdac0
   4fbf645f-330e-4cc3-8d8e-d5330269b4e5, 12855305-90fd-46be-b5cf-93d669e5c9e8, 8c0d54c1-f40b-4612-82c9-5190bbf54d3a]
 ```
 
-* Example output for the ICENT map - Pose with covariance
+* <a name="examplepose">Example output for the ICENT map - Pose with covariance</a>
+<!--* Example output for the ICENT map - Pose with covariance-->
 ```
 $rostopic echo /robot_0/pose_channel
 header: 
@@ -622,7 +655,7 @@ pose:
   covariance: [0.2280276789742004, 0.00121444362006784, 0.0, 0.0, 0.0, 0.0, 0.00121444362006784, 0.2095520253272909, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.06568863093933444]
 ```
 
-* Example output for the IML map - Nodes
+* Example output for the IML map - Nodes (todo replace with new topic echo, theta is introduced)
 
 ```
 $rostopic echo /map/nodes

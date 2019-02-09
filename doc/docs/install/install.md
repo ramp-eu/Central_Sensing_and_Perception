@@ -1,9 +1,3 @@
-#Introduction
- 
-Welcome to Module's Installation & Administration Guide!
-
-Any feedback on this document is highly welcome, including bug reports, typos or stuff you think should be included but is not. Please send the feedback through email to: module@l4ms.eu. Thanks in advance!
-
 # From Scratch
 
 Install Firos:
@@ -18,7 +12,14 @@ Install ROS packages:
 
 ```sudo apt-get install ros-kinetic-teleop-twist-keyboard```
 
-Install from SourceCode
+Install from SourceCode:
+
+* put all from src folder to your src folder of your catkin workspace or create a new one by typing catkin_init_workspace in src folder. Then compile it with catkin_make in one folder up.
+```
+cd ..
+catkin_make
+```
+
 # Docker
 Usage of Docker
 

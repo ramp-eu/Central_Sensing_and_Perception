@@ -1,0 +1,22 @@
+{
+    "map":{
+        "topics": {
+            "nodes": {
+                "msg": "maptogridmap.msg.Nodes",
+                "type": "subscriber"
+            },
+            "edges": {
+                "msg": "maptogridmap.msg.Edges",
+                "type": "subscriber"
+            }
+        }
+    },
+    "robot_0":{
+        "topics": {
+            "newObstacles": {
+                "msg": "mapupdates.msg.NewObstacles",
+                "type": "publisher"
+            }
+        }
+    }
+}

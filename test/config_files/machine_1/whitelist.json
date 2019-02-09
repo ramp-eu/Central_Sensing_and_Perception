@@ -4,6 +4,6 @@
         "publisher": ["do_serve"]
     },
     "robot_0": {
-        "subscriber": ["pose_channel"]
+        "subscriber": ["pose_channel","newObstacles"]
     }
 }

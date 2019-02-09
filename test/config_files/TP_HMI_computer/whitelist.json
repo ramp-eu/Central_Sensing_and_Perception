@@ -1,0 +1,9 @@
+{
+    "map": {
+        "publisher": ["nodes","edges"],
+        "subscriber": []
+    },
+    "robot_0": {
+        "publisher": ["pose_channel"]
+    }
+}
