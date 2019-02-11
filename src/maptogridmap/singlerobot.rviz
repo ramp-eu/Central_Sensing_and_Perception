@@ -13,6 +13,7 @@ Panels:
         - /Map1/Orientation1
         - /Marker1
         - /Marker2
+        - /Marker3
       Splitter Ratio: 0.581027985
     Tree Height: 394
   - Class: rviz/Selection
@@ -75,15 +76,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /gridmap_markerListener
-      Name: Marker
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
-    - Class: rviz/Marker
-      Enabled: true
-      Marker Topic: /graph_marker
+      Marker Topic: /edges_marker
       Name: Marker
       Namespaces:
         maptogridmap: true
@@ -91,7 +84,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /spanningtree_marker
+      Marker Topic: /nodes_marker
       Name: Marker
       Namespaces:
         maptogridmap: true
@@ -122,7 +115,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 28.6634712
+      Distance: 38.4601326
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
