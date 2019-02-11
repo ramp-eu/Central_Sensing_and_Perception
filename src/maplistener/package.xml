@@ -17,8 +17,9 @@
   <build_depend>sensor_msgs</build_depend>
   <build_depend>visualization_msgs</build_depend>
   <build_depend>message_filters</build_depend>
-<!--  <build_depend>maptogridmap</build_depend>-->
-  
+  <build_depend>maptogridmap</build_depend>
+  <build_depend>mapupdates</build_depend>
+
   <run_depend>std_msgs</run_depend>
   <run_depend>std_srvs</run_depend>
   <run_depend>message_runtime</run_depend>
@@ -31,8 +32,8 @@
   <run_depend>sensor_msgs</run_depend>
   <run_depend>visualization_msgs</run_depend>
   <run_depend>message_filters</run_depend>
-<!--  <run_depend>maptogridmap</run_depend>-->
-
+  <run_depend>maptogridmap</run_depend>
+  <run_depend>mapupdates</run_depend>
 </package>
 
 
