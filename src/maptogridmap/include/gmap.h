@@ -11,12 +11,15 @@
 #include <maptogridmap/GetMap.h>
 #include <maptogridmap/Nodes.h>
 #include <maptogridmap/Edges.h>
+#include <maptogridmap/Annotations.h>
 #include <mapupdates/NewObstacles.h>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <iostream>
 #include <string>
+#include <tf/transform_listener.h>
+
 
 struct I_point{
 	int  x, y, th;

@@ -23,6 +23,7 @@ add_message_files(
   GridmapCell.msg
   Nodes.msg
   Edges.msg
+  Annotations.msg
 )
 add_service_files(
   FILES

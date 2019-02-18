@@ -24,7 +24,10 @@ The creation of topology is started by launching the map_server package followed
 terminal 1: roslaunch maptogridmap startmapserver.launch
 terminal 2: roslaunch maptogridmap startmaptogridmap.launch
 ```
- 
+You can also start a single launch file which combines these two launch files:
+```
+roslaunch maptogridmap topology.launch
+``` 
 ## Creation of Nodes in maptogridmap package
 Nodes are all free cells of rectangular square size that does not contain any obstacle within it. The obstacles are read from the map PNG or PGM file loaded by calling the map_server node. There are three maps prepared in startmapserver.launch, where MURAPLAST florplan is uncommented and IML lab and ICENT lab are commented out for the later usage.
 
@@ -69,49 +72,58 @@ In this example it is set to 2.0m since the floorplan is quite big. ICENT lab is
 
 ### Annotations
 
-Annotations can be loaded from file annotations.ini located in maptogridmap/launch folder, which is put as a parameter textfile inside the startmaptogridmap.launch file. In this example the first three annotations were used in Zagreb demo in Task planner, and P1 is put as an additional example:
+Annotations can be loaded from file annotations.ini located in maptogridmap/launch folder, which is put as a parameter textfile inside the startmaptogridmap.launch file. In this example the first three annotations were used in Zagreb demo in Task planner, and P1 is put as an additional example for the IML map:
 ```
 [loadingArea]
 # coordinates
 point_x = 3.75
 point_y = 2.51
 theta = 0
+distance = 1.6
 
 [unloadingArea]
 # coordinates
 point_x = 6.4
 point_y = 2.51
 theta = 0 
+distance = 1.4
 
 [waitingArea]
 # coordinates
 point_x = 6.9
 point_y = 4.3
 theta = 90
+distance = 1.6
 
 [P1]
 # coordinates
-point_x = 2.9
-point_y = 4.6
-theta = 30
+point_x = 17.96
+point_y = 6.57
+theta = -90
+distance = 1.8
 ```
-The annotations are saved under the variable of type maptogridmap::Nodes inside of the maptogridmap package so that it can change the values of the computed nodes from gridmap cells:
+The annotations are saved under the variable of type maptogridmap::Annotations inside of the maptogridmap package. All values must be in meters and degrees. From these values it is calculated where the AGV needs to be placed in front of the annotation according to the distance from the annotation and the orientation theta. It changes the values of the computed nodes from gridmap cells so that TP can use this nodes as goals.
 ```
 x[]
   x[0]: 3.75
   x[1]: 6.4
   x[2]: 6.9
-  x[3]: 2.9
+  x[3]: 17.96
 y[]
   y[0]: 2.51
   y[1]: 2.51
   y[2]: 4.3
-  y[3]: 4.6
+  y[3]: 6.57
 theta[]
   theta[0]: 0
   theta[1]: 0
   theta[2]: 90
-  theta[3]: 30
+  theta[3]: -90
+distance[]
+  distance[0]: 1.6
+  distance[1]: 1.4
+  distance[2]: 1.6
+  distance[3]: 1.8
 name[]
   name[0]: loadingArea
   name[1]: unloadingArea

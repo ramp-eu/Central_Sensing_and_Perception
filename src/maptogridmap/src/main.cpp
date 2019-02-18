@@ -5,7 +5,8 @@ GridMapCell *GMC;
 maptogridmap::GetMap::Response map_resp_;
 int cycle_number;
 mapupdates::NewObstacles obstacles;
-maptogridmap::Nodes annotations;
+//maptogridmap::Nodes annotations;
+maptogridmap::Annotations annotations;
 
 class VisualizationPublisherGM
 {
@@ -15,11 +16,11 @@ protected:
   std::string target_frame_;
 
 public:
-  ros::Publisher gridmapvs_pub, graphvs_pub, stc_pub, globalpoints_pub;
+  ros::Publisher gridmapvs_pub, graphvs_pub, stc_pub, globalpoints_pub, annt_pub;
 
 
 
-    visualization_msgs::Marker gridmapvs, graphvs, stc, glp;
+    visualization_msgs::Marker gridmapvs, graphvs, stc, glp, annt;
 
   VisualizationPublisherGM(ros::NodeHandle n) :
       nh_(n),  target_frame_("map") 
@@ -85,6 +86,22 @@ public:
     stc.color.b = 0.5;
     stc.color.a = 1.0;
 
+  	annt_pub=nh_.advertise<visualization_msgs::Marker>("/annotation_marker",1);
+
+  	annt.header.frame_id = target_frame_;
+    annt.header.stamp = ros::Time::now();
+    annt.ns =  "maptogridmap";
+    annt.action = visualization_msgs::Marker::ADD;
+    annt.pose.orientation.w  = 1.0;
+    annt.type = visualization_msgs::Marker::ARROW;//POINTS; //LINE_STRIP;
+    annt.scale.x = 0.5; 
+    annt.scale.y = 0.1; 
+    annt.scale.z = 0.1; 
+    annt.color.r = 1.;
+    annt.color.g = 1.;
+    annt.color.b = 0.;
+    annt.color.a = 1.0;
+    annt.lifetime = ros::Duration(0.);
 
   }
 
@@ -179,6 +196,13 @@ void readAnnotations(std::string annotation_file)
 					annotations.theta.push_back(atof(word));
 				}
 			}
+			if (strcmp(word,"distance ")==0){
+				word = strtok (NULL," ");
+				if (word!= NULL){
+					std::cout << word <<std::endl;
+					annotations.distance.push_back(atof(word));
+				}
+			}
 		}    
 		
   }
@@ -260,6 +284,7 @@ int main(int argc, char** argv)
   ros::ServiceServer service = nh.advertiseService("grid_map", mapCallback);
   VisualizationPublisherGM visualGM(nh);
   nav_msgs::GetMap map;
+  ros::service::waitForService("static_map", 5000);
   ros::service::call("static_map",map);
 	double cellsize=2.;
   nh.getParam("/map2gm/cell_size", cellsize);
@@ -316,6 +341,7 @@ int main(int argc, char** argv)
   gmedge.header=gm.header;
 	map_resp_.map.header=gm.header;
   map_resp_.map.info=gm.info;
+  double tempx,tempy;
 			for (int i=0; i<sizex; i++){
 				for (int j=0; j<sizey; j++){
 					if (1){
@@ -324,9 +350,12 @@ int main(int argc, char** argv)
             gm.occupancy.push_back(gmap[i][j].occupancy);
             if (gmap[i][j].occupancy==0){
             	for (int k=0; k<annotations.x.size(); k++){
-            		if ((fabs(annotations.x[k]-gmap[i][j].x)<cellsize/2) && (fabs(annotations.y[k]-gmap[i][j].y)<cellsize/2)){
-            			gmap[i][j].x=annotations.x[k];
-            			gmap[i][j].y=annotations.y[k];
+            			tempx = annotations.x[k]-annotations.distance[k]*cos(annotations.theta[k]*M_PI/180.);
+									tempy = annotations.y[k]-annotations.distance[k]*sin(annotations.theta[k]*M_PI/180.);
+
+            		if ((fabs(tempx-gmap[i][j].x)<cellsize/2) && (fabs(tempy-gmap[i][j].y)<cellsize/2)){
+            			gmap[i][j].x=tempx;
+            			gmap[i][j].y=tempy;
             			gmap[i][j].theta=annotations.theta[k];
             			gmap[i][j].name=annotations.name[k];
             		}
@@ -490,4 +519,17 @@ void VisualizationPublisherGM::visualizationduringmotion(){
 			}
 			globalpoints_pub.publish(glp);
 
+			//points from annotations
+			geometry_msgs::Pose pose; 
+			for(int i = 0; i<annotations.x.size(); i++){
+				pose.position.x = annotations.x[i]-annotations.distance[i]*cos(annotations.theta[i]*M_PI/180.);
+				pose.position.y = annotations.y[i]-annotations.distance[i]*sin(annotations.theta[i]*M_PI/180.);
+				pose.position.z = 0;
+				pose.orientation = tf::createQuaternionMsgFromYaw(annotations.theta[i]*M_PI/180.);
+				annt.scale.x = annotations.distance[i];
+				annt.pose = pose;
+		    annt.header.stamp = ros::Time::now();
+		    annt.id = i;
+				annt_pub.publish(annt);
+			}
 }

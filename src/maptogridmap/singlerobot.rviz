@@ -14,6 +14,7 @@ Panels:
         - /Marker1
         - /Marker2
         - /Marker3
+        - /Marker4
       Splitter Ratio: 0.581027985
     Tree Height: 394
   - Class: rviz/Selection
@@ -90,6 +91,14 @@ Visualization Manager:
         maptogridmap: true
       Queue Size: 100
       Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /annotation_marker
+      Name: Marker
+      Namespaces:
+        maptogridmap: true
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -115,16 +124,16 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 38.4601326
+      Distance: 10.8981247
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 16.316927
-        Y: 16.3801823
-        Z: 1.98162675
+        X: 6.72582006
+        Y: 4.47608995
+        Z: 1.78959298
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.0500000007
       Invert Z Axis: false
