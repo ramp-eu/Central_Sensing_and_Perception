@@ -203,6 +203,11 @@ find_package(catkin REQUIRED COMPONENTS
   mapupdates
 )
 ```
+* add depend _maptogridmap_ in your package in package.xml:
+```
+  <build_depend>maptogridmap</build_depend>
+  <run_depend>maptogridmap</run_depend>
+```
 You can test how subscribed topics are visualized in rviz by typing:
 ```
 terminal 1: roslaunch maptogridmap startmapserver.launch
