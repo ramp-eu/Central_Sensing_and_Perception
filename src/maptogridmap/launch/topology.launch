@@ -13,5 +13,8 @@
         <param name="annotation_file" textfile="$(find maptogridmap)/launch/annotations.ini" />
     </node>
 
+    <!-- Run FIROS -->
+    <node name="firos" pkg="firos" type="core.py" />
+
 </launch>
 
