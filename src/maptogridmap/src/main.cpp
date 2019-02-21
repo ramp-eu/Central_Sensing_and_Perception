@@ -143,63 +143,63 @@ void readAnnotations(std::string annotation_file)
   char * p = strsep (&cstr,"\n");
   while (p!=0)
   {
-    std::cout << p << '\n';
+//    std::cout << p << '\n';
     line = &p[0];
-    std::cout << line << '\n';
+//    std::cout << line << '\n';
     p = strsep(&cstr,"\n");
 
 		if (line[0] == '#' || line[0] == '\n')
 		{
-			std::cout << "comment or empty row "<<std::endl;
+//			std::cout << "comment or empty row "<<std::endl;
 			if (p==NULL)
-				std::cout << "zasto" <<'\n';
+				std::cout << "why?" <<'\n';
 			continue;
 		}
 		if (line[0] == '['){
-			std::cout << "annotation" <<std::endl;
+//			std::cout << "annotation" <<std::endl;
 			word = strtok(line,"]");
 			if (word != NULL){
-				std::cout << word <<std::endl;
+//				std::cout << word <<std::endl;
 			}
 			word = &word[1];
 			if (word != NULL){
-				std::cout << word <<std::endl;
+//				std::cout << word <<std::endl;
 				annotations.name.push_back(word);
 				continue;
 			}
 		}
 		word = strtok (line,"=");
 		if (word == NULL){
-			std::cout << "no input" <<std::endl;
+//			std::cout << "no input" <<std::endl;
 			continue;
 		}
 		if (word != NULL){
-			std::cout << word <<std::endl;
+//			std::cout << word <<std::endl;
 			if (strcmp(word,"point_x ")==0){
 				word = strtok (NULL," ");
 				if (word!= NULL){
-					std::cout << word <<std::endl;
+//					std::cout << word <<std::endl;
 					annotations.x.push_back(atof(word));
 				}
 			}
 			if (strcmp(word,"point_y ")==0){
 				word = strtok (NULL," ");
 				if (word!= NULL){
-					std::cout << word <<std::endl;
+//					std::cout << word <<std::endl;
 					annotations.y.push_back(atof(word));
 				}
 			}
 			if (strcmp(word,"theta ")==0){
 				word = strtok (NULL," ");
 				if (word!= NULL){
-					std::cout << word <<std::endl;
+//					std::cout << word <<std::endl;
 					annotations.theta.push_back(atof(word));
 				}
 			}
 			if (strcmp(word,"distance ")==0){
 				word = strtok (NULL," ");
 				if (word!= NULL){
-					std::cout << word <<std::endl;
+//					std::cout << word <<std::endl;
 					annotations.distance.push_back(atof(word));
 				}
 			}
@@ -208,64 +208,64 @@ void readAnnotations(std::string annotation_file)
   }
 
 //this stays for debugging when running the code from the devel/lib/maptogridmap	
-	if ( (F = fopen("annotations.ini","r")) == NULL ){
-		std::cout << "no file to read "<<std::endl;
-	}else{
-		while (fgets(rdLine,35,F) != NULL)
-		{
-			line=&rdLine[0];
-//			std::cout << line <<std::endl;
-			if (line[0] == '#' || line[0] == '\n')
-			{
-				std::cout << "comment or empty row "<<std::endl;
-				continue;
-			}
-			if (line[0] == '['){
-				std::cout << "annotation" <<std::endl;
-				word = strtok(line,"]");
-				if (word != NULL){
-					std::cout << word <<std::endl;
-				}
-				word = &word[1];
-				if (word != NULL){
-					std::cout << word <<std::endl;
-					annotations.name.push_back(word);
-					continue;
-				}
-			}
-			word = strtok (line,"=");
-			if (word == NULL){
-				std::cout << "no input" <<std::endl;
-				continue;
-			}
-//			validconv = 0;
-			if (word != NULL){
-				std::cout << word <<std::endl;
-				if (strcmp(word,"point_x ")==0){
-					word = strtok (NULL," ");
-					if (word!= NULL){
-						std::cout << word <<std::endl;
-						annotations.x.push_back(atof(word));
-					}
-				}
-				if (strcmp(word,"point_y ")==0){
-					word = strtok (NULL," ");
-					if (word!= NULL){
-						std::cout << word <<std::endl;
-						annotations.y.push_back(atof(word));
-					}
-				}
-				if (strcmp(word,"theta ")==0){
-					word = strtok (NULL," ");
-					if (word!= NULL){
-						std::cout << word <<std::endl;
-						annotations.theta.push_back(atof(word));
-					}
-				}
-			}
-		}
-		fclose(F);
-	}
+//	if ( (F = fopen("annotations.ini","r")) == NULL ){
+//		std::cout << "no file to read "<<std::endl;
+//	}else{
+//		while (fgets(rdLine,35,F) != NULL)
+//		{
+//			line=&rdLine[0];
+////			std::cout << line <<std::endl;
+//			if (line[0] == '#' || line[0] == '\n')
+//			{
+//				std::cout << "comment or empty row "<<std::endl;
+//				continue;
+//			}
+//			if (line[0] == '['){
+//				std::cout << "annotation" <<std::endl;
+//				word = strtok(line,"]");
+//				if (word != NULL){
+//					std::cout << word <<std::endl;
+//				}
+//				word = &word[1];
+//				if (word != NULL){
+//					std::cout << word <<std::endl;
+//					annotations.name.push_back(word);
+//					continue;
+//				}
+//			}
+//			word = strtok (line,"=");
+//			if (word == NULL){
+//				std::cout << "no input" <<std::endl;
+//				continue;
+//			}
+////			validconv = 0;
+//			if (word != NULL){
+//				std::cout << word <<std::endl;
+//				if (strcmp(word,"point_x ")==0){
+//					word = strtok (NULL," ");
+//					if (word!= NULL){
+//						std::cout << word <<std::endl;
+//						annotations.x.push_back(atof(word));
+//					}
+//				}
+//				if (strcmp(word,"point_y ")==0){
+//					word = strtok (NULL," ");
+//					if (word!= NULL){
+//						std::cout << word <<std::endl;
+//						annotations.y.push_back(atof(word));
+//					}
+//				}
+//				if (strcmp(word,"theta ")==0){
+//					word = strtok (NULL," ");
+//					if (word!= NULL){
+//						std::cout << word <<std::endl;
+//						annotations.theta.push_back(atof(word));
+//					}
+//				}
+//			}
+//		}
+//		fclose(F);
+//	}
 	std::cout << annotations <<std::endl;
 	
 }
