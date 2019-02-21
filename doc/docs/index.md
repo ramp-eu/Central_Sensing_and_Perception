@@ -38,6 +38,13 @@ opil-MODULENAME.l4ms.eu:
 ## Project layout
 
     test/                                # The folder with testing files for sending the data with firos
+    	docker_compose_files/      		 # The files for testing docker containers
+    		Central_SP_docker/           # The files for testing Central SP docker container
+    			docker-compose.yml       # The docker-compose file for starting the Central SP container
+    			annotations.ini          # The file with annotation coordinates
+    			CHEMI.yaml          	 # The file with map parameters (resolution)
+    			map.png                  # The map file
+    			topology.launch          # The launch file where you can set the size of the node (grid cell)
     	config_files/                    # The configuration files with firos json entities
     		Central_SP_computer/		 # The configuration files for Central_SP_computer that receives the map updates and calculates the topology
     			config.json		         # Change IP and interface for the Central_SP_computer

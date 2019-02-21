@@ -1,0 +1,88 @@
+version: "2.0"
+
+services:
+
+    postgres:
+        restart: always
+        image: postgres:latest
+        volumes:
+            #This is a workaround for Windows, also see "volumes" below after the "services".
+            #- pg_db:/var/lib/postgresql/data:Z          
+            #This should work for linux
+            - ./postgres-data:/var/lib/postgresql/data                        
+
+    mongo:
+        restart: always
+        image: mongo:3.4
+        command: --nojournal    
+            
+    nginx:
+        restart: always
+        image: nginx:latest
+        ports:
+            - 80:80
+        volumes:
+            - ./nginx.conf:/etc/nginx/nginx.conf:ro
+            - ./static:/var/www/static:ro
+        depends_on:
+            - wirecloud
+            
+    ngsiproxy:
+        restart: always
+        image: fiware/ngsiproxy:latest
+        ports:
+            - 3000:3000   
+
+    orion:
+        restart: always
+        image: fiware/orion
+        links:
+            - mongo
+        ports:
+            - 1026:1026
+        command: 
+            -dbhost mongo
+            
+    wirecloud:
+        restart: always
+        image: fiware/wirecloud:latest-composable
+        depends_on:
+            - postgres            
+        volumes:
+            - ./wirecloud_instance:/opt/wirecloud_instance
+            - ./static:/var/www/static  
+#S&P
+    sp:
+        restart: always
+        image: l4ms/opil.sw.sp:2.0
+#        image: l4ms/opil.iot.ran:2.0
+#        links:
+#            - orion
+        volumes:
+            #- path on the host : path inside the container
+            - /tmp/.X11-unix:/tmp/.X11-unix:rw
+            - ./annotations.ini:/root/catkin_ws/src/mod.sw.sp/src/maptogridmap/launch/annotations.ini:ro
+#            - ./CHEMI.yaml:/root/catkin_ws/src/mod.sw.sp/src/maptogridmap/launch/map.yaml:ro
+#            - ./map.png:/root/catkin_ws/src/mod.sw.sp/src/maptogridmap/launch/map.png:ro
+#            - ./topology.launch:/root/catkin_ws/src/mod.sw.sp/src/maptogridmap/launch/topology.launch:ro
+        environment:
+#            - "CM_URL=http://orion:1026/" 
+            - FIWAREHOST=127.0.0.1
+#            - "FIWAREHOST=192.168.1.3"
+#            - FIWAREHOST=161.53.68.212
+#            - FIWAREHOST=orion
+            - HOST=127.0.0.1
+#            - "HOST=192.168.1.3"
+#            - HOST=161.53.68.212
+#            - HOST=host
+            - NETINTERFACE=lo
+#            - "NETINTERFACE=wlp1s0"
+#            - NETINTERFACE=enx00e04c6820db
+            - DISPLAY=$DISPLAY
+        network_mode: host
+
+                   
+            
+volumes:
+    pg_db: 
+        external: true
