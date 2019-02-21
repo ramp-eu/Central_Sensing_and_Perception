@@ -27,7 +27,7 @@ A ROS metapackage containing packages for localization and mapping developed in 
 
 #### lam_simulator
 
-ROS package which demonstrantes localization and mapping in Stage simulator. Relies on AMCL or gmapping algorithms started with the Stage simulator. Prepared demonstrations can also be used on the real robot.
+ROS package which demonstrates localization and mapping in Stage simulator. Relies on AMCL or gmapping algorithms started with the Stage simulator. Prepared demonstrations can also be used on the real robot.
 
 
 #### andymark_driver
@@ -46,5 +46,5 @@ ROS package which relies on robot_pose_ekf to fuse robot odometry with IMU data 
 
 #### sensing_and_perception
 
-ROS package for publishing AGV's pose with covariance to be sent to context brocker through firos. This package is located in the Local SP.
+ROS package for publishing AGV's pose with covariance to be sent to context broker through firos. This package is located in the Local SP.
 

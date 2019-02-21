@@ -27,13 +27,13 @@ opil-MODULENAME.l4ms.eu:
 
 * Creates a map with SLAM
 * Uses a map from CAD or as result of SLAM for localization
-* Creates map updates from new laser reading of previously unoccupied areas
+* Creates data for map updates from new laser reading of previously unoccupied areas
 
 ## Mapping - the Central SP
 
 * Uses a map from CAD or as result of SLAM for localization
 * Creates a topology for Task Planner from the map
-* Merges map updates from new laser reading of previously unoccupied areas into a global map
+* Merges local map updates from the Local SP into a global map (gridmap) and updates the topology
 
 ## Project layout
 
@@ -73,7 +73,7 @@ opil-MODULENAME.l4ms.eu:
     			whitelist.json		     # Also as above
     src/                                 # The source code that needs to be put inside the catkin workspace
         localization_and_mapping/        # The ROS metapackage for localization and SLAM
-        	andymark_driver/		     # Characheristic for Anda robot developed at ICENT
+        	andymark_driver/		     # Characteristic for Anda robot developed at ICENT
         	firos_config/                # Config files for sending the pose
         	husky/                       # Drivers used by Anda robot
         	odometry_correction/         # Improvement of odometry with IMU sensor for Anda robot

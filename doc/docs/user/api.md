@@ -1,5 +1,5 @@
 # <a name="topology">Topology</a>
-The topology that needs to be send to Task Planner is composed of nodes and edges. In the future it will be a single graph message, but since firos is not supporting arrays of custom ROS messages it is divided into two ROS messages: nodes and edges.
+The topology is composed of nodes and edges. In the future it will be a single graph message, but since firos is not supporting arrays of custom ROS messages it is divided into two ROS messages: nodes and edges.
 
 Nodes.msg
 
@@ -24,12 +24,12 @@ The creation of topology is started by launching the map_server package followed
 terminal 1: roslaunch maptogridmap startmapserver.launch
 terminal 2: roslaunch maptogridmap startmaptogridmap.launch
 ```
-You can also start a single launch file which combines these two launch files:
+You can also start a single launch file which combines these two launch files and also starts firos (this file is used in a docker container of Central SP):
 ```
 roslaunch maptogridmap topology.launch
 ``` 
 ## Creation of Nodes in maptogridmap package
-Nodes are all free cells of rectangular square size that does not contain any obstacle within it. The obstacles are read from the map PNG or PGM file loaded by calling the map_server node. There are three maps prepared in startmapserver.launch, where MURAPLAST florplan is uncommented and IML lab and ICENT lab are commented out for the later usage.
+Nodes are all free cells of rectangular square size that does not contain any obstacle within it. The obstacles are read from the map PNG or PGM file loaded by calling the map_server node. There are three maps prepared in startmapserver.launch, where MURAPLAST floorplan is uncommented and IML lab and ICENT lab are commented out for the later usage.
 
 ```
 <launch>
@@ -68,7 +68,7 @@ The size of the cell is given by the parameter in startmaptogridmap.launch:
 </launch>
 ```
 
-In this example it is set to 2.0m since the floorplan is quite big. ICENT lab is much smaller so 1.2m cell size gives better results. Values that are presented in context broker are coordinates of the cell center (x,y) or coordinates of the manual annotation (loaded from a file), theta as an orientation of the annotated place in the map (default is 0), a name of the node in the form of "vertex_0" or annotated name, and the node's uuid. The message that is sent through firos can be found here: maptogridmap/msg/Nodes.msg.
+In this example it is set to 2.0m since the floorplan is quite big. ICENT lab is much smaller so 1.2m cell size gives better results. Values that are presented in context broker are coordinates of the cell center (x,y) or coordinates of the manual annotation (loaded from a file), theta as an orientation of the annotated place in the map (default is 0), a name of the node in the form of "vertex_0" or it has a name of the annotation, and the node's uuid (Universally unique identifier). The message that is sent through firos can be found here: maptogridmap/msg/Nodes.msg.
 
 ### Annotations
 
@@ -284,7 +284,7 @@ When the map (or we also say the initial map) is not available, the SLAM process
 Inside the package lam_simulator there is a launch file (folder _localization_and_mapping/lam_simulator/launch/_). Run:
 
 ```
-roslaunch roslaunch lam_simulator gmapping_test_muraplast.launch
+roslaunch lam_simulator gmapping_test_muraplast.launch
 ```
 
 

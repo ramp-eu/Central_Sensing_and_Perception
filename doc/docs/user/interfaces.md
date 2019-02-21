@@ -2,8 +2,9 @@
 * Local SP is on every AGV next to RAN
 * Central SP is on the OPIL server
 * Pose of the AGV is calculated in the Local SP
-* Map updates are calculated in the Local SP from the laser sensor data
+* Map updates are calculated in the Local SP from the laser sensor data and initial map
 * Topology is calculated in the Central SP from the map file
+* Topology update is calculated in the Central SP from the map updates
 * There is no service calls implemented yet in firos so map is not transmited through firos. Each module (Local SP on every AGV, Central SP and HMI) should have its own copy of map file (from CAD or as a SLAM result).
 * Map updates are sent through firos, which are calculated from the new sensor readings that hit the free grid cells
 * Map merging is done in the Central SP from map updates of one Local SP (one AGV) into one global gridmap from which the updated topology is calculated (later it will be from more Local SPs, i.e., AGVs)
@@ -174,11 +175,15 @@ For receiving the topics through firos, robots.json and whitelist.json should lo
 Start firos and write a subscriber for the topics as suggested in Section [Writing a simple listener explaining the maplistener package](api.md#writelis).
 You can find the firos config files in test/config_files/TP_HMI_computer.
 
-# HMI receiving topology and pose with covariance through firos
+# HMI receiving topology, map updates and pose with covariance through firos
 
-It should be the same as for TP.
+HMI should have map presented with the coordinate system in the lower left corner and implemented the way of presenting the map updates received through OCB.
+For receiving the topology from the Central SP, and map updates and pose with covariance here is how entities look in OCB:
 
-TODO: explain how map file needs to exist there and how map updates will be received, put here the entities from OCB.
+TODO entities are maybe too much text to put here...
+
+
+
 
 #Interconnection between machines
 
