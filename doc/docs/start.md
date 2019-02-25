@@ -1,5 +1,7 @@
 # Start Guide
 
+To start SP module follow the [Install](./install/install.md) and [API Walkthrough](./user/api.md) procedures. In the following the list of ROS packages is given with the short explanation.
+
 ## Overview
 
 In src folder there are four ROS packages:

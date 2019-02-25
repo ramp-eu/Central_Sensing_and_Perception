@@ -1,8 +1,21 @@
 # From Scratch
 
-Install Firos:
+If you are using older version of Firos (v1) use this:
 
 ```git clone https://github.com/Ikergune/firos.git```
+
+Right now, all prepared config files are for Firos v1. Update to Firos v2 will come soon.
+To install Firos v2:
+
+```git clone --recursive https://github.com/iml130/firos.git```
+
+To change all config files to work with Firos v2 you need to replace some variables in config.json to numbers (check the folowing lines):
+
+```
+          "throttling": 3, 
+          "subscription_length": 300,
+          "subscription_refresh_delay": 0.9
+```
 
 Install ROS packages:
 
@@ -14,7 +27,7 @@ Install ROS packages:
 
 Install from SourceCode:
 
-* put all from src folder to your src folder of your catkin workspace or create a new one by typing catkin_init_workspace in src folder. Then compile it with catkin_make in one folder up.
+* put everything to your src folder of your catkin workspace or create a new one by typing catkin_init_workspace in src folder. Then compile it with catkin_make in one folder up.
 ```
 cd ..
 catkin_make
@@ -70,7 +83,13 @@ sudo docker-compose up
 You should see the entities in, e.g. firefox, at the address <http://localhost:1026/v2/entities>.
 
 This docker container starts the creation of topology (nodes, edges) from the given map file and with included annotations from the annotation file. As a default, IML lab will be started with 4 annotations, as is the case in this example, where usage of the files is commented.
-To use arbitrary annotations file and map file, go to the folder test/docker_compose_files/Central_SP_docker, where you can find an example of docker-compose.yml that starts everything on a local machine, the file with annotations - annotations.ini, the map files - map.png and CHEMI.yaml, and also a topology.launch if you want to change the size of the grid cell for calculating the topology. To use these files, first uncomment the lines in the docker-compose.yml with these files, and put the files in the same folder where you have your docker-compose.yml file. The files CHEMI.yaml and map.png can have arbitrary names, but do not change the image line in yaml file:
+
+To use arbitrary annotations file and map file:
+
+* go to the folder test/docker_compose_files/Central_SP_docker, where you can find an example of docker-compose.yml that starts everything on a local machine, the file with annotations - annotations.ini, the map files - map.png and CHEMI.yaml, and also a topology.launch if you want to change the size of the grid cell for calculating the topology.
+* to use these files, first uncomment the lines in the docker-compose.yml with these files, and put the files in the same folder where you have your docker-compose.yml file.
+
+The files CHEMI.yaml and map.png can have arbitrary names, but do not change the image line in yaml file:
 ```
 #CHEMI.yaml
 image: map.png
@@ -81,4 +100,8 @@ occupied_thresh: 0.165
 free_thresh: 0.001
 ```
 The map file is treated as a grayscaled image, and you can adjust occupied_tresh and free_tresh to different values, depending from which shade of gray you want it to be considered as obstacle.
+
+## The Local SP docker
+
+is not yet ready. Will come soon!
 

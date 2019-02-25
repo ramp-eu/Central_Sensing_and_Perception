@@ -178,11 +178,132 @@ You can find the firos config files in test/config_files/TP_HMI_computer.
 # HMI receiving topology, map updates and pose with covariance through firos
 
 HMI should have map presented with the coordinate system in the lower left corner and implemented the way of presenting the map updates received through OCB.
-For receiving the topology from the Central SP, and map updates and pose with covariance here is how entities look in OCB:
-
-TODO entities are maybe too much text to put here...
+For receiving the topology from the Central SP, and map updates and pose with covariance here is how entities look in OCB (making the GET localhost:10100/robots):
 
 
+```
+[
+    {
+        "topics": [
+            {
+                "type": "maptogridmap.msg.Nodes",
+                "name": "nodes",
+                "structure": {
+                    "info": {
+                        "origin": {
+                            "position": {
+                                "y": "float64",
+                                "x": "float64",
+                                "z": "float64"
+                            },
+                            "orientation": {
+                                "y": "float64",
+                                "x": "float64",
+                                "z": "float64",
+                                "w": "float64"
+                            }
+                        },
+                        "width": "uint32",
+                        "map_load_time": {
+                            "secs": "int32",
+                            "nsecs": "int32"
+                        },
+                        "resolution": "float32",
+                        "height": "uint32"
+                    },
+                    "name": "string[]",
+                    "header": {
+                        "stamp": {
+                            "secs": "int32",
+                            "nsecs": "int32"
+                        },
+                        "frame_id": "string",
+                        "seq": "uint32"
+                    },
+                    "x": "float64[]",
+                    "y": "float64[]",
+                    "theta": "float64[]",
+                    "uuid": "string[]"
+                },
+                "pubsub": "subscriber"
+            },
+            {
+                "type": "maptogridmap.msg.Edges",
+                "name": "edges",
+                "structure": {
+                    "header": {
+                        "stamp": {
+                            "secs": "int32",
+                            "nsecs": "int32"
+                        },
+                        "frame_id": "string",
+                        "seq": "uint32"
+                    },
+                    "uuid": "string[]",
+                    "name": "string[]",
+                    "uuid_src": "string[]",
+                    "uuid_dest": "string[]"
+                },
+                "pubsub": "subscriber"
+            }
+        ],
+        "name": "map"
+    },
+    {
+        "topics": [
+            {
+                "type": "mapupdates.msg.NewObstacles",
+                "name": "newObstacles",
+                "structure": {
+                    "y": "float64[]",
+                    "header": {
+                        "stamp": {
+                            "secs": "int32",
+                            "nsecs": "int32"
+                        },
+                        "frame_id": "string",
+                        "seq": "uint32"
+                    },
+                    "x": "float64[]"
+                },
+                "pubsub": "subscriber"
+            },
+            {
+                "type": "geometry_msgs.msg.PoseWithCovarianceStamped",
+                "name": "pose_channel",
+                "structure": {
+                    "header": {
+                        "stamp": {
+                            "secs": "int32",
+                            "nsecs": "int32"
+                        },
+                        "frame_id": "string",
+                        "seq": "uint32"
+                    },
+                    "pose": {
+                        "pose": {
+                            "position": {
+                                "y": "float64",
+                                "x": "float64",
+                                "z": "float64"
+                            },
+                            "orientation": {
+                                "y": "float64",
+                                "x": "float64",
+                                "z": "float64",
+                                "w": "float64"
+                            }
+                        },
+                        "covariance": "float64[36]"
+                    }
+                },
+                "pubsub": "subscriber"
+            }
+        ],
+        "name": "robot_0"
+    }
+]
+```
 
 
 #Interconnection between machines

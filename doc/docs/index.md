@@ -2,20 +2,30 @@
 
 The module Sensing and Perception (SP) is a software module as part of OPIL (Open Platform for Innovation in Logistics). 
 It provides the pose of the AGV inside the built map of the environment in which the AGV is navigating and updates the map with the new sensor readings.
-Additionally, it can build the map with SLAM (Simultaneous Localization And Mapping) if no map is given initially. It uses the laser scan data for map building and updating the map, and odometry sensors (encoders, IMU) together with lasers for localization.
+Additionally, it can build the map with SLAM (Simultaneous Localization And Mapping) if no map is given initially. It uses the laser scan data for map building and updating the map, and odometry sensors (encoders, IMU) together with lasers and map for localization.
 
-There are two versions of SP module: the Central SP and the Local SP.
-Every AGV has it's own Local SP, that takes care of localization and mapping. It creates a local map of it's surroundings.
-Every AGV sends this local map data as an update to a Central SP, which is on the OPIL server.
-The Central SP creates a global map of the factory for HMI and a topology for Task Planner using all the local updates from AGVs.
+Link to other modules of OPIL (opil-MODULENAME.l4ms.eu):
 
-Link to other pages:
+* [Robot Agent Node (RAN)](http://opil-ran.l4ms.eu)
+* [Human Agent Node (HAN)](http://opil-han.l4ms.eu)
+* [Sensor Agent Node (SAN)](http://opil-san.l4ms.eu) 
+* [Task Planner (TP)](http://opil-tp.l4ms.eu)
+* [Human Machine Interface (HMI)](http://opil-hmi.l4ms.eu)
+* [Context Management (CM)](http://opil-cm.l4ms.eu) 
 
-opil-MODULENAME.l4ms.eu:
+There are two instances of SP module: 
 
-* [Robot Agent Node](http://opil-ran.l4ms.eu)
-* [Human Agent Node](http://opil-han.l4ms.eu)
-* [Sensor Agent Node](http://opil-san.l4ms.eu) 
+* Central SP
+* Local SP
+
+Every AGV has it's own Local SP, that takes care of localization and mapping. It localizes the AGV inside the map, and it creates a local map of AGV's surrounding.
+Every AGV sends this local map data as an update to a Central SP, which is on the OPIL server. The Local SP is connected to Robot Agent Node (RAN) through ROS Master at RAN so that navigation inside RAN can get the pose data at high rate.  
+The Central SP creates a topology map of the factory floorplan for the Task Planner (TP) and Human Machine Interface (HMI) using the local updates from AGVs.
+The following figure explains the architecture of the SP module with the given initial map of the factory (either after a SLAM process or extracted from a CAD drawing). Orange boxes are modules developed for SP, while blue ones are the standard ROS modules. Required inputs are map file with its parameter (PNG file), file with annotations (loading, unloading areas, etc.), laser data (SCAN) and odometry data (ODOM).
+
+![SP module architecture](./img/sp.png)
+
+The functionalities of the SP modules are listed as follows:
 
 ## Localization - the Local SP
 
@@ -34,6 +44,31 @@ opil-MODULENAME.l4ms.eu:
 * Uses a map from CAD or as result of SLAM for localization
 * Creates a topology for Task Planner from the map
 * Merges local map updates from the Local SP into a global map (gridmap) and updates the topology
+
+## Illustration of localization, topology and map updates
+
+An example of SP module functionalities in a built map used in the demo in Zagreb at the review meeting is shown in the following figures. 
+
+
+### Annotations and topology
+This figure shows the topology creation with the annotations marked with yellow arrows (the loading, unloading and waiting areas).
+Blue squares are nodes of the topology graph, while lines connecting them are edges of the topology graph. Red squares are the gird cells which contain obstacle within the square of specified size (1.5 m in this example).
+![Annotations and topology](./img/annotationswithannotations.png)
+
+
+### Map updates 1
+The next figure shows the map updates and the localization within the known map. Green dots are the laser readings sensed from the calculated pose (x,y,theta) marked with red arrow.
+Tiny red squares (0.1 m) are the local map built with the laser readings. 
+
+![Map updates 1](./img/mapupdates1.png)
+
+### Map updates 2 - change of topology
+To illustrate how local map updates influence on the topology, a box was moving in front of the robot. There are more data in the local map updates (tiny red squares) which are used in the Central SP for topology update. Here it can be seen that one node become occupied and is removed from the topology graph. The edges that are connected to this node are also removed from the topology graph.
+![Map updates 2](./img/mapupdates2.png)
+
+### Map updates 3 - change of topology
+In this last figure, the new local updates changed the topology even more and one more node and corresponding edges were removed from the topology graph.
+![Map updates 3](./img/mapupdates3.png)
 
 ## Project layout
 

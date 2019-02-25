@@ -295,8 +295,8 @@ int main(int argc, char** argv)
   double resolution=map.response.map.info.resolution;
   int width=map.response.map.info.width;
   int height=map.response.map.info.height;
-  int sizex = int (floor (width*resolution / cellsize))+1;
-  int sizey = int (floor (height*resolution / cellsize))+1;
+  int sizex = int (floor (width*resolution / cellsize));
+  int sizey = int (floor (height*resolution / cellsize));
   printf("converting the map data to gridmap: cell size %f, res=%f, width=%d, height=%d, size gridmap (%d,%d)\n",cellsize, resolution, width, height, sizex, sizey);
   GMC = new GridMapCell(sizex, sizey, cellsize);
 	int ii,jj;
@@ -306,17 +306,19 @@ int main(int argc, char** argv)
 			for (int i=0; i < height; i++){
 				ii=(int)floor(j*resolution/cellsize);
 				jj=(int)floor(i*resolution/cellsize);
-				if (gmap[ii][jj].visited==-1){
-					gmap[ii][jj].visited=0;
-					gmap[ii][jj].x=ii*cellsize+cellsize/2.;
-					gmap[ii][jj].y=jj*cellsize+cellsize/2.;
-					boost::uuids::uuid lUUID=mUUIDGen();
-					gmap[ii][jj].uuid=boost::uuids::to_string(lUUID);
-					gmap[ii][jj].name="vertex_"+std::to_string(ii*sizey+jj);
-				}
-				if ((gmap[ii][jj].occupancy==0)&&(map.response.map.data[i*width+j]>0)){
-					gmap[ii][jj].occupancy=1;
-					gmap[ii][jj].staticcell=true;
+				if (ii<sizex && jj<sizey){
+					if (gmap[ii][jj].visited==-1){
+						gmap[ii][jj].visited=0;
+						gmap[ii][jj].x=ii*cellsize+cellsize/2.;
+						gmap[ii][jj].y=jj*cellsize+cellsize/2.;
+						boost::uuids::uuid lUUID=mUUIDGen();
+						gmap[ii][jj].uuid=boost::uuids::to_string(lUUID);
+						gmap[ii][jj].name="vertex_"+std::to_string(ii*sizey+jj);
+					}
+					if ((gmap[ii][jj].occupancy==0)&&(map.response.map.data[i*width+j]>0)){
+						gmap[ii][jj].occupancy=1;
+						gmap[ii][jj].staticcell=true;
+					}
 				}
 			}
 	}
@@ -385,6 +387,7 @@ int main(int argc, char** argv)
 	nodes_pub.publish(gmnode);
 	edges_pub.publish(gmedge);
 	//map_resp_.map.gmc=gm.gmc;
+//	std::cout << gm <<std::endl;
 
   ros::Rate rate(10.0);
   cycle_number=0;
