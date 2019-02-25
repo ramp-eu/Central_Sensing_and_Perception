@@ -71,7 +71,7 @@ To check the version type:
 ```
 sudo docker-compose --version
 ```
-You should see:
+You should see something similar to:
 ```
 docker-compose version 1.22.0, build f46880fe
 ```

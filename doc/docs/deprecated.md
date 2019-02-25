@@ -46,3 +46,75 @@ rostopic echo /map/realtopology (if test sending gridmap is on)
 rostopic echo /map/realmap (if test sending map is on)
 ```
 
+#Interconnection between machines
+
+## Towards Orion CB
+To send the topics to Orion Context Broker json files needs to be set properly inside the firos/config folder and firos needs to be running.
+
+## Towards Physical IO
+
+This direction is not yet used, meaning that something is being sent to IO from OCB. There are two reasons: a) the map is too big; b) there is no service call so AMCL can not work.
+
+But, in general, to send the topics through firos to Physical IO json files need to be set properly inside the firos/config folder and firos needs to be running.
+
+## firos config json files explained between machine 1 and machine 2
+
+On machine 1 all topics that are being sent through context broker need to be "subscriber", and that are being received from the context broker need to be "publisher". Topics are listed under ids and here we have "map" id and "robot_0" id.
+
+The numbering in names robot_0, robot_1, etc. corresponds to the number of used AGVs and you should correct config files with respect to number of AGVs.
+
+### robots.json
+```
+{
+   "map":{
+       "topics": {
+                "realtopology": {
+                    "msg": "maptogridmap.msg.Gridmap",
+                    "type": "subscriber"
+                },
+            	"realmap": {
+                	"msg": "nav_msgs.msg.OccupancyGrid",
+                	"type": "subscriber"
+
+            	},
+            	"nodes": {
+                	"msg": "maptogridmap.msg.Nodes",
+                	"type": "subscriber"
+
+            	},
+            	"edges": {
+                	"msg": "maptogridmap.msg.Edges",
+                	"type": "subscriber"
+
+            	},
+                "do_serve": {
+                    "msg": "std_msgs.msg.Bool",
+                    "type": "publisher"
+                }
+       }
+   },
+   "robot_0":{
+        "topics": {
+	    "pose_channel": {
+                "msg": "geometry_msgs.msg.PoseWithCovarianceStamped",
+                "type": "subscriber"
+ 	       }
+	    }
+	}
+
+}
+```
+### whitelist.json
+```
+{
+    "map": {
+        "subscriber": ["realtopology","nodes","realmap","edges"],
+        "publisher": ["do_serve"]
+    },
+    "robot_0": {
+        "subscriber": ["pose_channel"]
+    }
+}
+```
+On machine 2 there is exactly the opposite subscriber/publisher from machine 1, so simply just replace subscriber and publisher.
+

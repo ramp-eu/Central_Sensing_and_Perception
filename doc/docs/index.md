@@ -19,7 +19,7 @@ There are two instances of SP module:
 * Local SP
 
 Every AGV has it's own Local SP, that takes care of localization and mapping. It localizes the AGV inside the map, and it creates a local map of AGV's surrounding.
-Every AGV sends this local map data as an update to a Central SP, which is on the OPIL server. The Local SP is connected to Robot Agent Node (RAN) through ROS Master at RAN so that navigation inside RAN can get the pose data at high rate.  
+Every AGV sends this local map data as an update to a Central SP, which is on the OPIL server. The Local SP is connected to Robot Agent Node (RAN) through ROS Master at RAN side so that navigation inside RAN can get the pose data at high rate.  
 The Central SP creates a topology map of the factory floorplan for the Task Planner (TP) and Human Machine Interface (HMI) using the local updates from AGVs.
 The following figure explains the architecture of the SP module with the given initial map of the factory (either after a SLAM process or extracted from a CAD drawing). Orange boxes are modules developed for SP, while blue ones are the standard ROS modules. Required inputs are map file with its parameter (PNG file), file with annotations (loading, unloading areas, etc.), laser data (SCAN) and odometry data (ODOM).
 
@@ -29,9 +29,9 @@ The functionalities of the SP modules are listed as follows:
 
 ## Localization - the Local SP
 
-* Calculates a pose of the AGV inside the built map
-* Calculates a pose of the AGV inside the incrementally built map of the SLAM process
-* Sends a pose of the AGV to Task Planner, HMI, RAN
+* Calculates a pose with covariance of the AGV inside the built map
+* Calculates a pose with covariance of the AGV inside the incrementally built map of the SLAM process
+* Sends a pose with covariance of the AGV to Task Planner, HMI, RAN
 
 ## Mapping - the Local SP
 
@@ -45,7 +45,7 @@ The functionalities of the SP modules are listed as follows:
 * Creates a topology for Task Planner from the map
 * Merges local map updates from the Local SP into a global map (gridmap) and updates the topology
 
-## Illustration of localization, topology and map updates
+## <a name="topologyupdates">Illustration of localization, topology and map updates</a>
 
 An example of SP module functionalities in a built map used in the demo in Zagreb at the review meeting is shown in the following figures. 
 
@@ -63,7 +63,7 @@ Tiny red squares (0.1 m) are the local map built with the laser readings.
 ![Map updates 1](./img/mapupdates1.png)
 
 ### Map updates 2 - change of topology
-To illustrate how local map updates influence on the topology, a box was moving in front of the robot. There are more data in the local map updates (tiny red squares) which are used in the Central SP for topology update. Here it can be seen that one node become occupied and is removed from the topology graph. The edges that are connected to this node are also removed from the topology graph.
+To illustrate how local map updates influence on the topology, a box was moving in front of the robot. There are more data in the local map updates (tiny red squares) which are used in the Central SP for topology update. Here, it can be seen that one node became occupied and is removed from the topology graph. The edges that are connected to this node are also removed from the topology graph.
 ![Map updates 2](./img/mapupdates2.png)
 
 ### Map updates 3 - change of topology
