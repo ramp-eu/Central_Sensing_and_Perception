@@ -95,8 +95,15 @@ public:
     annt.pose.orientation.w  = 1.0;
     annt.type = visualization_msgs::Marker::ARROW;//POINTS; //LINE_STRIP;
     annt.scale.x = 0.5; 
-    annt.scale.y = 0.1; 
-    annt.scale.z = 0.1; 
+    annt.scale.y = 0.3; 
+    annt.scale.z = 0.3;
+//		annt.points.resize(2);
+//		annt.points[0].x = 0.;
+//		annt.points[0].y = 0.;
+//		annt.points[0].z = 0.;
+//		annt.points[1].x = 0.;
+//		annt.points[1].y = 0.;
+//		annt.points[1].z = 0.5;
     annt.color.r = 1.;
     annt.color.g = 1.;
     annt.color.b = 0.;
@@ -355,7 +362,7 @@ int main(int argc, char** argv)
             			tempx = annotations.x[k]-annotations.distance[k]*cos(annotations.theta[k]*M_PI/180.);
 									tempy = annotations.y[k]-annotations.distance[k]*sin(annotations.theta[k]*M_PI/180.);
 
-            		if ((fabs(tempx-gmap[i][j].x)<cellsize/2) && (fabs(tempy-gmap[i][j].y)<cellsize/2)){
+            		if ((fabs(tempx-gmap[i][j].x)<=cellsize/2) && (fabs(tempy-gmap[i][j].y)<=cellsize/2)){
             			gmap[i][j].x=tempx;
             			gmap[i][j].y=tempy;
             			gmap[i][j].theta=annotations.theta[k];
