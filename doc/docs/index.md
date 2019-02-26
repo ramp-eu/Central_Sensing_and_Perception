@@ -42,7 +42,7 @@ The functionalities of the SP modules are listed as follows:
 ## Mapping - the Central SP
 
 * Uses a map from CAD or as result of SLAM for localization
-* Creates a topology for Task Planner from the map
+* Creates a topology for Task Planner from the map and annotations file
 * Merges local map updates from the Local SP into a global map (gridmap) and updates the topology
 
 ## <a name="topologyupdates">Illustration of localization, topology and map updates</a>
@@ -53,10 +53,10 @@ An example of SP module functionalities in a built map used in the demo in Zagre
 ### Annotations and topology
 This figure shows the topology creation with the annotations marked with yellow arrows (the loading, unloading and waiting areas).
 Blue squares are nodes of the topology graph, while lines connecting them are edges of the topology graph. Red squares are the gird cells which contain obstacle within the square of specified size (1.5 m in this example).
+From the annotation file containing the annotation coordinates, distance and theta, it is calculated where the AGV needs to be placed in front of the annotation according to the distance from the annotation and the orientation theta. It changes the values of the computed nodes from gridmap cells so that Task Planner can use these nodes as goals.
 ![Annotations and topology](./img/annotationswithannotations.png)
 
-
-### Map updates 1
+### <a name="mapupdates1">Map updates 1</a>
 The next figure shows the map updates and the localization within the known map. Green dots are the laser readings sensed from the calculated pose (x,y,theta) marked with red arrow.
 Tiny red squares (0.1 m) are the local map built with the laser readings. 
 
@@ -118,5 +118,9 @@ In this last figure, the new local updates changed the topology even more and on
         maptogridmap/                    # The ROS package for topology creation and merging map updates
         mapupdates/                      # The ROS package for calculating map updates from the laser readings
         maplistener/                     # The ROS package for visualization of ROS topics
-        
+
+# Next steps
+
+Follow the [Install instructions](./install/install.md) and then the [Start guide.](./start.md)   
+For more details how everything works check the [API.](./user/api.md)     
         

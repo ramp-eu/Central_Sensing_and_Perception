@@ -1,4 +1,58 @@
-# <a name="topology">Topology</a>
+In the following the list of ROS packages is given with the short explanation.
+Afterwards, each package is explained with the followed examples.
+
+# Overview of ROS packages
+
+In src folder there are four main ROS packages:
+
+
+## maptogridmap package
+
+A ROS package for creating a gridmap with desired cell size from _map_server_ (PNG or PGM file) and merging the local map updates from an AGV into a gridmap, and a topology creation with annotations for the Task Planner in the form of a graph with nodes and edges. This package is located in the Central SP.
+
+## mapupdates package
+
+A ROS package for creating local map updates from the laser readings. This package is located in the Local SP on every AGV. Every AGV needs to start this package with the robot ID number set to 0, 1, etc., so that published topic has corresponding name as /robot_0/newObstacles, /robot_1/newObstacles, etc.
+
+## maplistener package
+
+A ROS package for testing subscribers to all created topics from mapupdates and maptogridmap packages and visualizing them in rviz.
+
+
+## localization_and_mapping metapackage
+
+A ROS metapackage containing packages for localization and mapping listed in the following: 
+
+
+### localization_and_mapping packages
+
+#### lam_simulator
+
+ROS package which demonstrates localization and mapping in the Stage simulator. Relies on AMCL or gmapping algorithms started using the Stage simulator. Prepared demonstrations can also be used on the real robot.
+
+
+#### sensing_and_perception
+
+ROS package for publishing AGV's pose with covariance to be sent to Orion Context Broker through firos. This package is located in the Local SP.
+
+#### andymark_driver
+
+ROS drivers for omnidirectional Andymark platform. Teleoperation and control relies on the nodes provided by the _husky_ package.
+
+
+#### husky
+
+ROS package for interfacing with Clearpath Husky robot. It also includes nodes for teleoperation and control.
+
+
+#### odometry_correction
+
+ROS package which relies on _robot_pose_ekf_ to fuse robot odometry with IMU data to improve the odometry estimation.
+
+
+
+
+# <a name="topology">Topology creation - maptogridmap package</a>
 The topology is composed of nodes and edges. In the future it will be a single graph message, but since firos is not supporting arrays of custom ROS messages it is divided into two ROS messages: nodes and edges.
 
 Nodes.msg
@@ -70,7 +124,7 @@ The size of the cell is given by the parameter in startmaptogridmap.launch:
 
 In this example it is set to 2.0m since the floorplan is quite big. ICENT lab is much smaller so 1.2m cell size gives better results. Values that are presented in context broker are coordinates of the cell center (x,y) or coordinates of the manual annotation (loaded from a file), theta as an orientation of the annotated place in the map (default is 0), a name of the node in the form of "vertex_0" or it has a name of the annotation, and the node's uuid (Universally unique identifier). The message that is sent through firos can be found here: maptogridmap/msg/Nodes.msg.
 
-### Annotations
+## Creation of Annotations in maptogridmap package
 
 Annotations can be loaded from file annotations.ini located in maptogridmap/launch folder, which is put as a parameter textfile inside the startmaptogridmap.launch file. In this example the first three annotations were used in Zagreb demo in Task planner, and P1 is put as an additional example for the IML map:
 ```
@@ -302,7 +356,7 @@ After you are sattisfied with the built map presented in RVIZ, save it and use i
 rosrun map_server map_saver -f mapfile
 ```
 
-#Preparing the built map to be used for localization and navigation
+# <a name="preparingmap">Preparing the map file to be used for localization and navigation</a>
 
 As a result of SLAM you will obtain in the current folder where you called the map_saver command the mapfile.pgm and mapfile.yaml files.
 This is an example:

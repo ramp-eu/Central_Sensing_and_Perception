@@ -1,3 +1,5 @@
+The following sections describe how other modules needs to be connected to the SP module. First, the workflow is listed with the repeated image from [Home](../index.md) describing it. Then, each section is dedicated to the computer running the module to which SP is connected.
+
 # Workflow
 * Local SP is on every AGV next to RAN
 * Central SP is on the OPIL server
@@ -9,6 +11,7 @@
 * Map updates are sent through firos, which are calculated from the new sensor readings that hit the free grid cells
 * Map merging is done in the Central SP from map updates of one Local SP (one AGV) into one global gridmap from which the updated topology is calculated (later it will be from more Local SPs, i.e., AGVs)
 * HMI should have the initial map file, and ability to present map updates over the initial map 
+![SP module architecture](../img/sp.png)
 
 # AGV's computer with the Local SP
 The main reason having the Local SP on the AGV's computer is to have high-rate closed navigation loop when relying on laser data and odometry for pose calculation, with no delay introduced when using the large data flow (lasers) through wifi. 
