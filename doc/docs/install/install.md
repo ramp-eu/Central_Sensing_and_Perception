@@ -84,6 +84,8 @@ You should see the entities in, e.g. firefox, at the address <http://localhost:1
 
 This docker container starts the creation of topology (nodes, edges) from the given map file and with included annotations from the annotation file. As a default, IML lab will be started with 4 annotations, as is the case in this example, where usage of the files is commented.
 
+![IML topology](../img/IMLtopology.png)
+
 To use arbitrary annotations file and map file:
 
 * go to the folder test/docker_compose_files/Central_SP_docker, where you can find an example of docker-compose.yml that starts everything on a local machine, the file with annotations - annotations.ini, the map files - map.png and CHEMI.yaml, and also a topology.launch if you want to change the size of the grid cell for calculating the topology.
