@@ -8,7 +8,7 @@ uncomment this and comment line beneath for amcl localization
 
 <node pkg="amcl" type="amcl" name="amcl" respawn="true">
 
-<remap from="map" to="/map/realmap" />
+<!--remap from="map" to="/map/realmap" /-->
 
 <remap from="scan" to="base_scan" />
   <!-- Publish scans from best pose at a max of 10 Hz -->
