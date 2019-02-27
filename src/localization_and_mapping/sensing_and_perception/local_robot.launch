@@ -1,0 +1,13 @@
+<launch>
+
+<include file="$(find lam_simulator)/launch/AndaOmnidriveamcltestZagrebdemo.launch">
+</include>
+
+     <!--- Run pubPoseWithCovariance node from sensing_and_perception package-->
+     <!-- Put args="1" if you are testing the robot with the id number 1 -->
+     <node name="publishPoseWithCovariance" pkg="sensing_and_perception" type="pubPoseWithCovariance" output="screen" args="0"/>	
+
+<include file="$(find mapupdates)/launch/startmapupdates.launch">
+</include>
+
+</launch>

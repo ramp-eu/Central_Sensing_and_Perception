@@ -26,7 +26,7 @@ To use arbitrary annotations file and map file you should create these files and
 
 Here is a quick guide how to create these files:
 
-* To use arbitrary annotations create the annotations.ini file:
+* To use arbitrary annotations create the **annotations.ini** file:
 ```
 #annotations.ini
 [P1]
@@ -36,7 +36,7 @@ point_y = 6.5
 theta = 180
 distance = 1.8
 ```
-where point_x, point_y are coordinates of the annotation, and theta and distance determine where the topology node should be so that Task Planner can use this node as the goal distanced (1.8 m in this example) from the annotation and oriented towards the annotation so that AGV has heading of theta (180 degrees in this example) with respect to the positive x-axis.
+where **point_x**, **point_y** are coordinates of the annotation, and **theta** and **distance** determine where the topology node should be so that Task Planner can use this node as the goal distanced (1.8 m in this example) from the annotation and oriented towards the annotation so that AGV has heading of **theta** (180 degrees in this example) with respect to the positive x-axis.
 
 * Uncomment the line in the [docker-compose.yml](./install/install.md#dockercompose):
 ```
@@ -50,13 +50,13 @@ the result should be as in this figure:
 
 ![IML topology](./img/IMLtopologyanntex.png)
 
-* To use arbitrary map file you should prepare map.png (export as png in any graphical software) and map.yaml. Here is an example of the CHEMI factory floorplan saved as png file:
+* To use arbitrary map file you should prepare **map.png** (export as png in any graphical software) and **map.yaml**. Here is an example of the CHEMI factory floorplan saved as png file:
 
 ![IML topology](../img/map.png)
 
 It should be a greyscaled image, where dark grey will be considered as obstacle, while light grey as free area.
 
-* To set the dimensions of the map file you need to prepare parameter file map.yaml, where you need to set the resolution of the map, and thresholds for defining what will be considered as an obstacle, and what as a free area. Here is an example for the CHEMI factory:
+* To set the dimensions of the map file you need to prepare parameter file **map.yaml**, where you need to set the **resolution** of the map, and thresholds for defining what will be considered as an obstacle, and what as a free area. Here is an example for the CHEMI factory:
 ```
 image: map.png
 resolution: 0.12
@@ -65,7 +65,7 @@ negate: 0
 occupied_thresh: 0.165
 free_thresh: 0.001
 ```
-Here, the line ```image: map.png``` should not be ever changed since, on the docker side, the name map.png will always be used, while the file names can be arbitrary since they are copied to the map.png and map.yaml. The parameter ```resolution: 0.12``` means the size of the pixel of the png file is 0.12 m wide. To calculate the resolution, you need to know the width of the image in meters. Then, simply divide the width of the image with the number of pixels. Adjust the parameters occupied_thresh and free_thresh to different values, depending on which shade of grey should be considered as occupied. In this example, thresholds are quite low, which means almost only white is considered as a free area.
+Here, the line ```image: map.png``` should not be ever changed since, on the docker side, the name **map.png** will always be used, while the file names can be arbitrary since they are copied to the **map.png** and **map.yaml**. The parameter ```resolution: 0.12``` means the size of the pixel of the png file is 0.12 m wide. To calculate the **resolution**, you need to know the width of the image in meters. Then, simply divide the width of the image with the number of pixels. Adjust the parameters **occupied_thresh** and **free_thresh** to different values, depending on which shade of grey should be considered as occupied. In this example, thresholds are quite low, which means almost only white is considered as a free area.
 
 * Uncomment the lines in the [docker-compose.yml](./install/install.md#dockercompose):
 ```
@@ -78,7 +78,7 @@ After restarting docker-compose.yml this is what should be the result:
 
 It can be seen that here the topology nodes are too rare and we are missing some of them in narrow passages. In the following we will change the size of the grid cell so that we do not miss topology nodes in the passages between the racks. In this example map the passage is 2.5 m wide, which means the size of the cell size should be half of it to include the worst case of the alignment of passages with the grid.
  
-* To change the size of the grid cell for calculating the topology prepare topology.launch as follows:
+* To change the size of the grid cell for calculating the topology prepare **topology.launch** as follows:
 ```
 <launch>
 <node name="map_server" pkg="map_server" type="map_server" args="$(find maptogridmap)/launch/map.yaml" respawn="false" >
@@ -93,7 +93,7 @@ It can be seen that here the topology nodes are too rare and we are missing some
     <node name="firos" pkg="firos" type="core.py" />
 </launch>
 ```
-where we put the parameter cell_size to 1.25 m.
+where we put the parameter **cell_size** to 1.25 m.
 
 * Uncomment the line in the [docker-compose.yml](./install/install.md#dockercompose):
 ```
@@ -141,6 +141,12 @@ You can check the topic of local map updates by typing:
 rostopic echo /robot_0/newObstacles
 ```
 You can change the resolution of the local map updates by following the guide in Section [Map updates](./user/api.md#mapupdates).
+
+All previous steps can be replaced by calling a single launch file for the Local SP:
+```
+roslaunch sensing_and_perception local_robot.launch 
+```
+This launch file starts the localization, local map updates and module for publishing Pose with Covariance.
 
 * To merge the local map updates into a global gridmap and topology, launch the maptogridmap:
 ```

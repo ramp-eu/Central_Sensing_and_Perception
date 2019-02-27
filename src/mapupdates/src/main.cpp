@@ -130,6 +130,7 @@ int main(int argc, char** argv)
 	ros::Subscriber read_laser = nh.subscribe(scan_topic_, 1, laserCallback);
   VisualizationPublisherGM visualGM(nh);
   nav_msgs::GetMap map;
+  ros::service::waitForService("static_map", 5000);
   ros::service::call("static_map",map);
   double cellsize=0.1;
   nh.getParam("/mapup/cell_size", cellsize);
