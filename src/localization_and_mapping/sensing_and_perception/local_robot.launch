@@ -10,4 +10,7 @@
 <include file="$(find mapupdates)/launch/startmapupdates.launch">
 </include>
 
+    <!-- Run FIROS -->
+    <node name="firos" pkg="firos" type="core.py" />
+
 </launch>
