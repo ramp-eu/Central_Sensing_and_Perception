@@ -68,16 +68,16 @@ public:
 };
 
 
-void globalPointsCallback(const mapupdates::NewObstaclesConstPtr& msg)
-{
-//	std::cout << msg->x.size()<<std::endl;
-	pointx.clear();
-	pointy.clear();
-	for (int i =0; i<msg->x.size(); i++){
-		pointx.push_back(msg->x[i]);
-		pointy.push_back(msg->y[i]);
-	}
-}
+//void globalPointsCallback(const mapupdates::NewObstaclesConstPtr& msg)
+//{
+////	std::cout << msg->x.size()<<std::endl;
+//	pointx.clear();
+//	pointy.clear();
+//	for (int i =0; i<msg->x.size(); i++){
+//		pointx.push_back(msg->x[i]);
+//		pointy.push_back(msg->y[i]);
+//	}
+//}
 double loc2glob_x(double Rx, double Rth, double X, double Y){
 	double globX;
 	globX=Rx+cos(Rth)*X-sin(Rth)*Y;
@@ -121,7 +121,7 @@ int main(int argc, char** argv)
   ros::NodeHandle nh;
   
   ros::Publisher newObstacles_pub = nh.advertise<mapupdates::NewObstacles>("/robot_"+ss.str()+"/newObstacles",1); 
-  ros::Subscriber read_global_points = nh.subscribe("/global_points", 1, globalPointsCallback);
+//  ros::Subscriber read_global_points = nh.subscribe("/global_points", 1, globalPointsCallback);
   scan_topic_="/base_scan";
   nh.getParam("/mapup/scan_topic", scan_topic_);
   tf::TransformListener tf_listener;
@@ -170,6 +170,7 @@ int main(int argc, char** argv)
 	newObstacles_pub.publish(gmobstacles); 
 
   tf_listener.waitForTransform("map", laser_tf_frame, ros::Time::now(), ros::Duration(3.0));//robot_0/
+  double yaw, pitch, roll, tfx, tfy;
 
   ros::Rate rate(10.0);
 
@@ -177,40 +178,46 @@ int main(int argc, char** argv)
     ros::spinOnce(); 
     cycle_number++;
 //    std::cout << "main " << cycle_number <<std::endl;
-    tf_listener.lookupTransform("map", laser_tf_frame, ros::Time(0), transform);	
-    double yaw, pitch, roll, tfx, tfy;
-		transform.getBasis().getRPY(roll, pitch, yaw);
-		tfx=transform.getOrigin().x();
-		tfy=transform.getOrigin().y();
-		pointx.clear();
-		pointy.clear();
-		for (int i=0; i<locx.size(); i++){
-			pointx.push_back(loc2glob_x(tfx, yaw,locx[i],locy[i]));
-			pointy.push_back(loc2glob_y(tfy, yaw,locx[i],locy[i]));
-		}
-//    gmobstacles.x.clear();
-//    gmobstacles.y.clear();
-    gmobstacles.header.stamp = ros::Time::now();
-    gmobstacles.header.frame_id = "map";
-	for(int i = 0; i<pointx.size(); i++){
-		ii=(int)floor(pointx[i]/cellsize);
-		jj=(int)floor(pointy[i]/cellsize);
-		if (ii>0 && jj>0 && ii<sizex && jj<sizey){
-//			if ((gmap[ii][jj].occupancy==0) && (gmap[ii][jj].visited!=cycle_number))
-			if ((gmap[ii][jj].occupancy==0))
-			{
-//				std::cout <<pointx[i]<<" "<<pointy[i]<<std::endl;
-				gmobstacles.x.push_back(gmap[ii][jj].x);
-				gmobstacles.y.push_back(gmap[ii][jj].y);
-//				gmap[ii][jj].visited = cycle_number;
-				gmap[ii][jj].occupancy = 1;
-			}
-		}	
-	}
-	newObstacles_pub.publish(gmobstacles); 
+    try {
+        tf_listener.waitForTransform("/map", laser_tf_frame, ros::Time(0), ros::Duration(0.1));
+        tf_listener.lookupTransform("/map", laser_tf_frame, ros::Time(0), transform);
+
+				transform.getBasis().getRPY(roll, pitch, yaw);
+				tfx=transform.getOrigin().x();
+				tfy=transform.getOrigin().y();
+				pointx.clear();
+				pointy.clear();
+				for (int i=0; i<locx.size(); i++){
+					pointx.push_back(loc2glob_x(tfx, yaw,locx[i],locy[i]));
+					pointy.push_back(loc2glob_y(tfy, yaw,locx[i],locy[i]));
+				}
+		    gmobstacles.x.clear();
+		    gmobstacles.y.clear();
+				gmobstacles.header.stamp = ros::Time::now();
+				gmobstacles.header.frame_id = "map";
+				for(int i = 0; i<pointx.size(); i++){
+					ii=(int)floor(pointx[i]/cellsize);
+					jj=(int)floor(pointy[i]/cellsize);
+					if (ii>0 && jj>0 && ii<sizex && jj<sizey){
+			//			if ((gmap[ii][jj].occupancy==0) && (gmap[ii][jj].visited!=cycle_number))
+						if ((gmap[ii][jj].occupancy==0))
+						{
+			//				std::cout <<pointx[i]<<" "<<pointy[i]<<std::endl;
+							gmobstacles.x.push_back(gmap[ii][jj].x);
+							gmobstacles.y.push_back(gmap[ii][jj].y);
+			//				gmap[ii][jj].visited = cycle_number;
+							gmap[ii][jj].occupancy = 1;
+						}
+					}	
+				}
+    }
+    catch (tf::TransformException ex) {
+        ROS_INFO("Local Map Updates: %s", ex.what());
+    }
+		newObstacles_pub.publish(gmobstacles); 
 
 
-	visualGM.visualizationduringmotion();	
+		visualGM.visualizationduringmotion();	
     
     
 	  rate.sleep();

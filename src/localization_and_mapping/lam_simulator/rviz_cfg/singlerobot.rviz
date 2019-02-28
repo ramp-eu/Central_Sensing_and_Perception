@@ -24,7 +24,6 @@ Panels:
         - /Marker10
         - /Marker11
         - /Odometry1
-        - /Odometry1/Status1
         - /Odometry1/Shape1
         - /Odometry1/Covariance1
         - /Odometry1/Covariance1/Position1
@@ -126,19 +125,19 @@ Visualization Manager:
       Update Interval: 0
       Value: false
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /globalpoints_marker
       Name: Marker
       Namespaces:
-        {}
+        mapupdates: true
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/Marker
       Enabled: true
       Marker Topic: /gridmap_marker
       Name: Marker
       Namespaces:
-        maptogridmap: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -146,7 +145,7 @@ Visualization Manager:
       Marker Topic: /nodes_marker
       Name: Marker
       Namespaces:
-        maptogridmap: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -154,7 +153,7 @@ Visualization Manager:
       Marker Topic: /edges_marker
       Name: Marker
       Namespaces:
-        maptogridmap: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -162,7 +161,7 @@ Visualization Manager:
       Marker Topic: /newobstacles_marker
       Name: Marker
       Namespaces:
-        maptogridmap: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -210,7 +209,7 @@ Visualization Manager:
       Marker Topic: /annotation_marker
       Name: Marker
       Namespaces:
-        maptogridmap: true
+        {}
       Queue Size: 100
       Value: true
     - Angle Tolerance: 0.100000001
@@ -231,7 +230,7 @@ Visualization Manager:
           Value: true
         Value: true
       Enabled: true
-      Keep: 100
+      Keep: 10
       Name: Odometry
       Position Tolerance: 0.100000001
       Shape:

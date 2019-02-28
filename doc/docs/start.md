@@ -146,7 +146,7 @@ All previous steps can be replaced by calling a single launch file for the Local
 ```
 roslaunch sensing_and_perception local_robot.launch 
 ```
-This launch file starts the localization, local map updates and module for publishing Pose with Covariance.
+This launch file starts the localization, local map updates and module for publishing Pose with Covariance. It does not start the simulator Stage because it will be started at RAN.
 
 * To merge the local map updates into a global gridmap and topology, launch the maptogridmap:
 ```

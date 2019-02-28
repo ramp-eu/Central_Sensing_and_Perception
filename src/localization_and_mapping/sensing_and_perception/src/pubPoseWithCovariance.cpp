@@ -30,25 +30,14 @@ class pubOdomWithCovariance {
     }
     
     void refreshPoseCallback(const nav_msgs::Odometry &msg) {
-        tf::StampedTransform transform;
-        tf::TransformListener listener;
-        double yaw, pitch, roll;
-        try {
-            listener.waitForTransform("/map", "/base_link", ros::Time(0), ros::Duration(1.0));
-            listener.lookupTransform("/map", "/base_link", ros::Time(0), transform);
-        }
-        catch (tf::TransformException ex) {
-            ROS_ERROR("%s", ex.what());
-        }
-        transform.getBasis().getRPY(roll, pitch, yaw);
     
         this->PoseWCS.header = msg.header;
         this->PoseWCS.header.frame_id = "map";
-        this->PoseWCS.pose.pose.position.x = transform.getOrigin().x();;
-        this->PoseWCS.pose.pose.position.y = transform.getOrigin().y();
+//        this->PoseWCS.pose.pose.position.x = transform.getOrigin().x();;
+//        this->PoseWCS.pose.pose.position.y = transform.getOrigin().y();
         this->PoseWCS.pose.pose.position.z = 0;
-        this->PoseWCS.pose.pose.orientation = tf::createQuaternionMsgFromYaw(yaw);
-        posePub.publish(this->PoseWCS);
+//        this->PoseWCS.pose.pose.orientation = tf::createQuaternionMsgFromYaw(yaw);
+//        posePub.publish(this->PoseWCS);
     }
     
     void refreshCovarianceCallback(const geometry_msgs::PoseWithCovarianceStamped &msg) {
@@ -79,15 +68,23 @@ int main(int argc, char **argv) {
 
   while (nh.ok()) {
     ros::spinOnce(); 
-    tf_listener.lookupTransform("map", "/base_link", ros::Time(0), transform);	
-		transform.getBasis().getRPY(roll, pitch, yaw);
-		publishOdometryWithCovariance.PoseWCS.header.stamp = ros::Time::now();
-    publishOdometryWithCovariance.PoseWCS.header.frame_id = "map";
-    publishOdometryWithCovariance.PoseWCS.pose.pose.position.x = transform.getOrigin().x();
-    publishOdometryWithCovariance.PoseWCS.pose.pose.position.y = transform.getOrigin().y();
-    publishOdometryWithCovariance.PoseWCS.pose.pose.position.z = 0;
-    publishOdometryWithCovariance.PoseWCS.pose.pose.orientation = tf::createQuaternionMsgFromYaw(yaw);
-		publishOdometryWithCovariance.posePub.publish(publishOdometryWithCovariance.PoseWCS);
+    
+    try {
+        tf_listener.waitForTransform("/map", "/base_link", ros::Time(0), ros::Duration(1.0));
+        tf_listener.lookupTransform("/map", "/base_link", ros::Time(0), transform);
+
+				transform.getBasis().getRPY(roll, pitch, yaw);
+				publishOdometryWithCovariance.PoseWCS.header.stamp = ros::Time::now();
+				publishOdometryWithCovariance.PoseWCS.header.frame_id = "map";
+				publishOdometryWithCovariance.PoseWCS.pose.pose.position.x = transform.getOrigin().x();
+				publishOdometryWithCovariance.PoseWCS.pose.pose.position.y = transform.getOrigin().y();
+				publishOdometryWithCovariance.PoseWCS.pose.pose.position.z = 0;
+				publishOdometryWithCovariance.PoseWCS.pose.pose.orientation = tf::createQuaternionMsgFromYaw(yaw);
+				publishOdometryWithCovariance.posePub.publish(publishOdometryWithCovariance.PoseWCS);
+    }
+    catch (tf::TransformException ex) {
+        ROS_INFO("Pose With Covariance: %s", ex.what());
+    }
     
  	  rate.sleep();
   }

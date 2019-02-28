@@ -7,11 +7,15 @@
 <include file="$(find lam_simulator)/launch/amcl_omnisimdemo.launch" />
 
      <!--- Run pubPoseWithCovariance node from sensing_and_perception package-->
-     <!-- Put args="1" if you are testing the robot with the id number 1 
+     <!-- Put args="1" if you are testing the robot with the id number 1 -->
      <node name="publishPoseWithCovariance" pkg="sensing_and_perception" type="pubPoseWithCovariance" output="screen" args="0"/>	
--->
-<include file="$(find mapupdates)/launch/startmapupdates.launch">
-</include>
+
+     <!--- Run mapup node from mapupdates package-->
+     <!-- Put args="1" if you are testing the robot with the id number 1 -->
+    <node name="mapup" pkg="mapupdates" type="mapup" output="screen" args="0" >
+        <param name="cell_size" type="double" value="0.1" />
+        <param name="scan_topic" value="/base_scan" />
+    </node>
 
     <!-- Run FIROS -->
     <node name="firos" pkg="firos" type="core.py" />
