@@ -29,7 +29,7 @@ services:
 #S&P
     sp:
         restart: always
-        image: l4ms/opil.sw.sp:2.0
+        image: l4ms/opil.sw.sp:c2.0
         volumes:
             #- path on the host : path inside the container
             - /tmp/.X11-unix:/tmp/.X11-unix:rw
@@ -67,7 +67,42 @@ To check if everything is working properly follow the guide [Starting from Docke
 
 ## The Local SP docker
 
-is not yet ready. Will come soon!
+The current version of the Local SP contains the Stage simulator. This will be removed soon and will be used from the RAN directly communicating through ROS.
+
+The docker container is located at 
+<https://hub.docker.com/r/l4ms/opil.sw.sp>
+
+To install it you need to prepare a docker-compose.yml following this example:
+### <a name="dockercomposelocal">docker-compose.yml</a>
+```
+version: "3"
+services:      
+    #Context Broker
+    orion:        
+        image: fiware/orion
+        ports:
+            - 1026:1026
+        command: 
+            -dbhost mongo
+    mongo:
+        restart: always
+        image: mongo:3.4
+        command: --nojournal    
+#S&P
+    splocal:
+        restart: always
+        image: l4ms/opil.sw.sp:l2.0
+        volumes:
+            #- path on the host : path inside the container
+            - /tmp/.X11-unix:/tmp/.X11-unix:rw
+#            - ./local_robot_sim.launch:/root/catkin_ws/src/mod.sw.sp/src/localization_and_mapping/sensing_and_perception/local_robot_sim.launch:ro
+        environment:
+            - FIWAREHOST=orion
+            - HOST=splocal
+            - NETINTERFACE=eth0
+            - DISPLAY=$DISPLAY
+```
+
 
 # Install from Scratch
 
@@ -103,5 +138,6 @@ Install from SourceCode:
 cd ..
 catkin_make
 ```
+Sometimes you need to repeat `catkin_make` due to the dependencies between the packages.
 To check if everything is working properly follow the guide [Starting from Scratch.](../start.md#fromscratch)
 

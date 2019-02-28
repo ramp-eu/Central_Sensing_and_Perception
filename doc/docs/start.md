@@ -105,7 +105,104 @@ After restarting docker-compose.yml this is what should be the result:
 
 ## <a name="fromdockerlocal">Starting from Docker - Local SP</a>
 
-will come later...
+This section will be short since current version contains the Stage simulator, which needs to be removed and be connected to the RAN through ROS master.
+
+Prepare a following docker-compose to start both Central and Local SP:
+
+```
+version: "3"
+services:      
+    #Context Broker
+    orion:        
+        image: fiware/orion
+        ports:
+            - 1026:1026
+        command: 
+            -dbhost mongo
+    mongo:
+        restart: always
+        image: mongo:3.4
+        command: --nojournal    
+#S&P
+    sp:
+        restart: always
+        image: l4ms/opil.sw.sp:c2.0
+        volumes:
+            #- path on the host : path inside the container
+            - /tmp/.X11-unix:/tmp/.X11-unix:rw
+#            - ./annotations.ini:/root/catkin_ws/src/mod.sw.sp/src/maptogridmap/launch/annotations.ini:ro
+#            - ./map.yaml:/root/catkin_ws/src/mod.sw.sp/src/maptogridmap/launch/map.yaml:ro
+#            - ./map.png:/root/catkin_ws/src/mod.sw.sp/src/maptogridmap/launch/map.png:ro
+#            - ./topology.launch:/root/catkin_ws/src/mod.sw.sp/src/maptogridmap/launch/topology.launch:ro
+        environment:
+            - FIWAREHOST=orion
+            - HOST=sp
+            - NETINTERFACE=eth0
+            - DISPLAY=$DISPLAY
+    splocal:
+        restart: always
+        image: l4ms/opil.sw.sp:l2.0
+        volumes:
+            #- path on the host : path inside the container
+            - /tmp/.X11-unix:/tmp/.X11-unix:rw
+#            - ./local_robot_sim.launch:/root/catkin_ws/src/mod.sw.sp/src/localization_and_mapping/sensing_and_perception/local_robot_sim.launch:ro
+        environment:
+            - FIWAREHOST=orion
+            - HOST=splocal
+            - NETINTERFACE=eth0
+            - DISPLAY=$DISPLAY
+```
+
+By default IML lab will be started and you should see something like this if you move the box in the Stage simulator:
+![Local and central SP](./img/localcentralupdateIML.png)
+
+On one rviz window you will see localized robot and local updates, while on another rviz window you will see the updates of the topology and new obstacles presented with blue tiny squares. You can change the map to, for example, ICENT lab by putting **local_robot_sim.launch** next to your **docker-compose.yml**. Prepare the file **local_robot_sim.launch** like this:
+
+```
+<launch>
+
+<!--ICENT lab-->
+<node name="map_server" pkg="map_server" type="map_server" args="$(find lam_simulator)/yaml/Andamapa.yaml" respawn="false" >
+<param name="frame_id" value="/map" />
+</node>
+<node pkg="stage_ros" type="stageros" name="stageros" args="$(find lam_simulator)/world/andaomnidriveamcltest.world" respawn="false" >
+    <param name="base_watchdog_timeout" value="0.2"/>
+</node>
+
+<!--IML lab
+<node name="map_server" pkg="map_server" type="map_server" args="$(find lam_simulator)/yaml/IMLlab.yaml" respawn="false" >
+<param name="frame_id" value="/map" />
+</node>
+<node pkg="stage_ros" type="stageros" name="stageros" args="$(find lam_simulator)/world/floormap_IML.world" respawn="false" >
+    <param name="base_watchdog_timeout" value="0.2"/>
+</node>
+-->
+
+<include file="$(find lam_simulator)/launch/amcl_omnisimdemo.launch" />
+
+     <!--- Run pubPoseWithCovariance node from sensing_and_perception package-->
+     <!-- Put args="1" if you are testing the robot with the id number 1 -->
+     <node name="publishPoseWithCovariance" pkg="sensing_and_perception" type="pubPoseWithCovariance" output="screen" args="0"/>	
+
+     <!--- Run mapup node from mapupdates package-->
+     <!-- Put args="1" if you are testing the robot with the id number 1 -->
+    <node name="mapup" pkg="mapupdates" type="mapup" output="screen" args="0" >
+        <param name="cell_size" type="double" value="0.1" />
+        <param name="scan_topic" value="/base_scan" />
+    </node>
+
+    <!-- Run FIROS -->
+    <node name="firos" pkg="firos" type="core.py" />
+
+<node name="rviz" pkg="rviz" type="rviz" args="-d $(find lam_simulator)/rviz_cfg/singlerobot.rviz" /> 
+
+</launch>
+```
+
+Uncomment the line in **docker-compose.yml**:
+```
+            - ./local_robot_sim.launch:/root/catkin_ws/src/mod.sw.sp/src/localization_and_mapping/sensing_and_perception/local_robot_sim.launch:ro
+```
 
 ## <a name="fromscratch">Starting from Scratch</a>
 
