@@ -105,9 +105,9 @@ After restarting docker-compose.yml this is what should be the result:
 
 ## <a name="fromdockerlocal">Starting from Docker - Local SP</a>
 
-This section will be short since current version contains the Stage simulator, which needs to be removed and be connected to the RAN through ROS master.
+The current version of the Local SP contains the Stage simulator, which will be removed in the future version since it will be connected to the RAN through ROS master.
 
-Prepare a following docker-compose to start both Central and Local SP:
+Prepare a following docker-compose to start both Central and Local SP. You can also start them on the different machines.
 
 ```
 version: "3"
@@ -130,10 +130,6 @@ services:
         volumes:
             #- path on the host : path inside the container
             - /tmp/.X11-unix:/tmp/.X11-unix:rw
-#            - ./annotations.ini:/root/catkin_ws/src/mod.sw.sp/src/maptogridmap/launch/annotations.ini:ro
-#            - ./map.yaml:/root/catkin_ws/src/mod.sw.sp/src/maptogridmap/launch/map.yaml:ro
-#            - ./map.png:/root/catkin_ws/src/mod.sw.sp/src/maptogridmap/launch/map.png:ro
-#            - ./topology.launch:/root/catkin_ws/src/mod.sw.sp/src/maptogridmap/launch/topology.launch:ro
         environment:
             - FIWAREHOST=orion
             - HOST=sp
@@ -145,7 +141,6 @@ services:
         volumes:
             #- path on the host : path inside the container
             - /tmp/.X11-unix:/tmp/.X11-unix:rw
-#            - ./local_robot_sim.launch:/root/catkin_ws/src/mod.sw.sp/src/localization_and_mapping/sensing_and_perception/local_robot_sim.launch:ro
         environment:
             - FIWAREHOST=orion
             - HOST=splocal
@@ -153,10 +148,13 @@ services:
             - DISPLAY=$DISPLAY
 ```
 
-By default IML lab will be started and you should see something like this if you move the box in the Stage simulator:
+This will start everything with the IML lab. The following figure presents the output after moving the green box in the Stage simulator:
 ![Local and central SP](./img/localcentralupdateIML.png)
 
-On one rviz window you will see localized robot and local updates, while on another rviz window you will see the updates of the topology and new obstacles presented with blue tiny squares. You can change the map to, for example, ICENT lab by putting **local_robot_sim.launch** next to your **docker-compose.yml**. Prepare the file **local_robot_sim.launch** like this:
+One rviz window is from the Local SP, where you can see the AGV's pose (red arrow) and local updates (red tiny squares). Another rviz window is from the Central SP, where you can see the updates of the topology and new obstacles presented with blue tiny squares presenting only the current position of the new obstacle. All new obstacles are processed as they are received so only new ones are sent. That is the reason why in the Local SP you can see a trail of the obstacle, while in the Central SP there is no trail but the topology is permanently changed.
+
+You can test more maps, and here is the examle how to change the map to ICENT lab.
+Prepare the file **local_robot_sim.launch** and put it next to your **docker-compose.yml**:
 
 ```
 <launch>
@@ -198,11 +196,66 @@ On one rviz window you will see localized robot and local updates, while on anot
 
 </launch>
 ```
-
-Uncomment the line in **docker-compose.yml**:
+In this launch files you can set various parameters: **cell_size** defines the fine gridmap for calculating new obstacles (tiny red squares); robot ID as an argument of _pubPoseWithCovariance_ and _mapupdates_ for having more robots, **scan_topic**, etc.
+For testing Local SP and Central SP on the same ICENT map, you also need to prepare a new **topology.launch**:
 ```
+<launch>
+<node name="map_server" pkg="map_server" type="map_server" args="$(find maptogridmap)/launch/Andamapa.yaml" respawn="false" >
+<param name="frame_id" value="/map" />
+</node>
+<node name="rviz" pkg="rviz" type="rviz" args="-d $(find maptogridmap)/singlerobot.rviz" /> 
+<node name="map2gm" pkg="maptogridmap" type="map2gm" output="screen">
+    <param name="cell_size" type="double" value="1.25" />
+    <param name="annotation_file" textfile="$(find maptogridmap)/launch/annotations.ini" />
+</node>
+<!-- Run FIROS -->
+<node name="firos" pkg="firos" type="core.py" />
+</launch>
+```
+Now the **docker-compose.yml** should include these two files as volumes:
+```
+version: "3"
+services:      
+    #Context Broker
+    orion:        
+        image: fiware/orion
+        ports:
+            - 1026:1026
+        command: 
+            -dbhost mongo
+    mongo:
+        restart: always
+        image: mongo:3.4
+        command: --nojournal    
+#S&P
+    sp:
+        restart: always
+        image: l4ms/opil.sw.sp:c2.0
+        volumes:
+            #- path on the host : path inside the container
+            - /tmp/.X11-unix:/tmp/.X11-unix:rw
+            - ./topology.launch:/root/catkin_ws/src/mod.sw.sp/src/maptogridmap/launch/topology.launch:ro
+        environment:
+            - FIWAREHOST=orion
+            - HOST=sp
+            - NETINTERFACE=eth0
+            - DISPLAY=$DISPLAY
+    splocal:
+        restart: always
+        image: l4ms/opil.sw.sp:l2.0
+        volumes:
+            #- path on the host : path inside the container
+            - /tmp/.X11-unix:/tmp/.X11-unix:rw
             - ./local_robot_sim.launch:/root/catkin_ws/src/mod.sw.sp/src/localization_and_mapping/sensing_and_perception/local_robot_sim.launch:ro
+        environment:
+            - FIWAREHOST=orion
+            - HOST=splocal
+            - NETINTERFACE=eth0
+            - DISPLAY=$DISPLAY
 ```
+After moving the green box in the simulator the result can be seen like in this figure:
+![Local and central SP in ICENT lab](./img/localcentralupdate.png)
+
 
 ## <a name="fromscratch">Starting from Scratch</a>
 
