@@ -144,9 +144,9 @@ You can change the resolution of the local map updates by following the guide in
 
 All previous steps can be replaced by calling a single launch file for the Local SP:
 ```
-roslaunch sensing_and_perception local_robot.launch 
+roslaunch sensing_and_perception local_robot_sim.launch 
 ```
-This launch file starts the localization, local map updates and module for publishing Pose with Covariance. It does not start the simulator Stage because it will be started at RAN.
+This launch file starts the localization, local map updates and module for publishing Pose with Covariance. The launch file that does not start the simulator Stage because it will be started at RAN is **local_robot.launch**.
 
 * To merge the local map updates into a global gridmap and topology, launch the maptogridmap:
 ```
