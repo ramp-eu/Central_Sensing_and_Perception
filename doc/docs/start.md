@@ -256,6 +256,55 @@ services:
 After moving the green box in the simulator the result can be seen like in this figure:
 ![Local and central SP in ICENT lab](./img/localcentralupdate.png)
 
+## <a name="fromdockerlocal">Starting from Docker - Local SP and RAN</a>
+
+This section explains connecting Local SP, where Local SP does not contain the Stage simulator and it is connected directly to RAN through a single ROS master (has tag l3.0). For that purpose RAN docker container is changed so that it does not contain map_server and amcl localization and right now temporal version is used from opilsp/ran:3.0.
+
+Prepare a following docker-compose to start both Central and Local SP:
+
+```
+version: "3"
+services:      
+    #Context Broker
+    orion:        
+        image: fiware/orion
+        ports:
+            - 1026:1026
+        command: 
+            -dbhost mongo
+    mongo:
+        restart: always
+        image: mongo:3.4
+        command: --nojournal    
+    ran:
+        restart: always
+        image: opilsp/ran:3.0
+        volumes:
+            #- path on the host : path inside the container
+            - /tmp/.X11-unix:/tmp/.X11-unix:rw
+        environment:
+            - FIWAREHOST=orion
+            - HOST=ran
+            - NETINTERFACE=eth0
+            - DISPLAY=$DISPLAY
+
+#S&P
+    splocal:
+        restart: always
+        image: l4ms/opil.sw.sp:l3.0
+        volumes:
+            #- path on the host : path inside the container
+            - /tmp/.X11-unix:/tmp/.X11-unix:rw
+        environment:
+            - FIWAREHOST=orion
+            - HOST=splocal
+            - NETINTERFACE=eth0
+            - DISPLAY=$DISPLAY
+```
+ICENT map will be started and you can command the robot through rviz by pressing 2D Nav Goal button and clicking the point on the map. The following figure describes the possible outcome, where arrow trails correspond to the past positions of the robot:
+![Local SP and RAN in ICENT lab](./img/movingwithran.png)
+
+You can also add Central SP in the docker-compose and obtain results similar to the previous section.
 
 ## <a name="fromscratch">Starting from Scratch</a>
 
