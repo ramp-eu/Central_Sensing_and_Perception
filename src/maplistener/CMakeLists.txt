@@ -25,7 +25,16 @@ find_package(catkin REQUIRED COMPONENTS
   mapupdates
 )
 
+generate_messages(
+   DEPENDENCIES
+   std_msgs
+   nav_msgs
+   geometry_msgs
+)
 
+catkin_package(
+  CATKIN_DEPENDS std_msgs message_runtime
+)
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
@@ -36,6 +45,7 @@ include_directories(
 add_executable(mapls src/main.cpp)
 #target_link_libraries(mapls ${maptogridmap_LIBRARIES} ${catkin_LIBRARIES})
 target_link_libraries(mapls ${catkin_LIBRARIES})
+add_dependencies(mapls maplistener_generate_messages_cpp)
 
 
 
