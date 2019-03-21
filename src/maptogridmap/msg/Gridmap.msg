@@ -10,4 +10,4 @@ nav_msgs/MapMetaData info
 float64[] x
 float64[] y
 float64[] occupancy
-#GridmapCell[] gmc
+GridmapCell[] gmc

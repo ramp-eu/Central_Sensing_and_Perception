@@ -11,6 +11,9 @@
 #include <maptogridmap/GetMap.h>
 #include <maptogridmap/Nodes.h>
 #include <maptogridmap/Edges.h>
+#include <maptogridmap/Edge.h>
+#include <maptogridmap/Vertex.h>
+#include <maptogridmap/Graph.h>
 #include <maptogridmap/Annotations.h>
 #include <mapupdates/NewObstacles.h>
 #include <boost/uuid/uuid_io.hpp>
@@ -39,6 +42,9 @@ struct I_point{
 struct I_edge{
 	int  xs, ys, xg, yg;
 };
+
+static const int xofs[ 4 ] = { -1,1,1,-1};
+static const int yofs[ 4 ] = { -1,-1,1,1};
 
 class GMcell{
 
@@ -79,7 +85,7 @@ class GridMapCell{
 
    int GetMapSizeX() {return MapSizeX;};
    int GetMapSizeY(){return MapSizeY;};
-   int GetSizeCell() {return size_cell;};
+   double GetSizeCell() {return size_cell;};
    GMcell **GetMap(){return map;};
    void spanningTree(int r, int c);
    void createEdges();

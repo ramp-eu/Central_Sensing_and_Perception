@@ -2,6 +2,6 @@
 
 Header header 
 
-Nodes[] vertices
-Edges[] edges
+Vertex[] vertices
+Edge[] edges
 

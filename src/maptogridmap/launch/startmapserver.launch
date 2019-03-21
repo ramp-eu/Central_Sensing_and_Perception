@@ -1,15 +1,15 @@
 <launch>
-<!---->
+<!--
 <node name="map_server" pkg="map_server" type="map_server" args="$(find maptogridmap)/launch/floorplanMP.yaml" respawn="false" >
 <param name="frame_id" value="/map" />
 </node>
+-->
 
-
-<!--	
+<!---->	
 <node name="map_server" pkg="map_server" type="map_server" args="$(find maptogridmap)/launch/IMLlab.yaml" respawn="false" >
 <param name="frame_id" value="/map" />
 </node>
--->	
+	
 		
 <!--
 <node name="map_server" pkg="map_server" type="map_server" args="$(find maptogridmap)/launch/Andamapa.yaml" respawn="false" >

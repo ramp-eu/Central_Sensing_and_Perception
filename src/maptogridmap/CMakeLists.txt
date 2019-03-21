@@ -24,6 +24,9 @@ add_message_files(
   Nodes.msg
   Edges.msg
   Annotations.msg
+  Vertex.msg
+  Edge.msg
+  Graph.msg
 )
 add_service_files(
   FILES

@@ -6,6 +6,7 @@
 
 //#include <maptogridmap/GetMap.h>
 #include <maptogridmap/Gridmap.h>
+#include <maptogridmap/Graph.h>
 #include <maptogridmap/Nodes.h>
 #include <maptogridmap/Edges.h>
 #include <mapupdates/NewObstacles.h>
@@ -23,17 +24,18 @@ protected:
   std::string target_frame_;
 
 public:
-  ros::Publisher gridmapls_pub, graphvs_pub, stc_pub, globalpoints_pub;
- 	ros::Subscriber gml_sub, nodes_sub, edges_sub, newobs_sub;
+  ros::Publisher gridmapls_pub, graphvs_pub, stc_pub, globalpoints_pub, graph_pub;
+ 	ros::Subscriber gml_sub, nodes_sub, edges_sub, newobs_sub, graph_sub;
 
 
-    visualization_msgs::Marker gridmapls, graphvs, stc, glp;
+    visualization_msgs::Marker gridmapls, graphvs, stc, glp, footprint;
 
   VisualizationPublisherGML(ros::NodeHandle n) :
       nh_(n),  target_frame_("map") 
   {
 
 	 	gml_sub = nh_.subscribe("map/topology",1,&VisualizationPublisherGML::gridmapCallback, this);
+	 	graph_sub = nh_.subscribe("map/graph",1,&VisualizationPublisherGML::graphCallback, this);
 	 	nodes_sub = nh_.subscribe("map/nodes",1,&VisualizationPublisherGML::nodesCallback, this);
 	 	edges_sub = nh_.subscribe("map/edges",1,&VisualizationPublisherGML::edgesCallback, this);
 	 	newobs_sub = nh_.subscribe("/robot_0/newObstacles",1,&VisualizationPublisherGML::newObstaclesCallback, this);
@@ -82,6 +84,21 @@ public:
     graphvs.color.b = 0.8;
     graphvs.color.a = 1.0;
     
+	graph_pub=nh_.advertise<visualization_msgs::Marker>("/footprint_markerListener",10);
+
+    footprint.header.frame_id = target_frame_;
+    footprint.header.stamp = ros::Time::now();
+    footprint.ns =  "maplistener";
+    footprint.action = visualization_msgs::Marker::ADD;
+    footprint.pose.orientation.w  = 1.0;
+    footprint.type = visualization_msgs::Marker::LINE_LIST;
+    footprint.scale.x = 0.05; 
+    footprint.scale.y = 0.05; 
+    footprint.color.r = 0.2;
+    footprint.color.g = 0.8;
+    footprint.color.b = 0.8;
+    footprint.color.a = 1.0;
+
   	stc_pub=nh_.advertise<visualization_msgs::Marker>("/edges_markerListener",10);
 
   	stc.header.frame_id = target_frame_;
@@ -101,6 +118,7 @@ public:
 
   void visualizationduringmotion();
   void gridmapCallback(const maptogridmap::GridmapConstPtr& gmMsg);
+  void graphCallback(const maptogridmap::GraphConstPtr& gmMsg);
   void nodesCallback(const maptogridmap::NodesConstPtr& gmMsg);
   void edgesCallback(const maptogridmap::EdgesConstPtr& gmMsg);
 	void newObstaclesCallback(const mapupdates::NewObstaclesConstPtr& msg);
@@ -140,6 +158,7 @@ void VisualizationPublisherGML::visualizationduringmotion(){
 			graphvs_pub.publish(graphvs);
 			globalpoints_pub.publish(glp);
 			stc_pub.publish(stc);
+			graph_pub.publish(footprint);
 
 
 }
@@ -160,6 +179,27 @@ void VisualizationPublisherGML::gridmapCallback(const maptogridmap::GridmapConst
 		if ((gmMsg->occupancy[i]>0)){
 			gridmapls.points.push_back(p);
 		}
+	}
+}
+
+void VisualizationPublisherGML::graphCallback(const maptogridmap::GraphConstPtr& gmMsg)
+{
+  footprint.points.clear();
+  geometry_msgs::Point p; 
+	for (int i=0; i<gmMsg->vertices.size(); i++){
+		for (int d=0; d<4;d++){
+			p.x=gmMsg->vertices[i].footprint[d].x;
+			p.y=gmMsg->vertices[i].footprint[d].y;
+			footprint.points.push_back(p);
+			if (d<3){
+			p.x=gmMsg->vertices[i].footprint[d+1].x;
+			p.y=gmMsg->vertices[i].footprint[d+1].y;
+			footprint.points.push_back(p);
+			}
+		}
+		p.x=gmMsg->vertices[i].footprint[0].x;
+		p.y=gmMsg->vertices[i].footprint[0].y;
+		footprint.points.push_back(p);
 	}
 }
 

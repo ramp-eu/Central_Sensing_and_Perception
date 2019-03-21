@@ -284,6 +284,7 @@ int main(int argc, char** argv)
   ros::NodeHandle nh;
   
   ros::Publisher gmap_pub = nh.advertise<maptogridmap::Gridmap>("map/topology",1);
+  ros::Publisher graph_pub = nh.advertise<maptogridmap::Graph>("map/graph",1);
   ros::Publisher nodes_pub = nh.advertise<maptogridmap::Nodes>("map/nodes",1);
   ros::Publisher edges_pub = nh.advertise<maptogridmap::Edges>("map/edges",1);
   ros::Subscriber gmu_sub = nh.subscribe("/robot_0/newObstacles",1,newObstaclesCallback);
@@ -335,10 +336,13 @@ int main(int argc, char** argv)
 	//read annotations from file
 	readAnnotations(annotation_file);
 	
-//	maptogridmap::GridmapCell gmcell;
+	maptogridmap::GridmapCell gmcell;
 	maptogridmap::Gridmap gm;
 	maptogridmap::Nodes gmnode;
 	maptogridmap::Edges gmedge;
+	maptogridmap::Vertex vertex;
+	maptogridmap::Edge edge;
+	maptogridmap::Graph graph;
 	gm.info.width=sizex;
 	gm.info.height=sizey;
 	gm.info.resolution=cellsize;
@@ -348,9 +352,11 @@ int main(int argc, char** argv)
   gmnode.header=gm.header;
   gmnode.info=gm.info;
   gmedge.header=gm.header;
+  graph.header=gm.header;
 	map_resp_.map.header=gm.header;
   map_resp_.map.info=gm.info;
   double tempx,tempy;
+  geometry_msgs::Point p;
 			for (int i=0; i<sizex; i++){
 				for (int j=0; j<sizey; j++){
 					if (1){
@@ -375,11 +381,23 @@ int main(int argc, char** argv)
             	gmnode.name.push_back(gmap[i][j].name);
 //            	boost::uuids::uuid lUUID=mUUIDGen();
             	gmnode.uuid.push_back(gmap[i][j].uuid);
+            	vertex.x=gmap[i][j].x;
+            	vertex.y=gmap[i][j].y;
+            	vertex.theta=gmap[i][j].theta;
+            	vertex.name=gmap[i][j].name;
+            	vertex.uuid=gmap[i][j].uuid;
+            	vertex.footprint.clear();
+            	for (int d=0; d<4; d++){
+            		p.x=vertex.x+cellsize/2.*xofs[d];
+            		p.y=vertex.y+cellsize/2.*yofs[d];
+            		vertex.footprint.push_back(p);
+            	}
+            	graph.vertices.push_back(vertex);
             }
-//           	gmcell.x=gmap[i][j].x;
-//           	gmcell.y=gmap[i][j].y;
-//           	gmcell.occupancy=gmap[i][j].occupancy;
-//						gm.gmc.push_back(gmcell);
+           	gmcell.x=gmap[i][j].x;
+           	gmcell.y=gmap[i][j].y;
+           	gmcell.occupancy=gmap[i][j].occupancy;
+						gm.gmc.push_back(gmcell);
 					}
 				}
 			}
@@ -387,12 +405,18 @@ int main(int argc, char** argv)
 				gmedge.uuid_src.push_back(gmap[GMC->edges[i].xs][GMC->edges[i].ys].uuid);
 				gmedge.uuid_dest.push_back(gmap[GMC->edges[i].xg][GMC->edges[i].yg].uuid);
 				boost::uuids::uuid lUUID=mUUIDGen();
-				gmedge.uuid.push_back(boost::uuids::to_string(lUUID));
-				gmedge.name.push_back("edge_"+std::to_string(GMC->edges[i].xs*sizey+GMC->edges[i].ys)+"_"+std::to_string(GMC->edges[i].xg*sizey+GMC->edges[i].yg));
+				edge.uuid_src=gmap[GMC->edges[i].xs][GMC->edges[i].ys].uuid;
+				edge.uuid_dest=gmap[GMC->edges[i].xg][GMC->edges[i].yg].uuid;
+				edge.uuid=boost::uuids::to_string(lUUID);
+				edge.name="edge_"+std::to_string(GMC->edges[i].xs*sizey+GMC->edges[i].ys)+"_"+std::to_string(GMC->edges[i].xg*sizey+GMC->edges[i].yg);
+				gmedge.uuid.push_back(edge.uuid);
+				gmedge.name.push_back(edge.name);
+				graph.edges.push_back(edge);
 			}
 	gmap_pub.publish(gm);
 	nodes_pub.publish(gmnode);
 	edges_pub.publish(gmedge);
+	graph_pub.publish(graph);
 	//map_resp_.map.gmc=gm.gmc;
 //	std::cout << gm <<std::endl;
 
@@ -424,6 +448,8 @@ int main(int argc, char** argv)
 			gmnode.theta.clear();
 			gmnode.uuid.clear();
 			gmnode.name.clear();
+			graph.vertices.clear();
+			graph.edges.clear();
 			for (int i=0; i<sizex; i++){
 						for (int j=0; j<sizey; j++){
 								gmap[i][j].visited=0;
@@ -433,6 +459,18 @@ int main(int argc, char** argv)
 		            	gmnode.theta.push_back(gmap[i][j].theta);
 				        	gmnode.name.push_back(gmap[i][j].name);
 				        	gmnode.uuid.push_back(gmap[i][j].uuid);
+				        	vertex.x=gmap[i][j].x;
+							vertex.y=gmap[i][j].y;
+							vertex.theta=gmap[i][j].theta;
+							vertex.name=gmap[i][j].name;
+							vertex.uuid=gmap[i][j].uuid;
+							vertex.footprint.clear();
+							for (int d=0; d<4; d++){
+								p.x=vertex.x+cellsize/2.*xofs[d];
+								p.y=vertex.y+cellsize/2.*yofs[d];
+								vertex.footprint.push_back(p);
+							}
+							graph.vertices.push_back(vertex);
 				        }
 						}
 			}
@@ -445,17 +483,24 @@ int main(int argc, char** argv)
 						gmedge.uuid_src.push_back(gmap[GMC->edges[i].xs][GMC->edges[i].ys].uuid);
 						gmedge.uuid_dest.push_back(gmap[GMC->edges[i].xg][GMC->edges[i].yg].uuid);
 						boost::uuids::uuid lUUID=mUUIDGen();
-						gmedge.uuid.push_back(boost::uuids::to_string(lUUID));
-						gmedge.name.push_back("edge_"+std::to_string(GMC->edges[i].xs*sizey+GMC->edges[i].ys)+"_"+std::to_string(GMC->edges[i].xg*sizey+GMC->edges[i].yg));
+						edge.uuid_src=gmap[GMC->edges[i].xs][GMC->edges[i].ys].uuid;
+						edge.uuid_dest=gmap[GMC->edges[i].xg][GMC->edges[i].yg].uuid;
+						edge.uuid=boost::uuids::to_string(lUUID);
+						edge.name="edge_"+std::to_string(GMC->edges[i].xs*sizey+GMC->edges[i].ys)+"_"+std::to_string(GMC->edges[i].xg*sizey+GMC->edges[i].yg);
+						gmedge.uuid.push_back(edge.uuid);
+						gmedge.name.push_back(edge.name);
+						graph.edges.push_back(edge);
 			}	
 		}
 
 		gmnode.header.stamp = ros::Time::now();
 		gm.header.stamp = ros::Time::now();
 		gmedge.header.stamp = ros::Time::now();
+		graph.header.stamp = ros::Time::now();
 		gmap_pub.publish(gm);
 		nodes_pub.publish(gmnode);
 		edges_pub.publish(gmedge);
+		graph_pub.publish(graph);
 
     ros::spinOnce(); 
 
@@ -481,7 +526,7 @@ void VisualizationPublisherGM::visualizationduringmotion(){
       GMcell **gmap=GMC->GetMap();
       int sizex=GMC->GetMapSizeX();
       int sizey=GMC->GetMapSizeY();
-			int cellsize=GMC->GetSizeCell();
+//			double cellsize=GMC->GetSizeCell();
 			for (int i=0; i<sizex; i++){
 				for (int j=0; j<sizey; j++){
 					if ((gmap[i][j].occupancy>0)||(gmap[i][j].visited==cycle_number)){
