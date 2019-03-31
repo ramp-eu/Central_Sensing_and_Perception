@@ -1,5 +1,26 @@
 Deprecated features are features that SP stil supports but that are not maintained or evolved any longer, or will be used in the future. In particular:
 
+# Firos v1 did not allow arrays of custom ROS messages
+
+The topology is composed of nodes and edges. Since firos is not supporting arrays of custom ROS messages it is divided into two ROS messages: nodes and edges.
+
+Nodes.msg
+
+	Header header	# standard ROS header
+	nav_msgs/MapMetaData info	# number of cells in x and y directions of the gridmap, the size of the cell
+	float64[] x	# x coordinate of the cell centre
+	float64[] y	# y coordinate of the cell centre
+	float64[] theta # orientation of the node used for annotations
+	string[] name	# e.g. vertex_0 or annotation name
+	string[] uuid	# unique id of a node
+	
+Edges.msg
+
+	Header header	# standard ROS header 
+	string[] uuid_src	# unique id of a source node of the edge
+	string[] uuid_dest	# unique id of a destination node of the edge
+	string[] name	# e.g. edge_0_1
+	string[] uuid	# unique id of an edge
 
 # Sending larger data on demand - a service mockup
 Since there is no service call supported yet in firos, topic _do_serve_ is used as a service mockup. On another machine that wants to obtain the data, on topic _do_serve_ needs to be sent value "true" or 1. Large data are a) map topic created with _map_server_ from PNG or PGM file and b) gridmap topic created from the map by resampling to cells of size given by the parameter _cell_size_.

@@ -53,25 +53,29 @@ ROS package which relies on _robot_pose_ekf_ to fuse robot odometry with IMU dat
 
 
 # <a name="topology">Topology creation - maptogridmap package</a>
-The topology is composed of nodes and edges. In the future it will be a single graph message, but since firos is not supporting arrays of custom ROS messages it is divided into two ROS messages: nodes and edges.
+The topology is composed of nodes (vertices) and edges. It is single graph message composed of arrays of two ROS messages: Vertex and Edge.
 
-Nodes.msg
+Graph.msg
 
 	Header header	# standard ROS header
-	nav_msgs/MapMetaData info	# number of cells in x and y directions of the gridmap, the size of the cell
-	float64[] x	# x coordinate of the cell centre
-	float64[] y	# y coordinate of the cell centre
-	float64[] theta # orientation of the node used for annotations
-	string[] name	# e.g. vertex_0 or annotation name
-	string[] uuid	# unique id of a node
-	
-Edges.msg
+	Vertex[] vertices # array of vertices
+	Edge[] edges # array of edges
 
-	Header header	# standard ROS header 
-	string[] uuid_src	# unique id of a source node of the edge
-	string[] uuid_dest	# unique id of a destination node of the edge
-	string[] name	# e.g. edge_0_1
-	string[] uuid	# unique id of an edge
+Vertex.msg
+
+	float64 x	# x coordinate of the cell centre
+	float64 y	# y coordinate of the cell centre
+	float64 theta # orientation of the node used for annotations
+	string name	# e.g. vertex_0 or annotation name
+	string uuid	# unique id of a vertex created from its unique name
+	geometry_msgs/Point[] footprint # four points of a squared footprint around a vertex of size cell_size
+	
+Edge.msg
+
+	string uuid_src	# unique id of a source node of the edge
+	string uuid_dest	# unique id of a destination node of the edge
+	string name	# e.g. edge_0_1
+	string uuid	# unique id of an edge created from its unique name
 	
 The creation of topology is started by launching the map_server package followed by launching the maptogridmap package which is explained in more details in the following text:
 ```
@@ -110,7 +114,7 @@ Nodes are all free cells of rectangular square size that does not contain any ob
 </launch>
 ```
 
-The size of the cell is given by the parameter in startmaptogridmap.launch:
+The size of the cell is given by the parameter **cell_size** in startmaptogridmap.launch:
 ```
 <launch>
 
@@ -122,7 +126,7 @@ The size of the cell is given by the parameter in startmaptogridmap.launch:
 </launch>
 ```
 
-In this example it is set to 2.0m since the floorplan is quite big. ICENT lab is much smaller so 1.2m cell size gives better results. Values that are presented in context broker are coordinates of the cell center (x,y) or coordinates of the manual annotation (loaded from a file), theta as an orientation of the annotated place in the map (default is 0), a name of the node in the form of "vertex_0" or it has a name of the annotation, and the node's uuid (Universally unique identifier). The message that is sent through firos can be found here: maptogridmap/msg/Nodes.msg.
+In this example it is set to 2.0m since the floorplan is quite big. ICENT lab is much smaller so 1.2m cell size gives better results. Values that are presented in context broker are coordinates of the cell center (x,y) or coordinates of the manual annotation (loaded from a file), theta as an orientation of the annotated place in the map (default is 0), a name of the node in the form of "vertex_0" or rewritten by the name of the annotation, and the node's uuid (Universally unique identifier). The message that is sent through firos is maptogridmap/msg/Graph.msg.
 
 ## Creation of Annotations in maptogridmap package
 
@@ -190,69 +194,41 @@ These four annotations change the coordinates of the cell centre of the grid map
 ## Creation of Edges in maptogridmap package
 Edges are pairs of neighbor nodes. Neighbors are defined between two nodes which have their centres' coordinates distanced for _cell_size_. The edges are bidirectional, meaning two neighbor nodes n and m forms the edge (n,m) and (m,n) which are identical.
 Values of Edges are the source node's uuid, named as _uuid_src_, the destination node's uuid, named as _uuid_dest_, the name of the edge in the form of "edge_0_1" meaning that two nodes with names "vertex_0" and "vertex_1" are connected with the edge, and the edge's uuid. 
-The message that is sent through firos can be found here: maptogridmap/msg/Edges.msg
+The message that is sent through firos is maptogridmap/msg/Graph.msg
 
 ## <a name="writelis">Writing a simple listener explaining the maplistener package</a>
 
 To read the topic in your own package you need to subscribe to it, include the header of the message, and write a message callback. The example is taken from maplistener/src/main.cpp.
 
-* subscribe to a topics /map/nodes and /map/edges 
+* subscribe to a topics /map/graph 
 ```
- 	nodes_sub = nh_.subscribe("map/nodes",1,&VisualizationPublisherGML::nodesCallback, this);
- 	edges_sub = nh_.subscribe("map/edges",1,&VisualizationPublisherGML::edgesCallback, this);
+ 	graph_sub = nh_.subscribe("map/graph",1,&VisualizationPublisherGML::graphCallback, this);
 
 ```
-* include the header of the message in your header file or in the cpp where you are writting the message callback:
+* include the header of the message in your header file or in the cpp where you are writing the message callback:
 ```
-#include <maptogridmap/Nodes.h>
-#include <maptogridmap/Edges.h>
+#include <maptogridmap/Graph.h>
 ```
-* write a message callback for nodes and edges and save the values in the global variable gmnode that needs to be saved for obtaining the coordinates of edges
+* write a message callback for nodes and edges (TODO: only partially changed for the new Graph.msg)
 ```
-maptogridmap::Nodes gmnode;
-void VisualizationPublisherGML::nodesCallback(const maptogridmap::NodesConstPtr& gmMsg)
+void VisualizationPublisherGML::graphCallback(const maptogridmap::GraphConstPtr& gmMsg)
 {
-  graphvs.points.clear();
+  footprint.points.clear();
   geometry_msgs::Point p; 
-	gmnode.x.clear();
-	gmnode.y.clear();
-	gmnode.name.clear();
-	gmnode.uuid.clear();
-	for (int i=0; i<gmMsg->x.size(); i++){
-		p.x=gmMsg->x[i];
-		p.y=gmMsg->y[i];
-		graphvs.points.push_back(p);
-		gmnode.x.push_back(gmMsg->x[i]);
-		gmnode.y.push_back(gmMsg->y[i]);
-		gmnode.name.push_back(gmMsg->name[i]);
-		gmnode.uuid.push_back(gmMsg->uuid[i]);
-	}
-}
-void VisualizationPublisherGML::edgesCallback(const maptogridmap::EdgesConstPtr& gmMsg)
-{
-  stc.points.clear();
-  geometry_msgs::Point p; 
-  int foundsrcdest;
-	for (int i=0; i<gmMsg->name.size(); i++){
-		foundsrcdest=0;
-		for (int j=0; j<gmnode.name.size(); j++){
-			if (gmnode.uuid[j]==gmMsg->uuid_src[i]){
-				p.x=gmnode.x[j];
-				p.y=gmnode.y[j];
-				stc.points.push_back(p);
-				foundsrcdest++;
-				if (foundsrcdest==2)
-					break;
-			}
-			if (gmnode.uuid[j]==gmMsg->uuid_dest[i]){
-				p.x=gmnode.x[j];
-				p.y=gmnode.y[j];
-				stc.points.push_back(p);
-				foundsrcdest++;
-				if (foundsrcdest==2)
-					break;
+	for (int i=0; i<gmMsg->vertices.size(); i++){
+		for (int d=0; d<4;d++){
+			p.x=gmMsg->vertices[i].footprint[d].x;
+			p.y=gmMsg->vertices[i].footprint[d].y;
+			footprint.points.push_back(p);
+			if (d<3){
+			p.x=gmMsg->vertices[i].footprint[d+1].x;
+			p.y=gmMsg->vertices[i].footprint[d+1].y;
+			footprint.points.push_back(p);
 			}
 		}
+		p.x=gmMsg->vertices[i].footprint[0].x;
+		p.y=gmMsg->vertices[i].footprint[0].y;
+		footprint.points.push_back(p);
 	}
 }
 ```
@@ -512,6 +488,8 @@ terminal 4: rosrun maplistener mapls
 
 # Examples
 ## Testing if ROS topics for Nodes and Edges are sent to Orion Context Broker:
+TODO: change to graph
+
 Make a clean start of context broker (use the docker-compose.yml in test/docker_compose_files/Central_SP_docker):
 ```
 sudo docker-compose down
@@ -550,6 +528,8 @@ Simply move the robot in stage by dragging it with the mouse and refresh the fir
 
 
 ## Testing if topics for Nodes, Edges, and PoseWithCovariance are received on machine_2 through firos
+TODO: change to graph
+
 If you want to receive the topics through firos, you need to put in firos/config all json files from test/config_files/machine_2:
 
 ```

@@ -1,6 +1,11 @@
 #include <gmap.h>
 
-static boost::uuids::random_generator mUUIDGen;
+//static boost::uuids::random_generator mUUIDGen;
+//static const std::wstring DNS_NAMESPACE_UUID = L"6ba7b810-9dad-11d1-80b4-00c04fd430c8";
+boost::uuids::uuid dns_namespace_uuid; // initialize to {6ba7b810-9dad-11d1-80b4-00c04fd430c8}
+boost::uuids::name_generator lUUIDNameGen(dns_namespace_uuid);
+//boost::uuids::name_generator lUUIDNameGen = boost::uuids::name_generator(mUUIDStringGen(DNS_NAMESPACE_UUID));
+
 GridMapCell *GMC;
 maptogridmap::GetMap::Response map_resp_;
 int cycle_number;
@@ -319,9 +324,10 @@ int main(int argc, char** argv)
 						gmap[ii][jj].visited=0;
 						gmap[ii][jj].x=ii*cellsize+cellsize/2.;
 						gmap[ii][jj].y=jj*cellsize+cellsize/2.;
-						boost::uuids::uuid lUUID=mUUIDGen();
-						gmap[ii][jj].uuid=boost::uuids::to_string(lUUID);
 						gmap[ii][jj].name="vertex_"+std::to_string(ii*sizey+jj);
+//						boost::uuids::uuid lUUID=mUUIDGen();
+						boost::uuids::uuid lUUID = lUUIDNameGen(gmap[ii][jj].name);
+						gmap[ii][jj].uuid=boost::uuids::to_string(lUUID);
 					}
 					if ((gmap[ii][jj].occupancy==0)&&(map.response.map.data[i*width+j]>0)){
 						gmap[ii][jj].occupancy=1;
@@ -379,7 +385,6 @@ int main(int argc, char** argv)
             	gmnode.y.push_back(gmap[i][j].y);
             	gmnode.theta.push_back(gmap[i][j].theta);
             	gmnode.name.push_back(gmap[i][j].name);
-//            	boost::uuids::uuid lUUID=mUUIDGen();
             	gmnode.uuid.push_back(gmap[i][j].uuid);
             	vertex.x=gmap[i][j].x;
             	vertex.y=gmap[i][j].y;
@@ -404,11 +409,12 @@ int main(int argc, char** argv)
 			for(int i=0; i<GMC->edges.size(); i++){
 				gmedge.uuid_src.push_back(gmap[GMC->edges[i].xs][GMC->edges[i].ys].uuid);
 				gmedge.uuid_dest.push_back(gmap[GMC->edges[i].xg][GMC->edges[i].yg].uuid);
-				boost::uuids::uuid lUUID=mUUIDGen();
+//				boost::uuids::uuid lUUID=mUUIDGen();
 				edge.uuid_src=gmap[GMC->edges[i].xs][GMC->edges[i].ys].uuid;
 				edge.uuid_dest=gmap[GMC->edges[i].xg][GMC->edges[i].yg].uuid;
-				edge.uuid=boost::uuids::to_string(lUUID);
 				edge.name="edge_"+std::to_string(GMC->edges[i].xs*sizey+GMC->edges[i].ys)+"_"+std::to_string(GMC->edges[i].xg*sizey+GMC->edges[i].yg);
+				boost::uuids::uuid lUUID = lUUIDNameGen(edge.name);
+				edge.uuid=boost::uuids::to_string(lUUID);
 				gmedge.uuid.push_back(edge.uuid);
 				gmedge.name.push_back(edge.name);
 				graph.edges.push_back(edge);
@@ -482,11 +488,12 @@ int main(int argc, char** argv)
 			for(int i=0; i<GMC->edges.size(); i++){
 						gmedge.uuid_src.push_back(gmap[GMC->edges[i].xs][GMC->edges[i].ys].uuid);
 						gmedge.uuid_dest.push_back(gmap[GMC->edges[i].xg][GMC->edges[i].yg].uuid);
-						boost::uuids::uuid lUUID=mUUIDGen();
+//						boost::uuids::uuid lUUID=mUUIDGen();
 						edge.uuid_src=gmap[GMC->edges[i].xs][GMC->edges[i].ys].uuid;
 						edge.uuid_dest=gmap[GMC->edges[i].xg][GMC->edges[i].yg].uuid;
-						edge.uuid=boost::uuids::to_string(lUUID);
 						edge.name="edge_"+std::to_string(GMC->edges[i].xs*sizey+GMC->edges[i].ys)+"_"+std::to_string(GMC->edges[i].xg*sizey+GMC->edges[i].yg);
+						boost::uuids::uuid lUUID = lUUIDNameGen(edge.name);
+						edge.uuid=boost::uuids::to_string(lUUID);
 						gmedge.uuid.push_back(edge.uuid);
 						gmedge.name.push_back(edge.name);
 						graph.edges.push_back(edge);
