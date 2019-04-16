@@ -19,6 +19,9 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/name_generator.hpp>
+#include <boost/uuid/string_generator.hpp>
+#include <boost/config.hpp>
 #include <iostream>
 #include <string>
 #include <tf/transform_listener.h>
