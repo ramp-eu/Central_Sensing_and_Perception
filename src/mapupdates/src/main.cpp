@@ -96,8 +96,10 @@ void laserCallback(const sensor_msgs::LaserScanConstPtr& msg)
 	locy.clear();
 	laser_tf_frame=msg->header.frame_id;
 	for(int i_LS=0;i_LS<msg->ranges.size();i_LS++){
+			if (msg->ranges[i_LS]<msg->range_max){
 			  locx.push_back(msg->ranges[i_LS]*cos(msg->angle_min+i_LS * msg->angle_increment));
 			  locy.push_back(msg->ranges[i_LS]*sin(msg->angle_min+i_LS * msg->angle_increment));
+			  }
 	}
 
 }

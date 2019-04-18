@@ -1,10 +1,31 @@
 <launch>
 
+<!--CHEMI map
+    <node name="map_server" pkg="map_server" type="map_server" args="$(find lam_simulator)/yaml/CHEMIchangedres.yaml" respawn="false"> 
+       <param name="frame_id" value="/map" /> 
+    </node>	    	  
+<include file="$(find lam_simulator)/launch/amcl_omnisimCHEMI.launch" />
+-->
+
+<!-- ICENT lab map-->
 <node name="map_server" pkg="map_server" type="map_server" args="$(find lam_simulator)/yaml/Andamapa.yaml" respawn="false" >
 <param name="frame_id" value="/map" />
 </node>
-
 <include file="$(find lam_simulator)/launch/amcl_omnisimdemo.launch" />
+
+
+<!--IML lab
+<node name="map_server" pkg="map_server" type="map_server" args="$(find lam_simulator)/yaml/IMLlab.yaml" respawn="false" >
+<param name="frame_id" value="/map" />
+</node>
+-->
+
+<!--Muraplast
+<node name="map_server" pkg="map_server" type="map_server" args="$(find lam_simulator)/yaml/floorplan_muraplast.yaml" respawn="false" >
+<param name="frame_id" value="/map" />
+</node>
+<include file="$(find lam_simulator)/launch/amcl_omnisim.launch" />
+-->
 
      <!--- Run pubPoseWithCovariance node from sensing_and_perception package-->
      <!-- Put args="1" if you are testing the robot with the id number 1 -->

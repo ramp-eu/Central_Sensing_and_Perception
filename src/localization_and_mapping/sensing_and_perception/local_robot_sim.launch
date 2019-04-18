@@ -1,24 +1,44 @@
 <launch>
 
-<!--
+<!--ICENT
 <node name="map_server" pkg="map_server" type="map_server" args="$(find lam_simulator)/yaml/Andamapa.yaml" respawn="false" >
 <param name="frame_id" value="/map" />
 </node>
 <node pkg="stage_ros" type="stageros" name="stageros" args="$(find lam_simulator)/world/andaomnidriveamcltest.world" respawn="false" >
     <param name="base_watchdog_timeout" value="0.2"/>
 </node>
+<include file="$(find lam_simulator)/launch/amcl_omnisimdemo.launch" />
 -->
-
+<!--IML-->
 <node name="map_server" pkg="map_server" type="map_server" args="$(find lam_simulator)/yaml/IMLlab.yaml" respawn="false" >
 <param name="frame_id" value="/map" />
 </node>
-
-
 <node pkg="stage_ros" type="stageros" name="stageros" args="$(find lam_simulator)/world/floormap_IML.world" respawn="false" >
     <param name="base_watchdog_timeout" value="0.2"/>
 </node>
-
 <include file="$(find lam_simulator)/launch/amcl_omnisimdemo.launch" />
+
+<!--CHEMI
+    <node name="map_server" pkg="map_server" type="map_server" args="$(find lam_simulator)/yaml/CHEMIchangedres.yaml" respawn="false"> 
+       <param name="frame_id" value="/map" /> 
+    </node>	    	  
+
+<node pkg="stage_ros" type="stageros" name="stageros" args="$(find lam_simulator)/world/floormap_CHEMI.world" respawn="false" >
+    <param name="base_watchdog_timeout" value="0.2"/>
+</node>
+<include file="$(find lam_simulator)/launch/amcl_omnisimCHEMI.launch" />
+-->
+<!--MURAPLAST
+<node name="map_server" pkg="map_server" type="map_server" args="$(find lam_simulator)/yaml/floorplan_muraplast.yaml" respawn="false" >
+<param name="frame_id" value="/map" />
+</node>
+
+<node pkg="stage_ros" type="stageros" name="stageros" args="$(find lam_simulator)/world/floormap_muraplast.world" respawn="false" >
+    <param name="base_watchdog_timeout" value="0.2"/>
+</node>
+<include file="$(find lam_simulator)/launch/amcl_omnisim.launch" />
+-->
+
 
      <!--- Run pubPoseWithCovariance node from sensing_and_perception package-->
      <!-- Put args="1" if you are testing the robot with the id number 1 -->
