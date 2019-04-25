@@ -202,4 +202,3 @@ include_directories(
 
 add_executable(pubPoseWithCovariance src/pubPoseWithCovariance.cpp)
 target_link_libraries(pubPoseWithCovariance ${catkin_LIBRARIES})
-add_dependencies(pubPoseWithCovariance opil_v1_generate_messages_cpp)

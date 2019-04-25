@@ -1,0 +1,10 @@
+{
+    "map": {
+        "subscriber": ["graph"],
+        "publisher": []
+    },
+    "robot_0": {
+        "subscriber": [],
+        "publisher": ["newObstacles"]
+    }
+}

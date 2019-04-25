@@ -1,5 +1,11 @@
 <launch>
 
+<!--also IML but can be replaced to a new map-->
+<node name="map_server" pkg="map_server" type="map_server" args="$(find lam_simulator)/yaml/map.yaml" respawn="false" >
+<param name="frame_id" value="/map" />
+</node>
+<include file="$(find lam_simulator)/launch/amcl_map.launch" />
+
 <!--CHEMI map
     <node name="map_server" pkg="map_server" type="map_server" args="$(find lam_simulator)/yaml/CHEMIchangedres.yaml" respawn="false"> 
        <param name="frame_id" value="/map" /> 
@@ -7,12 +13,12 @@
 <include file="$(find lam_simulator)/launch/amcl_omnisimCHEMI.launch" />
 -->
 
-<!-- ICENT lab map-->
+<!-- ICENT lab map
 <node name="map_server" pkg="map_server" type="map_server" args="$(find lam_simulator)/yaml/Andamapa.yaml" respawn="false" >
 <param name="frame_id" value="/map" />
 </node>
 <include file="$(find lam_simulator)/launch/amcl_omnisimdemo.launch" />
-
+-->
 
 <!--IML lab
 <node name="map_server" pkg="map_server" type="map_server" args="$(find lam_simulator)/yaml/IMLlab.yaml" respawn="false" >

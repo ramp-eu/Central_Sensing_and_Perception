@@ -1,0 +1,18 @@
+{
+    "map":{
+        "topics": {
+            "graph": {
+                "msg": "maptogridmap.msg.Graph",
+                "type": "subscriber"
+            }
+        }
+    },
+    "robot_0":{
+        "topics": {
+            "newObstacles": {
+                "msg": "mapupdates.msg.NewObstacles",
+                "type": "publisher"
+            }
+        }
+    }
+}

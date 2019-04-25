@@ -9,7 +9,15 @@
 </node>
 <include file="$(find lam_simulator)/launch/amcl_omnisimdemo.launch" />
 -->
-<!--IML-->
+<!--also IML but can be replaced to a new map-->
+<node name="map_server" pkg="map_server" type="map_server" args="$(find lam_simulator)/yaml/map.yaml" respawn="false" >
+<param name="frame_id" value="/map" />
+</node>
+<node pkg="stage_ros" type="stageros" name="stageros" args="$(find lam_simulator)/yaml/map.world" respawn="false" >
+    <param name="base_watchdog_timeout" value="0.2"/>
+</node>
+<include file="$(find lam_simulator)/launch/amcl_map.launch" />
+<!--IML
 <node name="map_server" pkg="map_server" type="map_server" args="$(find lam_simulator)/yaml/IMLlab.yaml" respawn="false" >
 <param name="frame_id" value="/map" />
 </node>
@@ -17,7 +25,7 @@
     <param name="base_watchdog_timeout" value="0.2"/>
 </node>
 <include file="$(find lam_simulator)/launch/amcl_omnisimdemo.launch" />
-
+-->
 <!--CHEMI
     <node name="map_server" pkg="map_server" type="map_server" args="$(find lam_simulator)/yaml/CHEMIchangedres.yaml" respawn="false"> 
        <param name="frame_id" value="/map" /> 

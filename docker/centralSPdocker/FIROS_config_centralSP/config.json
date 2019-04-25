@@ -1,0 +1,22 @@
+{
+  "environment": "fof_lab",
+
+  "fof_lab": {
+    "server": {
+        "address"   : "sp",
+        "port"      : 10100
+    },
+    "contextbroker": {
+        "address"   : "orion",
+        "port"      : 1026,
+        "subscription": {
+          "throttling": 0,
+          "subscription_length": 300,
+          "subscription_refresh_delay": 0.5
+        }
+    },
+    "log_level": "INFO",
+    "interface": "eth0"
+  }
+}
+

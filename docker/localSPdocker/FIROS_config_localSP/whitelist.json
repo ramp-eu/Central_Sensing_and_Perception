@@ -1,0 +1,5 @@
+{
+    "robot_0": {
+        "subscriber": ["pose_channel","newObstacles"]
+    }
+}
