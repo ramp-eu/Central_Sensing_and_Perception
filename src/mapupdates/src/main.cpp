@@ -138,11 +138,15 @@ int main(int argc, char** argv)
   nh.getParam("/mapup/cell_size", cellsize);
  
   double resolution=map.response.map.info.resolution;
+  geometry_msgs::Pose mappose=map.response.map.info.origin;
+  std::cout << mappose <<std::endl;
+  double xorigin=mappose.position.x;
+  double yorigin=mappose.position.y; 
   int width=map.response.map.info.width;
   int height=map.response.map.info.height;
   int sizex = int (floor (width*resolution / cellsize))+1;
   int sizey = int (floor (height*resolution / cellsize))+1;
-  printf("converting the map data to gridmap: cell size %f, res=%f, width=%d, height=%d, size gridmap (%d,%d)\n",cellsize, resolution, width, height, sizex, sizey);
+  printf("converting the map data to gridmap: cell size %f, res=%f, width=%d, height=%d, xorigin=%f, yorigin=%f, size gridmap (%d,%d)\n",cellsize, resolution, width, height, xorigin, yorigin, sizex, sizey);
   GMU = new GridMapCell(sizex, sizey, cellsize);
 	int ii,jj;
 	GMcell **gmap=GMU->GetMap();
@@ -154,13 +158,13 @@ int main(int argc, char** argv)
 				jj=(int)floor(i*resolution/cellsize);
 				if (gmap[ii][jj].visited==-1){
 					gmap[ii][jj].visited=0;
-					gmap[ii][jj].x=ii*cellsize+cellsize/2.;
-					gmap[ii][jj].y=jj*cellsize+cellsize/2.;
+					gmap[ii][jj].x=ii*cellsize+cellsize/2.+xorigin;
+					gmap[ii][jj].y=jj*cellsize+cellsize/2.+yorigin;
 					boost::uuids::uuid lUUID=mUUIDGen();
 					gmap[ii][jj].uuid=boost::uuids::to_string(lUUID);
 					gmap[ii][jj].name="vertex_"+std::to_string(ii*sizey+jj);
 				}
-				if ((gmap[ii][jj].occupancy==0)&&(map.response.map.data[i*width+j]>0)){
+				if ((gmap[ii][jj].occupancy==0)&&(map.response.map.data[i*width+j]!=0)){
 					gmap[ii][jj].occupancy=1;
 					gmap[ii][jj].staticcell=true;
 				}
@@ -198,8 +202,8 @@ int main(int argc, char** argv)
 				gmobstacles.header.stamp = ros::Time::now();
 				gmobstacles.header.frame_id = "map";
 				for(int i = 0; i<pointx.size(); i++){
-					ii=(int)floor(pointx[i]/cellsize);
-					jj=(int)floor(pointy[i]/cellsize);
+					ii=(int)floor((pointx[i]-xorigin)/cellsize);
+					jj=(int)floor((pointy[i]-yorigin)/cellsize);
 					if (ii>0 && jj>0 && ii<sizex && jj<sizey){
 			//			if ((gmap[ii][jj].occupancy==0) && (gmap[ii][jj].visited!=cycle_number))
 						if ((gmap[ii][jj].occupancy==0))

@@ -21,11 +21,11 @@ window( size [ 569 392 ] center [3.287 4.369] scale 19.013 )
 
 
 floorplan( 
-bitmap "elements/smartface_topologie_entwurf.png"
+bitmap "../yaml/map.png"
 #map_resolution     0.068 
   pose [24.696 7.7525 0.000 0.000] 
   size [49.392 15.505 0.800] 
-  name "IMLlab"
+  name "mapLab"
 )
 
 

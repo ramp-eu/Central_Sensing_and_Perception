@@ -308,11 +308,16 @@ int main(int argc, char** argv)
 	std::cout << annotation_file <<std::endl; 
   
   double resolution=map.response.map.info.resolution;
+  geometry_msgs::Pose mappose=map.response.map.info.origin;
+  std::cout << mappose <<std::endl;
+  double xorigin=mappose.position.x;
+  double yorigin=mappose.position.y; 
+
   int width=map.response.map.info.width;
   int height=map.response.map.info.height;
   int sizex = int (floor (width*resolution / cellsize));
   int sizey = int (floor (height*resolution / cellsize));
-  printf("converting the map data to gridmap: cell size %f, res=%f, width=%d, height=%d, size gridmap (%d,%d)\n",cellsize, resolution, width, height, sizex, sizey);
+  printf("converting the map data to gridmap: cell size %f, res=%f, width=%d, height=%d, xorigin=%f, yorigin=%f, size gridmap (%d,%d)\n",cellsize, resolution, width, height, xorigin, yorigin, sizex, sizey);
 //  printf("dns_namespace_uuid=%s",dns_namespace_uuid);
   std::cout << dns_namespace_uuid<<std::endl;
 //  std::cout << lUUIDNameGen(dns_namespace_uuid)<<std::endl;
@@ -329,14 +334,14 @@ int main(int argc, char** argv)
 				if (ii<sizex && jj<sizey){
 					if (gmap[ii][jj].visited==-1){
 						gmap[ii][jj].visited=0;
-						gmap[ii][jj].x=ii*cellsize+cellsize/2.;
-						gmap[ii][jj].y=jj*cellsize+cellsize/2.;
+						gmap[ii][jj].x=ii*cellsize+cellsize/2.+xorigin;
+						gmap[ii][jj].y=jj*cellsize+cellsize/2.+yorigin;
 						gmap[ii][jj].name="vertex_"+std::to_string(ii*sizey+jj);
 //						boost::uuids::uuid lUUID=mUUIDGen();
 						uuid lUUID = lUUIDNameGen(gmap[ii][jj].name);
 						gmap[ii][jj].uuid=to_string(lUUID);
 					}
-					if ((gmap[ii][jj].occupancy==0)&&(map.response.map.data[i*width+j]>0)){
+					if ((gmap[ii][jj].occupancy==0)&&(map.response.map.data[i*width+j]!=0)){
 						gmap[ii][jj].occupancy=1;
 						gmap[ii][jj].staticcell=true;
 					}
@@ -441,8 +446,8 @@ int main(int argc, char** argv)
     cycle_number++;
     update_nodes_edges = 0;
 		for(int i = 0; i<obstacles.x.size(); i++){
-			ii=(int)floor(obstacles.x[i]/cellsize);
-			jj=(int)floor(obstacles.y[i]/cellsize);
+			ii=(int)floor((obstacles.x[i]-xorigin)/cellsize);
+			jj=(int)floor((obstacles.y[i]-yorigin)/cellsize);
 			if (ii>0 && jj>0 && ii<sizex && jj<sizey){
 	//			if ((gmap[ii][jj].occupancy==0) && (gmap[ii][jj].visited!=cycle_number))
 				if ((gmap[ii][jj].occupancy==0))
@@ -577,9 +582,8 @@ void VisualizationPublisherGM::visualizationduringmotion(){
     					
 				}
 			//publish path			
-			stc_pub.publish(stc);
-		
 			}
+			stc_pub.publish(stc);
 			//points from newObstacles
 			for(int i = 0; i<obstacles.x.size(); i++){
 				p.x = obstacles.x[i];
