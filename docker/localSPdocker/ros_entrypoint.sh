@@ -8,6 +8,9 @@ sed -e "s/LOCALHOST/$HOST/g" -e "s/FIWAREHOST/$FIWAREHOST/g" -e "s/NETINTERFACE/
 if [ $SIMULATION == true ]
         then 
                 echo "without RAN but with simulator Stage"
+				echo "sleeping"
+				sleep 5
+				echo "continuing"
         else
 				echo "sleeping"
 				sleep 5

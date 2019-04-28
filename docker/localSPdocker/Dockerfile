@@ -29,7 +29,7 @@ RUN cd ~/catkin_ws/src && \
 	cd ~/catkin_ws/ && \
 	/bin/bash -c '. /opt/ros/kinetic/setup.bash; cd ~/catkin_ws; catkin_make'
 
-COPY ./FIROS_config_localSP /root/catkin_ws/src/firos/config
+COPY ./FIROS_config_localSPwithRAN /root/catkin_ws/src/firos/config
 
 COPY ros_entrypoint.sh /
 

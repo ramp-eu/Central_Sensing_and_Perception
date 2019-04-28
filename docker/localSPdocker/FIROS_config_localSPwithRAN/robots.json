@@ -1,0 +1,67 @@
+{
+	"robot_0":{
+		"topics": {
+			"pose_channel": {
+				"msg": "geometry_msgs.msg.PoseWithCovarianceStamped",
+				"type": "subscriber"
+			},
+			"newObstacles": {
+				"msg": "mapupdates.msg.NewObstacles",
+				"type": "subscriber"
+			}
+		}
+	},
+	"robot_opil_v2":{
+        "topics": {
+            "task_management_channel": {
+                "msg": "opil_v2.msg.CancelTask",
+                "type": "publisher"
+            },
+            "motion_channel": {
+                "msg": "opil_v2.msg.MotionAssignment",
+                "type": "publisher"
+            },
+            "action_channel": {
+                "msg": "opil_v2.msg.ActionAssignment",
+                "type": "publisher"
+            },
+            "action_channel_AGV": {
+                "msg": "opil_v2.msg.ActionDefinition",
+                "type": "subscriber"
+            },
+	    	"status_channel": {
+			    "msg": "opil_v2.msg.RANState",
+                "type": "subscriber"
+	    	},
+            "description_channel": {
+			    "msg": "opil_v2.msg.RobotDescription",
+                "type": "subscriber"
+	    	},
+	    	"status_channel_AGV": {
+			    "msg": "opil_v2.msg.RobotState",
+                "type": "publisher"
+	    	},
+            "description_channel_AGV": {
+			    "msg": "opil_v2.msg.RobotDescriptionAGV",
+                "type": "publisher"
+	    	},
+            "assignment_channel": {
+			    "msg": "opil_v2.msg.AssignmentStatus",
+                "type": "subscriber"
+	    	},
+            "movement_channel": {
+			    "msg": "opil_v2.msg.Motion",
+                "type": "subscriber"
+	    	},
+            "error_channel": {
+			    "msg": "opil_v2.msg.ErrorRAN",
+                "type": "subscriber"
+	    	},
+            "error_channel_AGV": {
+			    "msg": "opil_v2.msg.ErrorAGV",
+                "type": "publisher"
+	    	}
+        }
+    }
+
+}
