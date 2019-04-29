@@ -1,0 +1,81 @@
+version: "3"
+services:      
+    #Context Broker
+    orion:        
+        image: fiware/orion
+#        links:
+#            - mongo
+        ports:
+            - 1026:1026
+        command: 
+            -dbhost mongo
+            
+            
+
+#    postgres:
+#        restart: always
+#        image: postgres:latest
+#        volumes:
+#            #This is a workaround for Windows, also see "volumes" below after the "services".
+#            #- pg_db:/var/lib/postgresql/data:Z          
+#            #This should work for linux
+#            - ./postgres-data:/var/lib/postgresql/data                        
+
+    mongo:
+        restart: always
+        image: mongo:3.4
+        command: --nojournal    
+#            
+#    nginx:
+#        restart: always
+#        image: nginx:latest
+#        ports:
+#            - 80:80
+#        volumes:
+#            - ./nginx.conf:/etc/nginx/nginx.conf:ro
+#            - ./static:/var/www/static:ro
+#        depends_on:
+#            - wirecloud
+#            
+#    ngsiproxy:
+#        restart: always
+#        image: fiware/ngsiproxy:latest
+#        ports:
+#            - 3000:3000   
+
+#    wirecloud:
+#        restart: always
+#        image: fiware/wirecloud:latest-composable
+#        depends_on:
+#            - postgres            
+#        volumes:
+#            - ./wirecloud_instance:/opt/wirecloud_instance
+#            - ./static:/var/www/static  
+#S&P
+    splocal:
+        restart: always
+        image: l4ms/opil.sw.sp:2.5-local
+        volumes:
+            #- path on the host : path inside the container
+            - /tmp/.X11-unix:/tmp/.X11-unix:rw
+#            - ./testmap.yaml:/root/catkin_ws/src/localization_and_mapping/lam_simulator/yaml/map.yaml:ro
+#            - ./testmap.png:/root/catkin_ws/src/localization_and_mapping/lam_simulator/yaml/map.png:ro
+#            - ./amcl_testmap.launch:/root/catkin_ws/src/localization_and_mapping/lam_simulator/launch/amcl_map.launch:ro
+#            - ./testmap.world:/root/catkin_ws/src/localization_and_mapping/lam_simulator/yaml/map.world:ro
+#            - ./local_robot_sim.launch:/root/catkin_ws/src/localization_and_mapping/sensing_and_perception/local_robot_sim.launch:ro
+        environment:
+            - FIWAREHOST=orion
+            - HOST=splocal
+            - NETINTERFACE=eth0
+            - DISPLAY=$DISPLAY
+            - SIMULATION=true
+
+                   
+            
+#volumes:
+#    pg_db: 
+#        external: true
+
+
+
+
