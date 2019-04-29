@@ -1,6 +1,6 @@
 {
     "map": {
-        "subscriber": ["nodes","edges"],
+        "subscriber": ["nodes","edges","graph"],
         "publisher": []
     },
     "robot_0": {

@@ -54,17 +54,14 @@ services:
 #S&P
     sp:
         restart: always
-        image: l4ms/opil.sw.sp:2.0
-#        image: l4ms/opil.iot.ran:2.0
-#        links:
-#            - orion
+        image: l4ms/opil.sw.sp:2.5-central
         volumes:
             #- path on the host : path inside the container
             - /tmp/.X11-unix:/tmp/.X11-unix:rw
-            - ./annotations.ini:/root/catkin_ws/src/mod.sw.sp/src/maptogridmap/launch/annotations.ini:ro
-#            - ./CHEMI.yaml:/root/catkin_ws/src/mod.sw.sp/src/maptogridmap/launch/map.yaml:ro
-#            - ./map.png:/root/catkin_ws/src/mod.sw.sp/src/maptogridmap/launch/map.png:ro
-#            - ./topology.launch:/root/catkin_ws/src/mod.sw.sp/src/maptogridmap/launch/topology.launch:ro
+#            - ./annotations.ini:/root/catkin_ws/src/maptogridmap/launch/annotations.ini:ro
+#            - ./testmap.yaml:/root/catkin_ws/src/maptogridmap/launch/map.yaml:ro
+#            - ./testmap.png:/root/catkin_ws/src/maptogridmap/launch/map.png:ro
+#            - ./topology.launch:/root/catkin_ws/src/maptogridmap/launch/topology.launch:ro
         environment:
             - FIWAREHOST=orion
             - HOST=sp

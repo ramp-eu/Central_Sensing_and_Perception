@@ -5,6 +5,10 @@
                 "msg": "maptogridmap.msg.Nodes",
                 "type": "subscriber"
             },
+            "graph": {
+                "msg": "maptogridmap.msg.Graph",
+                "type": "subscriber"
+            },
             "edges": {
                 "msg": "maptogridmap.msg.Edges",
                 "type": "subscriber"

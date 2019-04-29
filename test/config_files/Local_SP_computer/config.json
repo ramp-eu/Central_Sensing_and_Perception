@@ -3,19 +3,19 @@
 
   "fof_lab": {
     "server": {
-        "address"   : "161.53.68.212",
+        "address"   : "127.0.0.1",
         "port"      : 10100
     },
     "contextbroker": {
-        "address"   : "161.53.68.95",
+        "address"   : "127.0.0.1",
         "port"      : 1026,
         "subscription": {
-          "throttling": "PT0S",
-          "subscription_length": "P1D",
+          "throttling": 3, 
+          "subscription_length": 300,
           "subscription_refresh_delay": 0.5
         }
     },
     "log_level": "INFO",
-    "interface": "enx00e04c6820db"
+    "interface": "lo"
   }
 }
