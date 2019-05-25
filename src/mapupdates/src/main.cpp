@@ -6,6 +6,7 @@ GridMapCell *GMU;
 std::vector<float> pointx, pointy, locx, locy;
 int cycle_number=0;
 std::string laser_tf_frame="/base_laser_link";
+bool laser_inverted=false;
 
 using namespace std;
 
@@ -95,11 +96,17 @@ void laserCallback(const sensor_msgs::LaserScanConstPtr& msg)
 	locx.clear();
 	locy.clear();
 	laser_tf_frame=msg->header.frame_id;
+	double ranges;
 	for(int i_LS=0;i_LS<msg->ranges.size();i_LS++){
-			if (msg->ranges[i_LS]<msg->range_max){
-			  locx.push_back(msg->ranges[i_LS]*cos(msg->angle_min+i_LS * msg->angle_increment));
-			  locy.push_back(msg->ranges[i_LS]*sin(msg->angle_min+i_LS * msg->angle_increment));
-			  }
+		if (laser_inverted){
+	        ranges=msg->ranges[msg->ranges.size()-1-i_LS];
+        }else{
+	        ranges=msg->ranges[i_LS];
+		}
+		if (ranges<msg->range_max){
+			  locx.push_back(ranges*cos(msg->angle_min+i_LS * msg->angle_increment));
+			  locy.push_back(ranges*sin(msg->angle_min+i_LS * msg->angle_increment));
+		}
 	}
 
 }
@@ -126,6 +133,7 @@ int main(int argc, char** argv)
 //  ros::Subscriber read_global_points = nh.subscribe("/global_points", 1, globalPointsCallback);
   scan_topic_="/base_scan";
   nh.getParam("/mapup/scan_topic", scan_topic_);
+  nh.getParam("/mapup/laser_inverted", laser_inverted);
   tf::TransformListener tf_listener;
   tf::StampedTransform transform;
 
