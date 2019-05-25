@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   tf
   laser_geometry
+  mapupdates
 )
 add_message_files(
   FILES
