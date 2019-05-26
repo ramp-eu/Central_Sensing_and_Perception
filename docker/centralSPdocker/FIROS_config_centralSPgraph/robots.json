@@ -14,5 +14,21 @@
                 "type": "publisher"
             }
         }
+    },
+    "robot_1":{
+        "topics": {
+            "newObstacles": {
+                "msg": "mapupdates.msg.NewObstacles",
+                "type": "publisher"
+            }
+        }
+    },
+    "robot_2":{
+        "topics": {
+            "newObstacles": {
+                "msg": "mapupdates.msg.NewObstacles",
+                "type": "publisher"
+            }
+        }
     }
 }
