@@ -1,38 +1,26 @@
 {
-	"map":{
-		"topics": {
-			"realtopology": {
-				"msg": "maptogridmap.msg.Gridmap",
-				"type": "subscriber"
-			},
-			"realmap": {
-				"msg": "nav_msgs.msg.OccupancyGrid",
-				"type": "subscriber"
-			},
-			"nodes": {
-				"msg": "maptogridmap.msg.Nodes",
-				"type": "subscriber"
-			},
-			"edges": {
-				"msg": "maptogridmap.msg.Edges",
-				"type": "subscriber"
-			},
-			"do_serve": {
-				"msg": "std_msgs.msg.Bool",
-				"type": "publisher"
-			}
-		}
-	},
-	"robot_0":{
-		"topics": {
-			"pose_channel": {
-				"msg": "geometry_msgs.msg.PoseWithCovarianceStamped",
-				"type": "subscriber"
-			},
-			"newObstacles": {
-				"msg": "mapupdates.msg.NewObstacles",
-				"type": "subscriber"
-			}
-		}
-	}
+    "map":{
+        "topics": {
+            "nodes": {
+                "msg": "maptogridmap.msg.Nodes",
+                "type": "subscriber"
+            },
+            "graph": {
+                "msg": "maptogridmap.msg.Graph",
+                "type": "subscriber"
+            },
+            "edges": {
+                "msg": "maptogridmap.msg.Edges",
+                "type": "subscriber"
+            }
+        }
+    },
+    "robot_0":{
+        "topics": {
+            "newObstacles": {
+                "msg": "mapupdates.msg.NewObstacles",
+                "type": "publisher"
+            }
+        }
+    }
 }

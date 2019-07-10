@@ -1,9 +1,10 @@
 {
     "map": {
-        "subscriber": ["realtopology","nodes","realmap","edges"],
-        "publisher": ["do_serve"]
+        "subscriber": ["nodes","edges","graph"],
+        "publisher": []
     },
     "robot_0": {
-        "subscriber": ["pose_channel","newObstacles"]
+        "subscriber": [],
+        "publisher": ["newObstacles"]
     }
 }
