@@ -1,9 +1,9 @@
 {
     "map": {
-        "publisher": ["nodes","edges"],
+        "publisher": ["graph"],
         "subscriber": []
     },
     "robot_0": {
-        "publisher": ["pose_channel"]
+        "publisher": ["pose_channel","newObstacles"]
     }
 }

@@ -1,23 +1,21 @@
 {
    "map":{
        "topics": {
-            	"nodes": {
-                	"msg": "maptogridmap.msg.Nodes",
-                	"type": "publisher"
-
-            	},
-            	"edges": {
-                	"msg": "maptogridmap.msg.Edges",
-                	"type": "publisher"
-
-            	}
+	            "graph": {
+	                "msg": "maptogridmap.msg.Graph",
+	                "type": "publisher"
+	            }
        }
-   }
+   },
    "robot_0":{
        "topics": {
             	"pose_channel": {
                 		"msg": "geometry_msgs.msg.PoseWithCovarianceStamped",
                 		"type": "publisher"
+            	},
+            	"newObstacles": {
+                	"msg": "mapupdates.msg.NewObstacles",
+                	"type": "publisher"
             	}
        }
    }

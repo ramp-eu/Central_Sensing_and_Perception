@@ -2,7 +2,7 @@
 
     <node name="mapup" pkg="mapupdates" type="mapup" output="screen" args="0" >
         <param name="cell_size" type="double" value="0.1" />
-        <param name="laser_inverted" type="bool" value="1" />
+        <param name="laser_inverted" type="bool" value="0" />
         <param name="scan_topic" value="/base_scan" />
     </node>
 
