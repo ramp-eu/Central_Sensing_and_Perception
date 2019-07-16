@@ -5,6 +5,6 @@
     },
     "robot_0": {
         "subscriber": [],
-        "publisher": ["newObstacles"]
+        "publisher": ["pose_channel","newObstacles"]
     }
 }

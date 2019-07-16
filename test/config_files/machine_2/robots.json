@@ -1,4 +1,20 @@
 {
+    "map":{
+        "topics": {
+            "nodes": {
+                "msg": "maptogridmap.msg.Nodes",
+                "type": "publisher"
+            },
+            "graph": {
+                "msg": "maptogridmap.msg.Graph",
+                "type": "publisher"
+            },
+            "edges": {
+                "msg": "maptogridmap.msg.Edges",
+                "type": "publisher"
+            }
+        }
+    },
 	"robot_0":{
 		"topics": {
 			"pose_channel": {
