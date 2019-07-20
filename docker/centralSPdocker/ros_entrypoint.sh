@@ -9,7 +9,27 @@ sed -e "s/LOCALHOST/$HOST/g" -e "s/FIWAREHOST/$FIWAREHOST/g" -e "s/NETINTERFACE/
 source "/opt/ros/$ROS_DISTRO/setup.bash"
 source "/root/catkin_ws/devel/setup.sh"
 
-exec roslaunch maptogridmap topology.launch
+FILEANNOT=/annotations.ini
+if test -f "$FILEANNOT"; then
+	cp annotations.ini /root/catkin_ws/src/maptogridmap/launch/
+fi
+FILETOP=/topology.launch
+if test -f "$FILETOP"; then
+	cp topology.launch /root/catkin_ws/src/maptogridmap/launch/
+fi
+FILEPNG=/map.png
+FILEYML=/map.yaml
+if test -f "$FILEPNG"; then
+	cp map.png /root/catkin_ws/src/maptogridmap/launch/
+	if test -f "$FILEYML"; then
+		cp map.yaml /root/catkin_ws/src/maptogridmap/launch/
+		exec roslaunch maptogridmap topology.launch
+	fi
+fi
 
+echo "please insert a floorplan.png and floorplan.yaml file to begin!"
+echo "in your docker-compose.yml put under volumes:"
+echo "            - ./floorplan.yaml:/map.yaml:ro"
+echo "            - ./floorplan.png:/map.png:ro"
 
 exec  "$@"

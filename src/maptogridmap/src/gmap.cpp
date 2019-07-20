@@ -98,11 +98,15 @@ void GridMapCell::createEdges(){
                   			I_point point;
 					        point.y=j+rofs[d];
 					        point.x=i+cofs[d];
-					        if (point.x>0 && point.y>0 && point.x<MapSizeX && point.y<MapSizeY){
+					        if (point.x>=0 && point.y>=0 && point.x<MapSizeX && point.y<MapSizeY){
 					        	if ((map[point.x][point.y].occupancy==0)&&(map[point.x][point.y].visited==0)){
 					        		edge.xg=point.x;
 					        		edge.yg=point.y;
-                            		edges.push_back(edge);
+//					        		if ((fabs(map[edge.xs][edge.ys].x-map[point.x][point.y].x)<size_cell/2) && (fabs(map[edge.xs][edge.ys].y-map[point.x][point.y].y)<size_cell/2)){
+//										printf("slicni su (%f,%f) (%f,%f)\n",map[edge.xs][edge.ys].x,map[edge.xs][edge.ys].y,map[edge.xg][edge.yg].x,map[edge.xg][edge.yg].y);
+//					        		}else{
+                            			edges.push_back(edge);
+//                            		}
                             	
                          		}
                          	}

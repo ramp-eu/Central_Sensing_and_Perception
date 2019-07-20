@@ -375,7 +375,6 @@ int main(int argc, char** argv)
 			}
 	}
 //	GMC->spanningTree(13,13);
-	GMC->createEdges();
 	
 	//read annotations from file
 	readAnnotations(annotation_file);
@@ -399,7 +398,7 @@ int main(int argc, char** argv)
   graph.header=gm.header;
 	map_resp_.map.header=gm.header;
   map_resp_.map.info=gm.info;
-  double tempx,tempy;
+  double tempx,tempy,midx,midy,thirdx,thirdy;
   geometry_msgs::Point p;
 			for (int i=0; i<sizex; i++){
 				for (int j=0; j<sizey; j++){
@@ -410,14 +409,25 @@ int main(int argc, char** argv)
             if (gmap[i][j].occupancy==0){
             	for (int k=0; k<annotations.x.size(); k++){
             			tempx = annotations.x[k]-annotations.distance[k]*cos(annotations.theta[k]*M_PI/180.);
-									tempy = annotations.y[k]-annotations.distance[k]*sin(annotations.theta[k]*M_PI/180.);
+						tempy = annotations.y[k]-annotations.distance[k]*sin(annotations.theta[k]*M_PI/180.);
+            			midx = annotations.x[k]-0.4*annotations.distance[k]*cos(annotations.theta[k]*M_PI/180.);
+						midy = annotations.y[k]-0.4*annotations.distance[k]*sin(annotations.theta[k]*M_PI/180.);
+            			thirdx = annotations.x[k]-0.7*annotations.distance[k]*cos(annotations.theta[k]*M_PI/180.);
+						thirdy = annotations.y[k]-0.7*annotations.distance[k]*sin(annotations.theta[k]*M_PI/180.);
 
-            		if ((fabs(tempx-gmap[i][j].x)<=cellsize/2) && (fabs(tempy-gmap[i][j].y)<=cellsize/2)){
+            		if ( ((fabs(tempx-gmap[i][j].x)<=cellsize/2) && (fabs(tempy-gmap[i][j].y)<=cellsize/2)) || ((fabs(midx-gmap[i][j].x)<=cellsize/2) && (fabs(midy-gmap[i][j].y)<=cellsize/2)) || ((fabs(thirdx-gmap[i][j].x)<=cellsize/2) && (fabs(thirdy-gmap[i][j].y)<=cellsize/2))){
+            			if ((fabs(tempx-gmap[i][j].x)>cellsize/2) || (fabs(tempy-gmap[i][j].y)>cellsize/2)){
+            				gmap[i][j].occupancy=1;
+            				continue;
+            			}
             			gmap[i][j].x=tempx;
             			gmap[i][j].y=tempy;
             			gmap[i][j].theta=annotations.theta[k];
             			gmap[i][j].name=annotations.name[k];
             		}
+            	}
+            	if (gmap[i][j].occupancy){
+            		continue;
             	}
             	gmnode.x.push_back(gmap[i][j].x);
             	gmnode.y.push_back(gmap[i][j].y);
@@ -429,12 +439,12 @@ int main(int argc, char** argv)
             	vertex.theta=gmap[i][j].theta;
             	vertex.name=gmap[i][j].name;
             	vertex.uuid=gmap[i][j].uuid;
-            	vertex.footprint.clear();
-            	for (int d=0; d<4; d++){
-            		p.x=vertex.x+cellsize/2.*xofs[d];
-            		p.y=vertex.y+cellsize/2.*yofs[d];
-            		vertex.footprint.push_back(p);
-            	}
+//            	vertex.footprint.clear();
+//            	for (int d=0; d<4; d++){
+//            		p.x=vertex.x+cellsize/2.*xofs[d];
+//            		p.y=vertex.y+cellsize/2.*yofs[d];
+//            		vertex.footprint.push_back(p);
+//            	}
             	graph.vertices.push_back(vertex);
             }
            	gmcell.x=gmap[i][j].x;
@@ -444,6 +454,10 @@ int main(int argc, char** argv)
 					}
 				}
 			}
+
+			GMC->createEdges();
+//			std::cout << GMC->edges.size() <<std::endl;
+
 			for(int i=0; i<GMC->edges.size(); i++){
 				gmedge.uuid_src.push_back(gmap[GMC->edges[i].xs][GMC->edges[i].ys].uuid);
 				gmedge.uuid_dest.push_back(gmap[GMC->edges[i].xg][GMC->edges[i].yg].uuid);
@@ -536,12 +550,12 @@ int main(int argc, char** argv)
 							vertex.theta=gmap[i][j].theta;
 							vertex.name=gmap[i][j].name;
 							vertex.uuid=gmap[i][j].uuid;
-							vertex.footprint.clear();
-							for (int d=0; d<4; d++){
-								p.x=vertex.x+cellsize/2.*xofs[d];
-								p.y=vertex.y+cellsize/2.*yofs[d];
-								vertex.footprint.push_back(p);
-							}
+//							vertex.footprint.clear();
+//							for (int d=0; d<4; d++){
+//								p.x=vertex.x+cellsize/2.*xofs[d];
+//								p.y=vertex.y+cellsize/2.*yofs[d];
+//								vertex.footprint.push_back(p);
+//							}
 							graph.vertices.push_back(vertex);
 				        }
 						}

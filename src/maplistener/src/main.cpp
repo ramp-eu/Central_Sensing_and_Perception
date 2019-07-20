@@ -28,7 +28,7 @@ public:
  	ros::Subscriber gml_sub, nodes_sub, edges_sub, newobs_sub, graph_sub;
 
 
-    visualization_msgs::Marker gridmapls, graphvs, stc, glp, footprint;
+    visualization_msgs::Marker gridmapls, graphvs, stc, glp, graphvertex;
 
   VisualizationPublisherGML(ros::NodeHandle n) :
       nh_(n),  target_frame_("map") 
@@ -84,20 +84,20 @@ public:
     graphvs.color.b = 0.8;
     graphvs.color.a = 1.0;
     
-	graph_pub=nh_.advertise<visualization_msgs::Marker>("/footprint_markerListener",10);
+	graph_pub=nh_.advertise<visualization_msgs::Marker>("/graph_markerListener",10);
 
-    footprint.header.frame_id = target_frame_;
-    footprint.header.stamp = ros::Time::now();
-    footprint.ns =  "maplistener";
-    footprint.action = visualization_msgs::Marker::ADD;
-    footprint.pose.orientation.w  = 1.0;
-    footprint.type = visualization_msgs::Marker::LINE_LIST;
-    footprint.scale.x = 0.05; 
-    footprint.scale.y = 0.05; 
-    footprint.color.r = 0.2;
-    footprint.color.g = 0.8;
-    footprint.color.b = 0.8;
-    footprint.color.a = 1.0;
+    graphvertex.header.frame_id = target_frame_;
+    graphvertex.header.stamp = ros::Time::now();
+    graphvertex.ns =  "maplistener";
+    graphvertex.action = visualization_msgs::Marker::ADD;
+    graphvertex.pose.orientation.w  = 1.0;
+    graphvertex.type = visualization_msgs::Marker::POINTS;
+    graphvertex.scale.x = 0.25; 
+    graphvertex.scale.y = 0.25; 
+    graphvertex.color.r = 0.2;
+    graphvertex.color.g = 0.8;
+    graphvertex.color.b = 0.8;
+    graphvertex.color.a = 1.0;
 
   	stc_pub=nh_.advertise<visualization_msgs::Marker>("/edges_markerListener",10);
 
@@ -158,7 +158,7 @@ void VisualizationPublisherGML::visualizationduringmotion(){
 			graphvs_pub.publish(graphvs);
 			globalpoints_pub.publish(glp);
 			stc_pub.publish(stc);
-			graph_pub.publish(footprint);
+			graph_pub.publish(graphvertex);
 
 
 }
@@ -184,22 +184,12 @@ void VisualizationPublisherGML::gridmapCallback(const maptogridmap::GridmapConst
 
 void VisualizationPublisherGML::graphCallback(const maptogridmap::GraphConstPtr& gmMsg)
 {
-  footprint.points.clear();
+  graphvertex.points.clear();
   geometry_msgs::Point p; 
 	for (int i=0; i<gmMsg->vertices.size(); i++){
-		for (int d=0; d<4;d++){
-			p.x=gmMsg->vertices[i].footprint[d].x;
-			p.y=gmMsg->vertices[i].footprint[d].y;
-			footprint.points.push_back(p);
-			if (d<3){
-			p.x=gmMsg->vertices[i].footprint[d+1].x;
-			p.y=gmMsg->vertices[i].footprint[d+1].y;
-			footprint.points.push_back(p);
-			}
-		}
-		p.x=gmMsg->vertices[i].footprint[0].x;
-		p.y=gmMsg->vertices[i].footprint[0].y;
-		footprint.points.push_back(p);
+		p.x=gmMsg->vertices[i].x;
+		p.y=gmMsg->vertices[i].y;
+		graphvertex.points.push_back(p);
 	}
 }
 

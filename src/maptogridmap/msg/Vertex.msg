@@ -5,5 +5,5 @@ float64 y
 float64 theta
 string name
 string uuid
-geometry_msgs/Point[] footprint
+#geometry_msgs/Point[] footprint
 
