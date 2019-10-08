@@ -424,6 +424,8 @@ int main(int argc, char** argv)
             			gmap[i][j].y=tempy;
             			gmap[i][j].theta=annotations.theta[k];
             			gmap[i][j].name=annotations.name[k];
+            			uuid lUUID = lUUIDNameGen(gmap[i][j].name);
+						gmap[i][j].uuid=to_string(lUUID);
             		}
             	}
             	if (gmap[i][j].occupancy){
