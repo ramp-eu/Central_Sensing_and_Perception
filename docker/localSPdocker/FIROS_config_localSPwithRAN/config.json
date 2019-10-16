@@ -2,7 +2,6 @@
   "environment": "fof_lab",
 
   "fof_lab": {
-  	"context_type": "CentralSP",
     "server": {
         "address"   : "splocal",
         "port"      : 10100

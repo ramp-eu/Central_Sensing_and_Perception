@@ -349,7 +349,7 @@ int main(int argc, char** argv)
 //  std::cout << lUUIDNameGen(dns_namespace_uuid)<<std::endl;
   std::cout << string_generator()("6ba7b810-9dad-11d1-80b4-00c04fd430c8") <<std::endl;
   std::cout << lUUIDNameGen("vertex_0")<<std::endl;
-  GMC = new GridMapCell(sizex, sizey, cellsize);
+  GMC = new GridMapCell(sizex, sizey, cellsize, xorigin, yorigin);
 	int ii,jj;
 	GMcell **gmap=GMC->GetMap();
 	for (int j=0; j < width; j++)
@@ -415,6 +415,12 @@ int main(int argc, char** argv)
             			thirdx = annotations.x[k]-0.7*annotations.distance[k]*cos(annotations.theta[k]*M_PI/180.);
 						thirdy = annotations.y[k]-0.7*annotations.distance[k]*sin(annotations.theta[k]*M_PI/180.);
 
+        			if (((fabs(tempx-gmap[i][j].x)<=cellsize) && (fabs(tempy-gmap[i][j].y)<=cellsize)) && ((fabs(tempx-gmap[i][j].x)>cellsize/2) || (fabs(tempy-gmap[i][j].y)>cellsize/2)))
+        			{
+        				gmap[i][j].x=tempx;
+        				gmap[i][j].y=tempy;
+        				continue;
+        			}
             		if ( ((fabs(tempx-gmap[i][j].x)<=cellsize/2) && (fabs(tempy-gmap[i][j].y)<=cellsize/2)) || ((fabs(midx-gmap[i][j].x)<=cellsize/2) && (fabs(midy-gmap[i][j].y)<=cellsize/2)) || ((fabs(thirdx-gmap[i][j].x)<=cellsize/2) && (fabs(thirdy-gmap[i][j].y)<=cellsize/2))){
             			if ((fabs(tempx-gmap[i][j].x)>cellsize/2) || (fabs(tempy-gmap[i][j].y)>cellsize/2)){
             				gmap[i][j].occupancy=1;
@@ -429,6 +435,9 @@ int main(int argc, char** argv)
             		}
             	}
             	if (gmap[i][j].occupancy){
+            		continue;
+            	}
+            	if (i!=floor((gmap[i][j].x-xorigin)/cellsize) || j!=floor((gmap[i][j].y-yorigin)/cellsize)){
             		continue;
             	}
             	gmnode.x.push_back(gmap[i][j].x);
@@ -459,6 +468,7 @@ int main(int argc, char** argv)
 
 			GMC->createEdges();
 //			std::cout << GMC->edges.size() <<std::endl;
+			std::cout << graph.vertices.size() <<std::endl;
 
 			for(int i=0; i<GMC->edges.size(); i++){
 				gmedge.uuid_src.push_back(gmap[GMC->edges[i].xs][GMC->edges[i].ys].uuid);
@@ -473,6 +483,7 @@ int main(int argc, char** argv)
 				gmedge.name.push_back(edge.name);
 				graph.edges.push_back(edge);
 			}
+	std::cout << graph.edges.size() <<std::endl;
 	gmap_pub.publish(gm);
 	nodes_pub.publish(gmnode);
 	edges_pub.publish(gmedge);

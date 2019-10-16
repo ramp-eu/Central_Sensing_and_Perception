@@ -77,6 +77,8 @@ class GridMapCell{
 
 	int MapSizeX, MapSizeY;
 	double size_cell;
+	double xorigin;
+	double yorigin;
 
   
   GMcell **map;
@@ -93,11 +95,13 @@ class GridMapCell{
    void spanningTree(int r, int c);
    void createEdges();
 
-  GridMapCell(int size_x, int size_y, int cellsize)
+  GridMapCell(int size_x, int size_y, double cellsize, double xo, double yo)
   {
           if(size_x>0 && size_y>0)
           {
           		size_cell=cellsize;
+          		xorigin=xo;
+          		yorigin=yo;
               MapSizeX=size_x; MapSizeY=size_y;
               map = (GMcell **)malloc(size_x*sizeof(GMcell *)) ;
                for (int i=0; i<size_x; i++)
