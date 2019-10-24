@@ -410,13 +410,13 @@ int main(int argc, char** argv)
             	for (int k=0; k<annotations.x.size(); k++){
             			tempx = annotations.x[k]-annotations.distance[k]*cos(annotations.theta[k]*M_PI/180.);
 						tempy = annotations.y[k]-annotations.distance[k]*sin(annotations.theta[k]*M_PI/180.);
-            			midx = annotations.x[k]-0.4*annotations.distance[k]*cos(annotations.theta[k]*M_PI/180.);
-						midy = annotations.y[k]-0.4*annotations.distance[k]*sin(annotations.theta[k]*M_PI/180.);
+            			midx = annotations.x[k]-0.2*annotations.distance[k]*cos(annotations.theta[k]*M_PI/180.);
+						midy = annotations.y[k]-0.2*annotations.distance[k]*sin(annotations.theta[k]*M_PI/180.);
             			thirdx = annotations.x[k]-0.7*annotations.distance[k]*cos(annotations.theta[k]*M_PI/180.);
 						thirdy = annotations.y[k]-0.7*annotations.distance[k]*sin(annotations.theta[k]*M_PI/180.);
 
         			if (((fabs(tempx-gmap[i][j].x)<=cellsize) && (fabs(tempy-gmap[i][j].y)<=cellsize)) && ((fabs(tempx-gmap[i][j].x)>cellsize/2) || (fabs(tempy-gmap[i][j].y)>cellsize/2)))
-        			{
+        			{//neighbor cell to annotation cell
         				gmap[i][j].x=tempx;
         				gmap[i][j].y=tempy;
         				continue;

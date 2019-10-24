@@ -108,13 +108,16 @@ void GridMapCell::createEdges(){
 									js=floor((map[edge.xs][edge.ys].y-yorigin)/size_cell);
 									ig=floor((map[edge.xg][edge.yg].x-xorigin)/size_cell);
 									jg=floor((map[edge.xg][edge.yg].y-yorigin)/size_cell);
+									if (is>=0 && js>=0 && is<MapSizeX && js<MapSizeY && ig>=0 && jg>=0 && ig<MapSizeX && jg<MapSizeY){
+//									printf("realne koordinate (%f,%f) (%f,%f)\n",map[edge.xs][edge.ys].x,map[edge.xs][edge.ys].y,map[edge.xg][edge.yg].x,map[edge.xg][edge.yg].y);
+//									printf("provjera indeksa iz realnih koordinata (%d,%d) (%d,%d)\n",is,js,ig,jg);
 					        		if ((fabs(map[edge.xs][edge.ys].x-map[point.x][point.y].x)<size_cell/2) && (fabs(map[edge.xs][edge.ys].y-map[point.x][point.y].y)<size_cell/2)){
 //										printf("slicni su (%f,%f) (%f,%f)\n",map[edge.xs][edge.ys].x,map[edge.xs][edge.ys].y,map[edge.xg][edge.yg].x,map[edge.xg][edge.yg].y);
 //										printf("indeks u gridmapi (%d,%d) (%d,%d)\n",edge.xs,edge.ys,edge.xg,edge.yg);
 //										printf("provjera indeksa iz realnih koordinata (%d,%d) (%d,%d)\n",is,js,ig,jg);
 					        		}else{
 					        		
-										if (is!=edge.xs || js!=edge.ys || ig!=edge.xg || jg!=edge.yg){
+										if ((is!=edge.xs || js!=edge.ys || ig!=edge.xg || jg!=edge.yg) && (map[is][js].occupancy==0) && (map[ig][jg].occupancy==0)) {
 //											printf("\n\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAa\n");
 //											printf("realne koordinate (%f,%f) (%f,%f)\n",map[edge.xs][edge.ys].x,map[edge.xs][edge.ys].y,map[edge.xg][edge.yg].x,map[edge.xg][edge.yg].y);
 //											printf("indeks u gridmapi (%d,%d) (%d,%d)\n",edge.xs,edge.ys,edge.xg,edge.yg);
@@ -125,6 +128,7 @@ void GridMapCell::createEdges(){
 											edge.yg=jg;
 					        			}
                             			edges.push_back(edge);
+                            		}
                             		}
                             	
                          		}
