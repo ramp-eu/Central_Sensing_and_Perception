@@ -4,6 +4,10 @@
             "graph": {
                 "msg": "maptogridmap.msg.Graph",
                 "type": "subscriber"
+            },
+            "annotations": {
+                "msg": "maptogridmap.msg.Annotations",
+                "type": "subscriber"
             }
         }
     },

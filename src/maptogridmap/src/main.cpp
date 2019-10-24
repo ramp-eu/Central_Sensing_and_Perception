@@ -203,6 +203,8 @@ void readAnnotations(std::string annotation_file)
 			if (word != NULL){
 //				std::cout << word <<std::endl;
 				annotations.name.push_back(word);
+				uuid lUUID = lUUIDNameGen(word);
+				annotations.uuid.push_back(to_string(lUUID));
 				continue;
 			}
 		}
@@ -318,6 +320,7 @@ int main(int argc, char** argv)
   ros::Publisher graph_pub = nh.advertise<maptogridmap::Graph>("map/graph",1);
   ros::Publisher nodes_pub = nh.advertise<maptogridmap::Nodes>("map/nodes",1);
   ros::Publisher edges_pub = nh.advertise<maptogridmap::Edges>("map/edges",1);
+  ros::Publisher annotation_pub = nh.advertise<maptogridmap::Annotations>("map/annotations",1);
   ros::Subscriber gmu_sub = nh.subscribe("/robot_0/newObstacles",1,newObstaclesCallback);
   ros::Subscriber gmu_sub1 = nh.subscribe("/robot_1/newObstacles",1,newObstaclesCallback1);
   ros::Subscriber gmu_sub2 = nh.subscribe("/robot_2/newObstacles",1,newObstaclesCallback2);
@@ -430,8 +433,9 @@ int main(int argc, char** argv)
             			gmap[i][j].y=tempy;
             			gmap[i][j].theta=annotations.theta[k];
             			gmap[i][j].name=annotations.name[k];
-            			uuid lUUID = lUUIDNameGen(gmap[i][j].name);
-						gmap[i][j].uuid=to_string(lUUID);
+//            			uuid lUUID = lUUIDNameGen(gmap[i][j].name);
+						gmap[i][j].uuid=annotations.uuid[k]; //to_string(lUUID);
+//						std::cout << gmap[i][j].uuid <<std::endl;
             		}
             	}
             	if (gmap[i][j].occupancy){
@@ -488,6 +492,7 @@ int main(int argc, char** argv)
 	nodes_pub.publish(gmnode);
 	edges_pub.publish(gmedge);
 	graph_pub.publish(graph);
+	annotation_pub.publish(annotations);
 	//map_resp_.map.gmc=gm.gmc;
 //	std::cout << gm <<std::endl;
 
@@ -601,6 +606,7 @@ int main(int argc, char** argv)
 		nodes_pub.publish(gmnode);
 		edges_pub.publish(gmedge);
 		graph_pub.publish(graph);
+		annotation_pub.publish(annotations);
 
     ros::spinOnce(); 
 

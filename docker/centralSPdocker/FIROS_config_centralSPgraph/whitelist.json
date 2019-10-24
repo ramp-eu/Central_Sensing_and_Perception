@@ -1,6 +1,6 @@
 {
     "map": {
-        "subscriber": ["graph"],
+        "subscriber": ["graph","annotations"],
         "publisher": []
     },
     "robot_0": {
