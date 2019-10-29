@@ -209,18 +209,25 @@ int main(int argc, char** argv)
 		    gmobstacles.y.clear();
 				gmobstacles.header.stamp = ros::Time::now();
 				gmobstacles.header.frame_id = "map";
+				for (int i=0; i<sizex; i++){
+						for (int j=0; j<sizey; j++){
+								if ((gmap[i][j].staticcell==false) && (gmap[i][j].occupancy>0)){
+									gmap[i][j].occupancy=gmap[i][j].occupancy-1;
+								}
+						}
+				}
 				for(int i = 0; i<pointx.size(); i++){
 					ii=(int)floor((pointx[i]-xorigin)/cellsize);
 					jj=(int)floor((pointy[i]-yorigin)/cellsize);
 					if (ii>0 && jj>0 && ii<sizex && jj<sizey){
 			//			if ((gmap[ii][jj].occupancy==0) && (gmap[ii][jj].visited!=cycle_number))
-						if ((gmap[ii][jj].occupancy==0))
+						if ((gmap[ii][jj].occupancy<=50))
 						{
 			//				std::cout <<pointx[i]<<" "<<pointy[i]<<std::endl;
 							gmobstacles.x.push_back(gmap[ii][jj].x);
 							gmobstacles.y.push_back(gmap[ii][jj].y);
 			//				gmap[ii][jj].visited = cycle_number;
-							gmap[ii][jj].occupancy = 1;
+							gmap[ii][jj].occupancy = 100;
 						}
 					}	
 				}

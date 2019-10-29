@@ -410,6 +410,7 @@ int main(int argc, char** argv)
   map_resp_.map.info=gm.info;
   double tempx,tempy,midx,midy,thirdx,thirdy;
   geometry_msgs::Point p;
+  int is,js;
 			for (int i=0; i<sizex; i++){
 				for (int j=0; j<sizey; j++){
 					if (1){
@@ -425,6 +426,11 @@ int main(int argc, char** argv)
             			thirdx = annotations.annotations[k].x-0.7*annotations.annotations[k].distance*cos(annotations.annotations[k].theta*M_PI/180.);
 						thirdy = annotations.annotations[k].y-0.7*annotations.annotations[k].distance*sin(annotations.annotations[k].theta*M_PI/180.);
 
+        				is=floor((tempx-xorigin)/cellsize);
+						js=floor((tempy-yorigin)/cellsize);
+						if (is>=0 && js>=0 && is<sizex && js<sizey){
+							if (gmap[is][js].occupancy==0){
+							
         			if (((fabs(tempx-gmap[i][j].x)<=cellsize) && (fabs(tempy-gmap[i][j].y)<=cellsize)) && ((fabs(tempx-gmap[i][j].x)>cellsize/2) || (fabs(tempy-gmap[i][j].y)>cellsize/2)))
         			{//neighbor cell to annotation cell
         				gmap[i][j].x=tempx;
@@ -434,6 +440,7 @@ int main(int argc, char** argv)
             		if ( ((fabs(tempx-gmap[i][j].x)<=cellsize/2) && (fabs(tempy-gmap[i][j].y)<=cellsize/2)) || ((fabs(midx-gmap[i][j].x)<=cellsize/2) && (fabs(midy-gmap[i][j].y)<=cellsize/2)) || ((fabs(thirdx-gmap[i][j].x)<=cellsize/2) && (fabs(thirdy-gmap[i][j].y)<=cellsize/2))){
             			if ((fabs(tempx-gmap[i][j].x)>cellsize/2) || (fabs(tempy-gmap[i][j].y)>cellsize/2)){
             				gmap[i][j].occupancy=1;
+            				gmap[i][j].staticcell=true;
             				continue;
             			}
             			gmap[i][j].x=tempx;
@@ -444,6 +451,8 @@ int main(int argc, char** argv)
 						gmap[i][j].uuid=annotations.annotations[k].uuid; //to_string(lUUID);
 //						std::cout << gmap[i][j].uuid <<std::endl;
             		}
+							}
+						}
             	}
             	if (gmap[i][j].occupancy){
             		continue;
@@ -515,10 +524,10 @@ int main(int argc, char** argv)
 			jj=(int)floor((obstacles.y[i]-yorigin)/cellsize);
 			if (ii>0 && jj>0 && ii<sizex && jj<sizey){
 	//			if ((gmap[ii][jj].occupancy==0) && (gmap[ii][jj].visited!=cycle_number))
-				if ((gmap[ii][jj].occupancy==0))
+				if ((gmap[ii][jj].occupancy<=50))
 				{
 	//				std::cout <<pointx[i]<<" "<<pointy[i]<<std::endl;
-					gmap[ii][jj].occupancy = 1;
+					gmap[ii][jj].occupancy = 100;
 					gm.occupancy[ii*sizey+jj] = 1;
 					update_nodes_edges = 1;
 				}
@@ -529,10 +538,10 @@ int main(int argc, char** argv)
 			jj=(int)floor((obstacles1.y[i]-yorigin)/cellsize);
 			if (ii>0 && jj>0 && ii<sizex && jj<sizey){
 	//			if ((gmap[ii][jj].occupancy==0) && (gmap[ii][jj].visited!=cycle_number))
-				if ((gmap[ii][jj].occupancy==0))
+				if ((gmap[ii][jj].occupancy<=50))
 				{
 	//				std::cout <<pointx[i]<<" "<<pointy[i]<<std::endl;
-					gmap[ii][jj].occupancy = 1;
+					gmap[ii][jj].occupancy = 100;
 					gm.occupancy[ii*sizey+jj] = 1;
 					update_nodes_edges = 1;
 				}
@@ -543,14 +552,24 @@ int main(int argc, char** argv)
 			jj=(int)floor((obstacles2.y[i]-yorigin)/cellsize);
 			if (ii>0 && jj>0 && ii<sizex && jj<sizey){
 	//			if ((gmap[ii][jj].occupancy==0) && (gmap[ii][jj].visited!=cycle_number))
-				if ((gmap[ii][jj].occupancy==0))
+				if ((gmap[ii][jj].occupancy<=50))
 				{
 	//				std::cout <<pointx[i]<<" "<<pointy[i]<<std::endl;
-					gmap[ii][jj].occupancy = 1;
+					gmap[ii][jj].occupancy = 100;
 					gm.occupancy[ii*sizey+jj] = 1;
 					update_nodes_edges = 1;
 				}
 			}	
+		}
+
+		for (int i=0; i<sizex; i++){
+						for (int j=0; j<sizey; j++){
+								if ((gmap[i][j].staticcell==false) && (gmap[i][j].occupancy>0)){
+									gmap[i][j].occupancy=gmap[i][j].occupancy-1;
+									if (gmap[i][j].occupancy==0)
+										update_nodes_edges = 1;
+								}
+						}
 		}
 
 		if (update_nodes_edges){
