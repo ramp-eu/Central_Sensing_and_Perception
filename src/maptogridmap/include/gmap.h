@@ -15,6 +15,7 @@
 #include <maptogridmap/Vertex.h>
 #include <maptogridmap/Graph.h>
 #include <maptogridmap/Annotations.h>
+#include <maptogridmap/Annotation.h>
 #include <mapupdates/NewObstacles.h>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid.hpp>

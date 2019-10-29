@@ -3,11 +3,11 @@
 
 Header header 
 
+Annotation[] annotations
 
-# The map data, in row-major order, starting with (0,0).
-float64[] x
-float64[] y
-float64[] theta
-float64[] distance
-string[] name
-string[] uuid
+#float64[] x
+#float64[] y
+#float64[] theta
+#float64[] distance
+#string[] name
+#string[] uuid

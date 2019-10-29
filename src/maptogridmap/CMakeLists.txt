@@ -25,6 +25,7 @@ add_message_files(
   Nodes.msg
   Edges.msg
   Annotations.msg
+  Annotation.msg
   Vertex.msg
   Edge.msg
   Graph.msg

@@ -175,7 +175,7 @@ void readAnnotations(std::string annotation_file)
 	char rdLine[36]="";
 	char *line;
 	char *word;
-
+	maptogridmap::Annotation annt;
 	char * cstr = new char [annotation_file.length()+1];
   std::strcpy (cstr, annotation_file.c_str());
   char * p = strsep (&cstr,"\n");
@@ -202,9 +202,11 @@ void readAnnotations(std::string annotation_file)
 			word = &word[1];
 			if (word != NULL){
 //				std::cout << word <<std::endl;
-				annotations.name.push_back(word);
+				annt.name=word;
+//				annotations.name.push_back(word);
 				uuid lUUID = lUUIDNameGen(word);
-				annotations.uuid.push_back(to_string(lUUID));
+				annt.uuid=to_string(lUUID);
+//				annotations.uuid.push_back(to_string(lUUID));
 				continue;
 			}
 		}
@@ -219,32 +221,37 @@ void readAnnotations(std::string annotation_file)
 				word = strtok (NULL," ");
 				if (word!= NULL){
 //					std::cout << word <<std::endl;
-					annotations.x.push_back(atof(word));
+//					annotations.x.push_back(atof(word));
+					annt.x=(atof(word));
 				}
 			}
 			if (strcmp(word,"point_y ")==0){
 				word = strtok (NULL," ");
 				if (word!= NULL){
 //					std::cout << word <<std::endl;
-					annotations.y.push_back(atof(word));
+//					annotations.y.push_back(atof(word));
+					annt.y=(atof(word));
 				}
 			}
 			if (strcmp(word,"theta ")==0){
 				word = strtok (NULL," ");
 				if (word!= NULL){
 //					std::cout << word <<std::endl;
-					annotations.theta.push_back(atof(word));
+//					annotations.theta.push_back(atof(word));
+					annt.theta=(atof(word));
 				}
 			}
 			if (strcmp(word,"distance ")==0){
 				word = strtok (NULL," ");
 				if (word!= NULL){
 //					std::cout << word <<std::endl;
-					annotations.distance.push_back(atof(word));
+//					annotations.distance.push_back(atof(word));
+					annt.distance=(atof(word));
+					annotations.annotations.push_back(annt);
 				}
 			}
 		}    
-		
+
   }
 
 //this stays for debugging when running the code from the devel/lib/maptogridmap	
@@ -410,13 +417,13 @@ int main(int argc, char** argv)
             gm.y.push_back(gmap[i][j].y);
             gm.occupancy.push_back(gmap[i][j].occupancy);
             if (gmap[i][j].occupancy==0){
-            	for (int k=0; k<annotations.x.size(); k++){
-            			tempx = annotations.x[k]-annotations.distance[k]*cos(annotations.theta[k]*M_PI/180.);
-						tempy = annotations.y[k]-annotations.distance[k]*sin(annotations.theta[k]*M_PI/180.);
-            			midx = annotations.x[k]-0.2*annotations.distance[k]*cos(annotations.theta[k]*M_PI/180.);
-						midy = annotations.y[k]-0.2*annotations.distance[k]*sin(annotations.theta[k]*M_PI/180.);
-            			thirdx = annotations.x[k]-0.7*annotations.distance[k]*cos(annotations.theta[k]*M_PI/180.);
-						thirdy = annotations.y[k]-0.7*annotations.distance[k]*sin(annotations.theta[k]*M_PI/180.);
+            	for (int k=0; k<annotations.annotations.size(); k++){
+            			tempx = annotations.annotations[k].x-annotations.annotations[k].distance*cos(annotations.annotations[k].theta*M_PI/180.);
+						tempy = annotations.annotations[k].y-annotations.annotations[k].distance*sin(annotations.annotations[k].theta*M_PI/180.);
+            			midx = annotations.annotations[k].x-0.2*annotations.annotations[k].distance*cos(annotations.annotations[k].theta*M_PI/180.);
+						midy = annotations.annotations[k].y-0.2*annotations.annotations[k].distance*sin(annotations.annotations[k].theta*M_PI/180.);
+            			thirdx = annotations.annotations[k].x-0.7*annotations.annotations[k].distance*cos(annotations.annotations[k].theta*M_PI/180.);
+						thirdy = annotations.annotations[k].y-0.7*annotations.annotations[k].distance*sin(annotations.annotations[k].theta*M_PI/180.);
 
         			if (((fabs(tempx-gmap[i][j].x)<=cellsize) && (fabs(tempy-gmap[i][j].y)<=cellsize)) && ((fabs(tempx-gmap[i][j].x)>cellsize/2) || (fabs(tempy-gmap[i][j].y)>cellsize/2)))
         			{//neighbor cell to annotation cell
@@ -431,10 +438,10 @@ int main(int argc, char** argv)
             			}
             			gmap[i][j].x=tempx;
             			gmap[i][j].y=tempy;
-            			gmap[i][j].theta=annotations.theta[k];
-            			gmap[i][j].name=annotations.name[k];
+            			gmap[i][j].theta=annotations.annotations[k].theta;
+            			gmap[i][j].name=annotations.annotations[k].name;
 //            			uuid lUUID = lUUIDNameGen(gmap[i][j].name);
-						gmap[i][j].uuid=annotations.uuid[k]; //to_string(lUUID);
+						gmap[i][j].uuid=annotations.annotations[k].uuid; //to_string(lUUID);
 //						std::cout << gmap[i][j].uuid <<std::endl;
             		}
             	}
@@ -691,12 +698,12 @@ void VisualizationPublisherGM::visualizationduringmotion(){
 
 			//points from annotations
 			geometry_msgs::Pose pose; 
-			for(int i = 0; i<annotations.x.size(); i++){
-				pose.position.x = annotations.x[i]-annotations.distance[i]*cos(annotations.theta[i]*M_PI/180.);
-				pose.position.y = annotations.y[i]-annotations.distance[i]*sin(annotations.theta[i]*M_PI/180.);
+			for(int i = 0; i<annotations.annotations.size(); i++){
+				pose.position.x = annotations.annotations[i].x-annotations.annotations[i].distance*cos(annotations.annotations[i].theta*M_PI/180.);
+				pose.position.y = annotations.annotations[i].y-annotations.annotations[i].distance*sin(annotations.annotations[i].theta*M_PI/180.);
 				pose.position.z = 0;
-				pose.orientation = tf::createQuaternionMsgFromYaw(annotations.theta[i]*M_PI/180.);
-				annt.scale.x = annotations.distance[i];
+				pose.orientation = tf::createQuaternionMsgFromYaw(annotations.annotations[i].theta*M_PI/180.);
+				annt.scale.x = annotations.annotations[i].distance;
 				annt.pose = pose;
 		    annt.header.stamp = ros::Time::now();
 		    annt.id = i;
