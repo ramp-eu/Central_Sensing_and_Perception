@@ -401,90 +401,157 @@ int main(int argc, char** argv)
 	gm.info.resolution=cellsize;
 	gm.info.map_load_time = ros::Time::now();
 	gm.header.frame_id = "map";
-  gm.header.stamp = ros::Time::now();
-  gmnode.header=gm.header;
-  gmnode.info=gm.info;
-  gmedge.header=gm.header;
-  graph.header=gm.header;
+	gm.header.stamp = ros::Time::now();
+	gmnode.header=gm.header;
+	gmnode.info=gm.info;
+	gmedge.header=gm.header;
+	graph.header=gm.header;
 	map_resp_.map.header=gm.header;
-  map_resp_.map.info=gm.info;
-  double tempx,tempy,midx,midy,thirdx,thirdy;
-  geometry_msgs::Point p;
-  int is,js;
-			for (int i=0; i<sizex; i++){
-				for (int j=0; j<sizey; j++){
-					if (1){
-						gm.x.push_back(gmap[i][j].x);
-            gm.y.push_back(gmap[i][j].y);
-            gm.occupancy.push_back(gmap[i][j].occupancy);
-            if (gmap[i][j].occupancy==0){
-            	for (int k=0; k<annotations.annotations.size(); k++){
-            			tempx = annotations.annotations[k].x-annotations.annotations[k].distance*cos(annotations.annotations[k].theta*M_PI/180.);
-						tempy = annotations.annotations[k].y-annotations.annotations[k].distance*sin(annotations.annotations[k].theta*M_PI/180.);
-            			midx = annotations.annotations[k].x-0.2*annotations.annotations[k].distance*cos(annotations.annotations[k].theta*M_PI/180.);
-						midy = annotations.annotations[k].y-0.2*annotations.annotations[k].distance*sin(annotations.annotations[k].theta*M_PI/180.);
-            			thirdx = annotations.annotations[k].x-0.7*annotations.annotations[k].distance*cos(annotations.annotations[k].theta*M_PI/180.);
-						thirdy = annotations.annotations[k].y-0.7*annotations.annotations[k].distance*sin(annotations.annotations[k].theta*M_PI/180.);
+	map_resp_.map.info=gm.info;
+	double tempx,tempy,midx,midy;
+//  double thirdx,thirdy;
+	geometry_msgs::Point p;
+	int is,js,ig,jg;
+//  double gx,gy;
+  	int rofs[8]={ 0, -1, 0, 1, 1, -1, 1, -1};   
+	int cofs[8]={ 1, 0, -1, 0, 1, 1, -1, -1};
 
-        				is=floor((tempx-xorigin)/cellsize);
-						js=floor((tempy-yorigin)/cellsize);
-						if (is>=0 && js>=0 && is<sizex && js<sizey){
-							if (gmap[is][js].occupancy==0){
-							
-        			if (((fabs(tempx-gmap[i][j].x)<=cellsize) && (fabs(tempy-gmap[i][j].y)<=cellsize)) && ((fabs(tempx-gmap[i][j].x)>cellsize/2) || (fabs(tempy-gmap[i][j].y)>cellsize/2)))
-        			{//neighbor cell to annotation cell
-        				gmap[i][j].x=tempx;
-        				gmap[i][j].y=tempy;
-        				continue;
-        			}
-            		if ( ((fabs(tempx-gmap[i][j].x)<=cellsize/2) && (fabs(tempy-gmap[i][j].y)<=cellsize/2)) || ((fabs(midx-gmap[i][j].x)<=cellsize/2) && (fabs(midy-gmap[i][j].y)<=cellsize/2)) || ((fabs(thirdx-gmap[i][j].x)<=cellsize/2) && (fabs(thirdy-gmap[i][j].y)<=cellsize/2))){
-            			if ((fabs(tempx-gmap[i][j].x)>cellsize/2) || (fabs(tempy-gmap[i][j].y)>cellsize/2)){
-            				gmap[i][j].occupancy=1;
-            				gmap[i][j].staticcell=true;
-            				continue;
-            			}
-            			gmap[i][j].x=tempx;
-            			gmap[i][j].y=tempy;
-            			gmap[i][j].theta=annotations.annotations[k].theta;
-            			gmap[i][j].name=annotations.annotations[k].name;
-//            			uuid lUUID = lUUIDNameGen(gmap[i][j].name);
-						gmap[i][j].uuid=annotations.annotations[k].uuid; //to_string(lUUID);
-//						std::cout << gmap[i][j].uuid <<std::endl;
-            		}
-							}
+  //write down the annotations into gridmap first
+	for (int k=0; k<annotations.annotations.size(); k++){
+		tempx = annotations.annotations[k].x-annotations.annotations[k].distance*cos(annotations.annotations[k].theta*M_PI/180.);
+		tempy = annotations.annotations[k].y-annotations.annotations[k].distance*sin(annotations.annotations[k].theta*M_PI/180.);
+		is=floor((tempx-xorigin)/cellsize);
+		js=floor((tempy-yorigin)/cellsize);
+		if (is>=0 && js>=0 && is<sizex && js<sizey){
+			//check if annotation vertex is occupied - do not do anything for the occupied annotations
+			if (gmap[is][js].occupancy==0){
+				gmap[is][js].annotation=true;
+				gmap[is][js].x=tempx;
+            	gmap[is][js].y=tempy;
+            	gmap[is][js].theta=annotations.annotations[k].theta;
+            	gmap[is][js].name=annotations.annotations[k].name;
+				gmap[is][js].uuid=annotations.annotations[k].uuid; 
+				//cells under the annotation arrow will be changed to occupied
+				for (int l=0; l<5; l++){
+					midx = annotations.annotations[k].x-l*0.2*annotations.annotations[k].distance*cos(annotations.annotations[k].theta*M_PI/180.);
+					midy = annotations.annotations[k].y-l*0.2*annotations.annotations[k].distance*sin(annotations.annotations[k].theta*M_PI/180.);
+					ig=floor((midx-xorigin)/cellsize);
+					jg=floor((midy-yorigin)/cellsize);
+					if (ig>=0 && jg>=0 && ig<sizex && jg<sizey){
+						if (gmap[ig][jg].annotation==false)
+						{
+							gmap[ig][jg].occupancy=1;
+            				gmap[ig][jg].staticcell=true;
 						}
-            	}
-            	if (gmap[i][j].occupancy){
-            		continue;
-            	}
-            	if (i!=floor((gmap[i][j].x-xorigin)/cellsize) || j!=floor((gmap[i][j].y-yorigin)/cellsize)){
-            		continue;
-            	}
-            	gmnode.x.push_back(gmap[i][j].x);
-            	gmnode.y.push_back(gmap[i][j].y);
-            	gmnode.theta.push_back(gmap[i][j].theta);
-            	gmnode.name.push_back(gmap[i][j].name);
-            	gmnode.uuid.push_back(gmap[i][j].uuid);
-            	vertex.x=gmap[i][j].x;
-            	vertex.y=gmap[i][j].y;
-            	vertex.theta=gmap[i][j].theta;
-            	vertex.name=gmap[i][j].name;
-            	vertex.uuid=gmap[i][j].uuid;
-//            	vertex.footprint.clear();
-//            	for (int d=0; d<4; d++){
-//            		p.x=vertex.x+cellsize/2.*xofs[d];
-//            		p.y=vertex.y+cellsize/2.*yofs[d];
-//            		vertex.footprint.push_back(p);
-//            	}
-            	graph.vertices.push_back(vertex);
-            }
-           	gmcell.x=gmap[i][j].x;
-           	gmcell.y=gmap[i][j].y;
-           	gmcell.occupancy=gmap[i][j].occupancy;
-						gm.gmc.push_back(gmcell);
 					}
 				}
 			}
+		}
+	}
+	
+	for (int i=0; i<sizex; i++){
+		for (int j=0; j<sizey; j++){
+			if (1){
+				gm.x.push_back(gmap[i][j].x);
+	            gm.y.push_back(gmap[i][j].y);
+	            gm.occupancy.push_back(gmap[i][j].occupancy);
+	            if (gmap[i][j].occupancy==0){
+
+
+					if (gmap[i][j].annotation==false){
+//check the cell is neighbor of the annotation vertex
+						for (int d=0; d<8; d++){
+							I_point point;
+					        js=j+rofs[d];
+					        is=i+cofs[d];
+					        if (is>=0 && js>=0 && is<sizex && js<sizey){
+					        	if ((gmap[is][js].occupancy==0) && (gmap[is][js].annotation)){
+					        	//if neighbor cells are closer than the cellsize from the annotation vertex, hide them under the annotation vertex
+					        		if ((fabs(gmap[i][j].x-gmap[is][js].x)<cellsize) && (fabs(gmap[i][j].y-gmap[is][js].y)<cellsize)){
+					        			gmap[i][j].x=gmap[is][js].x;
+        								gmap[i][j].y=gmap[is][js].y;
+        								continue;
+					        		}
+					        	}
+					        }
+						}					
+					}
+					if (i!=floor((gmap[i][j].x-xorigin)/cellsize) || j!=floor((gmap[i][j].y-yorigin)/cellsize)){
+            			continue;
+            		}
+
+
+//            	for (int k=0; k<annotations.annotations.size(); k++){
+//            			tempx = annotations.annotations[k].x-annotations.annotations[k].distance*cos(annotations.annotations[k].theta*M_PI/180.);
+//						tempy = annotations.annotations[k].y-annotations.annotations[k].distance*sin(annotations.annotations[k].theta*M_PI/180.);
+//            			midx = annotations.annotations[k].x-0.2*annotations.annotations[k].distance*cos(annotations.annotations[k].theta*M_PI/180.);
+//						midy = annotations.annotations[k].y-0.2*annotations.annotations[k].distance*sin(annotations.annotations[k].theta*M_PI/180.);
+//            			thirdx = annotations.annotations[k].x-0.7*annotations.annotations[k].distance*cos(annotations.annotations[k].theta*M_PI/180.);
+//						thirdy = annotations.annotations[k].y-0.7*annotations.annotations[k].distance*sin(annotations.annotations[k].theta*M_PI/180.);
+
+//        				is=floor((tempx-xorigin)/cellsize);
+//						js=floor((tempy-yorigin)/cellsize);
+//						if (is>=0 && js>=0 && is<sizex && js<sizey){
+//						//check if annotation vertex is occupied - do not do anything for the occupied annotations
+//							if (gmap[is][js].occupancy==0){
+//							//coordinates of the cell centre (some cells have changed centre - close to annotations)
+//								gx=i*cellsize+cellsize/2.+xorigin;
+//								gy=j*cellsize+cellsize/2.+yorigin;
+//        			if (((fabs(tempx-gx)<=cellsize) && (fabs(tempy-gy)<=cellsize)) && ((fabs(tempx-gx)>cellsize/2) || (fabs(tempy-gy)>cellsize/2)))
+//        			{//neighbor cell to annotation cell
+//        				gmap[i][j].x=tempx;
+//        				gmap[i][j].y=tempy;
+//        				continue;
+//        			}
+//            		if ( ((fabs(tempx-gx)<=cellsize/2) && (fabs(tempy-gy)<=cellsize/2)) || ((fabs(midx-gx)<=cellsize/2) && (fabs(midy-gy)<=cellsize/2)) || ((fabs(thirdx-gx)<=cellsize/2) && (fabs(thirdy-gy)<=cellsize/2))){
+//            		//cells "under" the annotation arrow are skipped - artificial obstacle
+//            			if ((fabs(tempx-gx)>cellsize/2) || (fabs(tempy-gy)>cellsize/2)){
+//            				gmap[i][j].occupancy=1;
+//            				gmap[i][j].staticcell=true;
+//            				continue;
+//            			}
+//            			gmap[i][j].x=tempx;
+//            			gmap[i][j].y=tempy;
+//            			gmap[i][j].theta=annotations.annotations[k].theta;
+//            			gmap[i][j].name=annotations.annotations[k].name;
+////            			uuid lUUID = lUUIDNameGen(gmap[i][j].name);
+//						gmap[i][j].uuid=annotations.annotations[k].uuid; //to_string(lUUID);
+////						std::cout << gmap[i][j].uuid <<std::endl;
+//            		}
+//							}
+//						}
+//            	}
+//            	if (gmap[i][j].occupancy){
+//            		continue;
+//            	}
+//            	if (i!=floor((gmap[i][j].x-xorigin)/cellsize) || j!=floor((gmap[i][j].y-yorigin)/cellsize)){
+//            		continue;
+//            	}
+					gmnode.x.push_back(gmap[i][j].x);
+					gmnode.y.push_back(gmap[i][j].y);
+					gmnode.theta.push_back(gmap[i][j].theta);
+					gmnode.name.push_back(gmap[i][j].name);
+					gmnode.uuid.push_back(gmap[i][j].uuid);
+					vertex.x=gmap[i][j].x;
+					vertex.y=gmap[i][j].y;
+					vertex.theta=gmap[i][j].theta;
+					vertex.name=gmap[i][j].name;
+					vertex.uuid=gmap[i][j].uuid;
+					//            	vertex.footprint.clear();
+					//            	for (int d=0; d<4; d++){
+					//            		p.x=vertex.x+cellsize/2.*xofs[d];
+					//            		p.y=vertex.y+cellsize/2.*yofs[d];
+					//            		vertex.footprint.push_back(p);
+					//            	}
+					graph.vertices.push_back(vertex);
+		        }
+		   		gmcell.x=gmap[i][j].x;
+		   		gmcell.y=gmap[i][j].y;
+		   		gmcell.occupancy=gmap[i][j].occupancy;
+				gm.gmc.push_back(gmcell);
+			}
+		}
+	}
 
 			GMC->createEdges();
 //			std::cout << GMC->edges.size() <<std::endl;

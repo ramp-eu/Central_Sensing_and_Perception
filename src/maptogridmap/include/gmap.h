@@ -57,6 +57,7 @@ class GMcell{
 	int occupancy;
 	double x,y,theta; //coordinates of the cell centre
 	bool staticcell;
+	bool annotation;
 	int visited;
 	std::string uuid;
 	std::string name;
@@ -69,6 +70,7 @@ class GMcell{
 	  			theta=0;
 	  			staticcell=false;
 	  			visited=-1;
+	  			annotation=false;
         };
 };
 
