@@ -691,6 +691,7 @@ int main(int argc, char** argv)
 			}	
 		}
 
+		if ((cycle_number % 20)==0 || update_nodes_edges){
 		gmnode.header.stamp = ros::Time::now();
 		gm.header.stamp = ros::Time::now();
 		gmedge.header.stamp = ros::Time::now();
@@ -700,6 +701,7 @@ int main(int argc, char** argv)
 		edges_pub.publish(gmedge);
 		graph_pub.publish(graph);
 		annotation_pub.publish(annotations);
+		}
 
     ros::spinOnce(); 
 
