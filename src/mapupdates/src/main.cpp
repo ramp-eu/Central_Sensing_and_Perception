@@ -6,6 +6,7 @@ GridMapCell *GMU;
 std::vector<float> pointx, pointy, locx, locy;
 int cycle_number=0;
 std::string laser_tf_frame="/base_laser_link";
+std::string map_frame="/map";
 bool laser_inverted=false;
 
 using namespace std;
@@ -25,7 +26,7 @@ public:
     visualization_msgs::Marker gridmapvs, graphvs, stc, glp;
 
   VisualizationPublisherGM(ros::NodeHandle n) :
-      nh_(n),  target_frame_("map") 
+      nh_(n),  target_frame_(map_frame) 
   {
 
 	gridmapvs_pub=nh_.advertise<visualization_msgs::Marker>("/finegridmap_marker",10);
@@ -95,7 +96,7 @@ void laserCallback(const sensor_msgs::LaserScanConstPtr& msg)
 {
 	locx.clear();
 	locy.clear();
-	laser_tf_frame=msg->header.frame_id;
+	laser_tf_frame=msg->header.frame_id; // Take frame name form msg header 
 	double ranges;
 	for(int i_LS=0;i_LS<msg->ranges.size();i_LS++){
 		if (laser_inverted){
@@ -124,6 +125,7 @@ int main(int argc, char** argv)
 	}
 	std::stringstream ss;
 	std::string scan_topic_;
+	std::string map_service_name;
   ss << robotId;			
 	ROS_INFO("Hello, I am robot %d",robotId);
 	ros::init(argc, argv, "mapupdates");
@@ -132,16 +134,21 @@ int main(int argc, char** argv)
   ros::Publisher newObstacles_pub = nh.advertise<mapupdates::NewObstacles>("/robot_"+ss.str()+"/newObstacles",1); 
 //  ros::Subscriber read_global_points = nh.subscribe("/global_points", 1, globalPointsCallback);
   scan_topic_="/base_scan";
+  map_service_name="/static_map";
   nh.getParam("/mapup/scan_topic", scan_topic_);
   nh.getParam("/mapup/laser_inverted", laser_inverted);
+  nh.getParam("/mapup/map_frame", map_frame);
+  nh.getParam("/mapup/map_service_name", map_service_name);
+
+  //nh.getParam("/mapup/scan_frame", laser_tf_frame);
   tf::TransformListener tf_listener;
   tf::StampedTransform transform;
 
-	ros::Subscriber read_laser = nh.subscribe(scan_topic_, 1, laserCallback);
+  ros::Subscriber read_laser = nh.subscribe(scan_topic_, 1, laserCallback);
   VisualizationPublisherGM visualGM(nh);
   nav_msgs::GetMap map;
-  ros::service::waitForService("static_map", 5000);
-  ros::service::call("static_map",map);
+  ros::service::waitForService(map_service_name, 5000); // Wait until service 
+  ros::service::call(map_service_name,map);
   double cellsize=0.1;
   nh.getParam("/mapup/cell_size", cellsize);
  
@@ -183,7 +190,7 @@ int main(int argc, char** argv)
   gmobstacles.header.stamp = ros::Time::now();
 	newObstacles_pub.publish(gmobstacles); 
 
-  tf_listener.waitForTransform("map", laser_tf_frame, ros::Time::now(), ros::Duration(3.0));//robot_0/
+  tf_listener.waitForTransform(map_frame, laser_tf_frame, ros::Time::now(), ros::Duration(3.0));//robot_0/
   double yaw, pitch, roll, tfx, tfy;
 
   ros::Rate rate(10.0);
@@ -193,8 +200,8 @@ int main(int argc, char** argv)
     cycle_number++;
 //    std::cout << "main " << cycle_number <<std::endl;
     try {
-        tf_listener.waitForTransform("/map", laser_tf_frame, ros::Time(0), ros::Duration(0.1));
-        tf_listener.lookupTransform("/map", laser_tf_frame, ros::Time(0), transform);
+        tf_listener.waitForTransform(map_frame, laser_tf_frame, ros::Time(0), ros::Duration(0.1));
+        tf_listener.lookupTransform(map_frame, laser_tf_frame, ros::Time(0), transform);
 
 				transform.getBasis().getRPY(roll, pitch, yaw);
 				tfx=transform.getOrigin().x();
@@ -208,7 +215,7 @@ int main(int argc, char** argv)
 		    gmobstacles.x.clear();
 		    gmobstacles.y.clear();
 				gmobstacles.header.stamp = ros::Time::now();
-				gmobstacles.header.frame_id = "map";
+				gmobstacles.header.frame_id = map_frame;
 				for (int i=0; i<sizex; i++){
 						for (int j=0; j<sizey; j++){
 								if ((gmap[i][j].staticcell==false) && (gmap[i][j].occupancy>0)){
