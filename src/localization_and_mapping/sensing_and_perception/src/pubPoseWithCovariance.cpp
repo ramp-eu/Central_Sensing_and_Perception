@@ -9,6 +9,10 @@ using namespace std;
 int robotId;
 
 std::stringstream ss;
+std::string base_frame="/base_link";
+std::string map_frame="/map";
+std::string amcl_topic="/amcl_pose";
+
 
 class pubOdomWithCovariance {
     private:
@@ -25,14 +29,14 @@ class pubOdomWithCovariance {
 		ss << robotId;			
         posePub = n.advertise<geometry_msgs::PoseWithCovarianceStamped>("/robot_"+ss.str()+"/pose_channel", 1);
         
-        refreshCovariance = n.subscribe("/amcl_pose",1, &pubOdomWithCovariance::refreshCovarianceCallback, this);
+        refreshCovariance = n.subscribe(amcl_topic,1, &pubOdomWithCovariance::refreshCovarianceCallback, this);
 //        poseSub = n.subscribe("/odom",1, &pubOdomWithCovariance::refreshPoseCallback, this);
     }
     
     void refreshPoseCallback(const nav_msgs::Odometry &msg) {
     
         this->PoseWCS.header = msg.header;
-        this->PoseWCS.header.frame_id = "map";
+        this->PoseWCS.header.frame_id = map_frame;
 //        this->PoseWCS.pose.pose.position.x = transform.getOrigin().x();;
 //        this->PoseWCS.pose.pose.position.y = transform.getOrigin().y();
         this->PoseWCS.pose.pose.position.z = 0;
@@ -57,12 +61,18 @@ int main(int argc, char **argv) {
 	ROS_INFO("Hello, I am robot %d",robotId);
   ros::init(argc, argv, "PoseWithCovariance");
 	ros::NodeHandle nh;
+
+  nh.getParam("/publishPoseWithCovariance/amcl_topic", amcl_topic);
+  nh.getParam("/publishPoseWithCovariance/map_frame", map_frame);
+  nh.getParam("/publishPoseWithCovariance/base_frame", base_frame);
+
+  std::cout << map_frame <<std::endl;
   
   pubOdomWithCovariance publishOdometryWithCovariance;
   tf::TransformListener tf_listener;
   tf::StampedTransform transform;
   double yaw, pitch, roll, tfx, tfy;
-  tf_listener.waitForTransform("map", "/base_link", ros::Time::now(), ros::Duration(3.0));
+  tf_listener.waitForTransform(map_frame, base_frame, ros::Time::now(), ros::Duration(3.0));
 
   ros::Rate rate(10.0);
 
@@ -70,12 +80,12 @@ int main(int argc, char **argv) {
     ros::spinOnce(); 
     
     try {
-        tf_listener.waitForTransform("/map", "/base_link", ros::Time(0), ros::Duration(1.0));
-        tf_listener.lookupTransform("/map", "/base_link", ros::Time(0), transform);
+        tf_listener.waitForTransform(map_frame, base_frame, ros::Time(0), ros::Duration(1.0));
+        tf_listener.lookupTransform(map_frame, base_frame, ros::Time(0), transform);
 
 				transform.getBasis().getRPY(roll, pitch, yaw);
 				publishOdometryWithCovariance.PoseWCS.header.stamp = ros::Time::now();
-				publishOdometryWithCovariance.PoseWCS.header.frame_id = "map";
+				publishOdometryWithCovariance.PoseWCS.header.frame_id = map_frame;
 				publishOdometryWithCovariance.PoseWCS.pose.pose.position.x = transform.getOrigin().x();
 				publishOdometryWithCovariance.PoseWCS.pose.pose.position.y = transform.getOrigin().y();
 				publishOdometryWithCovariance.PoseWCS.pose.pose.position.z = 0;

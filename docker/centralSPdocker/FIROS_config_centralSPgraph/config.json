@@ -3,8 +3,7 @@
 
   "fof_lab": {
     "server": {
-        "address"   : "sp",
-        "port"      : 10100
+        "port"      : 10103
     },
     "contextbroker": {
         "address"   : "orion",
@@ -15,8 +14,11 @@
           "subscription_refresh_delay": 0.5
         }
     },
-    "log_level": "INFO",
-    "interface": "eth0"
+    "endpoint": {
+      "address": "sp",
+      "port": 39002
+    },
+    "log_level": "INFO"
   }
 }
 
