@@ -589,7 +589,7 @@ int main(int argc, char** argv)
 		for(int i = 0; i<obstacles.x.size(); i++){
 			ii=(int)floor((obstacles.x[i]-xorigin)/cellsize);
 			jj=(int)floor((obstacles.y[i]-yorigin)/cellsize);
-			if (ii>0 && jj>0 && ii<sizex && jj<sizey){
+			if (ii>=0 && jj>=0 && ii<sizex && jj<sizey){
 	//			if ((gmap[ii][jj].occupancy==0) && (gmap[ii][jj].visited!=cycle_number))
 				if ((gmap[ii][jj].occupancy<=50))
 				{
@@ -603,7 +603,7 @@ int main(int argc, char** argv)
 		for(int i = 0; i<obstacles1.x.size(); i++){
 			ii=(int)floor((obstacles1.x[i]-xorigin)/cellsize);
 			jj=(int)floor((obstacles1.y[i]-yorigin)/cellsize);
-			if (ii>0 && jj>0 && ii<sizex && jj<sizey){
+			if (ii>=0 && jj>=0 && ii<sizex && jj<sizey){
 	//			if ((gmap[ii][jj].occupancy==0) && (gmap[ii][jj].visited!=cycle_number))
 				if ((gmap[ii][jj].occupancy<=50))
 				{
@@ -617,7 +617,7 @@ int main(int argc, char** argv)
 		for(int i = 0; i<obstacles2.x.size(); i++){
 			ii=(int)floor((obstacles2.x[i]-xorigin)/cellsize);
 			jj=(int)floor((obstacles2.y[i]-yorigin)/cellsize);
-			if (ii>0 && jj>0 && ii<sizex && jj<sizey){
+			if (ii>=0 && jj>=0 && ii<sizex && jj<sizey){
 	//			if ((gmap[ii][jj].occupancy==0) && (gmap[ii][jj].visited!=cycle_number))
 				if ((gmap[ii][jj].occupancy<=50))
 				{
