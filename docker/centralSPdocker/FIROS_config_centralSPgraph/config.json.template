@@ -1,24 +1,22 @@
 {
-  "environment": "fof_lab",
-
-  "fof_lab": {
+  "environment": "docker",
+  "docker": {
     "server": {
-        "port"      : 10103
+      "port": 10103
     },
     "contextbroker": {
-        "address"   : "FIWAREHOST",
-        "port"      : 1026,
-        "subscription": {
-          "throttling": 0,
-          "subscription_length": 300,
-          "subscription_refresh_delay": 0.5
-        }
+      "address": "FIWAREHOST",
+      "port": 1026,
+      "subscription": {
+        "throttling": 0,
+        "subscription_length": 300,
+        "subscription_refresh_delay": 0.5
+      }
     },
     "endpoint": {
       "address": "LOCALHOST",
       "port": 39002
-    },    
+    },
     "log_level": "INFO"
   }
 }
-

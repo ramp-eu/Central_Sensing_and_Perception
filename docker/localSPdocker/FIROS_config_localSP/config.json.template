@@ -1,7 +1,7 @@
 {
-  "environment": "fof_lab",
+  "environment": "docker",
 
-  "fof_lab": {
+  "docker": {
     "server": {
         "port"      : 10104
     },
@@ -17,7 +17,7 @@
     "endpoint": {
       "address": "LOCALHOST",
       "port": 39003
-    },    
+    },
     "log_level": "INFO"
   }
 }

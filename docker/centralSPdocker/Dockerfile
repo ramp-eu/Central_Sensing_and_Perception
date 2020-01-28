@@ -25,7 +25,7 @@ RUN mkdir -p ~/catkin_ws/src && \
 COPY ./src /root/catkin_ws/src
 
 RUN cd ~/catkin_ws/src && \
-	git clone --recursive https://github.com/iml130/firos.git && \
+	git clone -b v0.2.0 --recursive https://github.com/iml130/firos.git && \
 	cd ~/catkin_ws/ && \
 	/bin/bash -c '. /opt/ros/kinetic/setup.bash; cd ~/catkin_ws; catkin_make'
 

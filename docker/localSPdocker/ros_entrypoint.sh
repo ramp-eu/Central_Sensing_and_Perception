@@ -3,7 +3,7 @@ set -e
 
 echo SP Local : OPIL version 3 is now running
 # firos setup
-sed -e "s/LOCALHOST/$HOST/g" -e "s/FIWAREHOST/$FIWAREHOST/g" -e "s/NETINTERFACE/$NETINTERFACE/g" /root/catkin_ws/src/firos/config/config.json.template > /root/catkin_ws/src/firos/config/config.json
+sed -e "s/LOCALHOST/$HOST/g" -e "s/FIWAREHOST/$FIWAREHOST/g" /root/catkin_ws/src/firos/config/config.json.template > /root/catkin_ws/src/firos/config/config.json
 
 if [ $SIMULATION == true ]
         then 
@@ -15,8 +15,8 @@ if [ $SIMULATION == true ]
 				echo "sleeping"
 				sleep 5
 				echo "continuing"
-				export ROS_MASTER_URI=http://ran:11311
-				export ROS_IP=splocal
+				export ROS_MASTER_URI=$ROS_MASTER_URI
+				export ROS_IP=$ROS_IP
 				echo $ROS_MASTER_URI
 fi
 
@@ -24,6 +24,14 @@ fi
 source "/opt/ros/$ROS_DISTRO/setup.bash"
 source "/root/catkin_ws/devel/setup.sh"
 
+FILEROBOTS=/robots.json
+if test -f "$FILEROBOTS"; then
+	cp robots.json /root/catkin_ws/src/firos/config/
+fi
+FILEWHITELIST=/whitelist.json
+if test -f "$FILEWHITELIST"; then
+	cp whitelist.json /root/catkin_ws/src/firos/config/
+fi
 FILEAMCL=/amcl_map.launch
 if test -f "$FILEAMCL"; then
 	cp amcl_map.launch /root/catkin_ws/src/localization_and_mapping/lam_simulator/launch/
