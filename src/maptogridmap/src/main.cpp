@@ -11,6 +11,7 @@ name_generator lUUIDNameGen(string_generator()("6ba7b810-9dad-11d1-80b4-00c04fd4
 GridMapCell *GMC;
 maptogridmap::GetMap::Response map_resp_;
 int cycle_number;
+double cellsize=2.;
 mapupdates::NewObstacles obstacles;
 mapupdates::NewObstacles obstacles1; //for robot_1
 mapupdates::NewObstacles obstacles2; //for robot_2
@@ -169,7 +170,7 @@ void newObstaclesCallback2(const mapupdates::NewObstaclesConstPtr& msg)
 	}
 }
 
-void readAnnotations(std::string annotation_file)
+int readAnnotations(std::string annotation_file)
 {
 	FILE	*F;
 	char rdLine[36]="";
@@ -247,6 +248,20 @@ void readAnnotations(std::string annotation_file)
 //					std::cout << word <<std::endl;
 //					annotations.distance.push_back(atof(word));
 					annt.distance=(atof(word));
+					float annttempx = annt.x-annt.distance*cos(annt.theta*M_PI/180.);
+					float annttempy = annt.y-annt.distance*sin(annt.theta*M_PI/180.);
+					for (int k=0; k<annotations.annotations.size(); k++){
+						float tempx = annotations.annotations[k].x-annotations.annotations[k].distance*cos(annotations.annotations[k].theta*M_PI/180.);
+						float tempy = annotations.annotations[k].y-annotations.annotations[k].distance*sin(annotations.annotations[k].theta*M_PI/180.);
+						if ((fabs(tempx-annttempx)<cellsize) && (fabs(tempy-annttempy)<cellsize)){
+							ROS_ERROR("Annotations are too close!!! Change the coordinates of the annotation or decrease the cell size. Here are the details:");
+							std::cout << "The annotation 1:" <<'\n';
+							std::cout << annt <<std::endl;
+							printf("has the topology vertex at (%f,%f), which is closer than cell_size (%f m) to the vertex (%f,%f) of the annotation 2:\n",annttempx,annttempy,cellsize,tempx,tempy);
+							std::cout << annotations.annotations[k] <<std::endl;
+							return 0;
+						}
+					}
 					annotations.annotations.push_back(annt);
 				}
 			}
@@ -314,7 +329,7 @@ void readAnnotations(std::string annotation_file)
 //		fclose(F);
 //	}
 	std::cout << annotations <<std::endl;
-	
+	return 1;
 }
 
 int main(int argc, char** argv)
@@ -337,15 +352,14 @@ int main(int argc, char** argv)
   nav_msgs::GetMap map;
   ros::service::waitForService("static_map", 5000);
   ros::service::call("static_map",map);
-	double cellsize=2.;
   nh.getParam("/map2gm/cell_size", cellsize);
   std::string annotation_file;
   nh.getParam("/map2gm/annotation_file", annotation_file);
-	std::cout << annotation_file <<std::endl; 
+//	std::cout << annotation_file <<std::endl; 
   
   double resolution=map.response.map.info.resolution;
   geometry_msgs::Pose mappose=map.response.map.info.origin;
-  std::cout << mappose <<std::endl;
+//  std::cout << mappose <<std::endl;
   double xorigin=mappose.position.x;
   double yorigin=mappose.position.y; 
 
@@ -355,10 +369,10 @@ int main(int argc, char** argv)
   int sizey = int (floor (height*resolution / cellsize));
   printf("converting the map data to gridmap: cell size %f, res=%f, width=%d, height=%d, xorigin=%f, yorigin=%f, size gridmap (%d,%d)\n",cellsize, resolution, width, height, xorigin, yorigin, sizex, sizey);
 //  printf("dns_namespace_uuid=%s",dns_namespace_uuid);
-  std::cout << dns_namespace_uuid<<std::endl;
+//  std::cout << dns_namespace_uuid<<std::endl;
 //  std::cout << lUUIDNameGen(dns_namespace_uuid)<<std::endl;
-  std::cout << string_generator()("6ba7b810-9dad-11d1-80b4-00c04fd430c8") <<std::endl;
-  std::cout << lUUIDNameGen("vertex_0")<<std::endl;
+//  std::cout << string_generator()("6ba7b810-9dad-11d1-80b4-00c04fd430c8") <<std::endl;
+//  std::cout << lUUIDNameGen("vertex_0")<<std::endl;
   GMC = new GridMapCell(sizex, sizey, cellsize, xorigin, yorigin);
 	int ii,jj;
 	GMcell **gmap=GMC->GetMap();
@@ -387,7 +401,10 @@ int main(int argc, char** argv)
 //	GMC->spanningTree(13,13);
 	
 	//read annotations from file
-	readAnnotations(annotation_file);
+	if (readAnnotations(annotation_file)!=1){
+		std::cout << "shutting down the topology calculation..." <<'\n';
+		return 0;
+	}
 	
 	maptogridmap::GridmapCell gmcell;
 	maptogridmap::Gridmap gm;
@@ -445,6 +462,11 @@ int main(int argc, char** argv)
 						}
 					}
 				}
+			}else{
+				ROS_ERROR("Annotations are occupied!!! Change the coordinates or distance of the annotation or decrease the cell size. Here are the details:");
+				std::cout << annotations.annotations[k] <<std::endl;
+				printf("Annotation vertex in the topology graph is at the occupied position (%f,%f) for the cell_size = %f m. Shutting down...\n",tempx,tempy,cellsize);
+				return 0;
 			}
 		}
 	}
