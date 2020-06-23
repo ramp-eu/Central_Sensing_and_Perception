@@ -23,15 +23,16 @@ RUN mkdir -p ~/catkin_ws/src && \
         /bin/bash -c 'source devel/setup.bash'
 
 COPY ./src /root/catkin_ws/src
+#COPY ./docker/centralSPdocker/src /root/catkin_ws/src
 
 RUN cd ~/catkin_ws/src && \
 	git clone -b v0.2.0 --recursive https://github.com/iml130/firos.git && \
 	cd ~/catkin_ws/ && \
 	/bin/bash -c '. /opt/ros/kinetic/setup.bash; cd ~/catkin_ws; catkin_make'
 
-COPY ./FIROS_config_centralSPgraph /root/catkin_ws/src/firos/config
+COPY ./docker/centralSPdocker/FIROS_config_centralSPgraph /root/catkin_ws/src/firos/config
 
-COPY ros_entrypoint.sh /
+COPY ./docker/centralSPdocker/ros_entrypoint.sh /
 
 RUN echo "source /root/catkin_ws/devel/setup.bash" >> /root/.bashrc
 
