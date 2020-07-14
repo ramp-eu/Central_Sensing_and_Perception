@@ -1,0 +1,9 @@
+image: map.png
+#this results 2.4mm error per meter
+resolution: 0.014005602
+origin: [-9.916, -6.12, 0.0] #708 437
+#origin: [0, 0, 0.0]
+negate: 0
+occupied_thresh: 0.65
+free_thresh: 0.196
+

@@ -1,79 +1,49 @@
 version: "3"
 services:      
     #Context Broker
-    orion:        
-        image: fiware/orion
-#        links:
-#            - mongo
-        ports:
-            - 1026:1026
-        command: 
-            -dbhost mongo
-            
-            
 
-#    postgres:
-#        restart: always
-#        image: postgres:latest
-#        volumes:
-#            #This is a workaround for Windows, also see "volumes" below after the "services".
-#            #- pg_db:/var/lib/postgresql/data:Z          
-#            #This should work for linux
-#            - ./postgres-data:/var/lib/postgresql/data                        
+
 
     mongo:
-        restart: always
         image: mongo:3.4
-        command: --nojournal    
-#            
-#    nginx:
-#        restart: always
-#        image: nginx:latest
-#        ports:
-#            - 80:80
-#        volumes:
-#            - ./nginx.conf:/etc/nginx/nginx.conf:ro
-#            - ./static:/var/www/static:ro
-#        depends_on:
-#            - wirecloud
-#            
-#    ngsiproxy:
-#        restart: always
-#        image: fiware/ngsiproxy:latest
-#        ports:
-#            - 3000:3000   
+        command: --nojournal
 
-#    wirecloud:
-#        restart: always
-#        image: fiware/wirecloud:latest-composable
-#        depends_on:
-#            - postgres            
-#        volumes:
-#            - ./wirecloud_instance:/opt/wirecloud_instance
-#            - ./static:/var/www/static  
-#S&P
+    ### Proxy for Context Broker ###
+    ngsiproxy:
+        image: fiware/ngsiproxy:latest
+        ports:
+            - 3000:3000
+
+    ### Context Broker ###
+    orion:
+        image: fiware/orion
+        depends_on:
+            - mongo
+            - ngsiproxy
+        ports:
+            - 1026:1026
+        command:
+            -dbhost mongo -corsOrigin __ALL
+
+
+
     sp:
         restart: always
-        image: l4ms/opil.sw.sp:2.5-central
+        image: l4ms/opil.sw.sp.central:3.0.7-beta
         volumes:
             #- path on the host : path inside the container
             - /tmp/.X11-unix:/tmp/.X11-unix:rw
-#            - ./annotations.ini:/root/catkin_ws/src/maptogridmap/launch/annotations.ini:ro
-#            - ./testmap.yaml:/root/catkin_ws/src/maptogridmap/launch/map.yaml:ro
-#            - ./testmap.png:/root/catkin_ws/src/maptogridmap/launch/map.png:ro
-#            - ./topology.launch:/root/catkin_ws/src/maptogridmap/launch/topology.launch:ro
+            - ./annotations.ini:/annotations.ini:ro
+            - ./demo.yaml:/map.yaml:ro
+            - ./demo.png:/map.png:ro
+            - ./topology.launch:/topology.launch:ro
         environment:
             - FIWAREHOST=orion
             - HOST=sp
-            - NETINTERFACE=eth0
             - DISPLAY=$DISPLAY
-
+        ports: 
+            - "39002:39002"
                    
-            
-#volumes:
-#    pg_db: 
-#        external: true
-
 
 
 
