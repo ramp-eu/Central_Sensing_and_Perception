@@ -713,7 +713,7 @@ int main(int argc, char** argv)
 			}	
 		}
 
-		if ((cycle_number % 20)==0 || update_nodes_edges){
+		if ((cycle_number % 20)==0) { // || update_nodes_edges){
 		gmnode.header.stamp = ros::Time::now();
 		gm.header.stamp = ros::Time::now();
 		gmedge.header.stamp = ros::Time::now();
