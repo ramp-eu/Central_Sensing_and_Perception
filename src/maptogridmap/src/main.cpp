@@ -255,10 +255,10 @@ int readAnnotations(std::string annotation_file)
 						float tempy = annotations.annotations[k].y-annotations.annotations[k].distance*sin(annotations.annotations[k].theta*M_PI/180.);
 						if ((fabs(tempx-annttempx)<cellsize) && (fabs(tempy-annttempy)<cellsize)){
 							ROS_ERROR("Annotations are too close!!! Change the coordinates of the annotation or decrease the cell size. Here are the details:");
-							std::cout << "The annotation 1:" <<'\n';
+							std::cout << "The annotation " << annt.name <<" is too close to the annotation " << annotations.annotations[k].name << std::endl;
 							std::cout << annt <<std::endl;
-							printf("has the topology vertex at (%f,%f), which is closer than cell_size (%f m) to the vertex (%f,%f) of the annotation 2:\n",annttempx,annttempy,cellsize,tempx,tempy);
 							std::cout << annotations.annotations[k] <<std::endl;
+							std::cout << "The annotation "<< annt.name <<" has the topology vertex at ("<<annttempx<<", "<<annttempy<<" ), which is closer than the cell_size "<< cellsize <<" of the topology vertex at ("<<tempx<<", "<<tempy<<" ) of the annotation " << annotations.annotations[k].name <<std::endl;
 							return 0;
 						}
 					}
