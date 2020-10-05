@@ -251,6 +251,13 @@ int readAnnotations(std::string annotation_file)
 					float annttempx = annt.x-annt.distance*cos(annt.theta*M_PI/180.);
 					float annttempy = annt.y-annt.distance*sin(annt.theta*M_PI/180.);
 					for (int k=0; k<annotations.annotations.size(); k++){
+						if (annotations.annotations[k].name.compare(annt.name)==0){
+							ROS_ERROR("Annotations have the same name! Names must be unique! Here are the details:");
+							std::cout << "The annotation " << annotations.annotations.size()+1 <<" has the same name as the annotation " << k+1 << std::endl;
+							std::cout << annt <<std::endl;
+							std::cout << annotations.annotations[k] <<std::endl;
+							return 0;
+						}
 						float tempx = annotations.annotations[k].x-annotations.annotations[k].distance*cos(annotations.annotations[k].theta*M_PI/180.);
 						float tempy = annotations.annotations[k].y-annotations.annotations[k].distance*sin(annotations.annotations[k].theta*M_PI/180.);
 						if ((fabs(tempx-annttempx)<cellsize) && (fabs(tempy-annttempy)<cellsize)){
