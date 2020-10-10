@@ -3,7 +3,7 @@
 void GridMapCell::spanningTree(int r, int c){
 
   std::vector<I_point> neighbour;
-  neighbour.reserve(100); 
+  neighbour.reserve(100000); 
   neighbour.clear();
   I_point temp, temp2;
   temp.x=c;
@@ -19,53 +19,63 @@ void GridMapCell::spanningTree(int r, int c){
   int num_n=neighbour.size();
   int temp_start=0;
   int in=temp_start;
+  int maxspanninglength=200000000;
 
    while (in<num_n){
+//   		 printf("neighbor tree size %d\n",neighbour.size());
+		 if (spanningpath.size()>maxspanninglength){
+		 	break;
+		 }
          temp=neighbour[in]; 
-                 if (temp_start==0){
-                     spanningpath.push_back(temp); 
-                 } else{
-                    for (int ti=in; ti<num_n; ti++){        //BFS
-                         temp2=neighbour[ti];
-                         if (abs(spanningpath[num_put].x-temp2.x)+abs(spanningpath[num_put].y-temp2.y)<=1){
-                            num_put=num_put+1;
-                            spanningpath.push_back(temp2);
-                            neighbour[in]=temp2;
-                            neighbour[ti]=temp;
-                            temp.x=temp2.x;
-                            temp.y=temp2.y;
-                            break;
-                         }
-                     }
+//                 if (temp_start==0){
+//                     spanningpath.push_back(temp); 
+//                 } else{
+//                    for (int ti=in; ti<num_n; ti++){        //BFS
+//                         temp2=neighbour[ti];
+//                         if (abs(spanningpath[num_put].x-temp2.x)+abs(spanningpath[num_put].y-temp2.y)<=1){
+//                            num_put=num_put+1;
+//                            spanningpath.push_back(temp2);
+//                            neighbour[in]=temp2;
+//                            neighbour[ti]=temp;
+//                            temp.x=temp2.x;
+//                            temp.y=temp2.y;
+//                            break;
+//                         }
+//                     }
 
-                     if (abs(spanningpath[num_put].x-temp2.x)+abs(spanningpath[num_put].y-temp2.y)>1){
-                         int temp_length=num_put;
-                         for (int tp=0; tp<temp_length; tp++){
-                             num_put=num_put+1;
-                             spanningpath.push_back(spanningpath[temp_length-tp-1]);//
-                             for (int ti=in; ti<num_n; ti++){ 
-                                 temp2=neighbour[ti];
-                                 if (abs(spanningpath[num_put].x-temp2.x)+abs(spanningpath[num_put].y-temp2.y)<=1){
-                                    num_put=num_put+1;
-                                    spanningpath.push_back(temp2);
-                                    neighbour[in]=temp2;
-                                    neighbour[ti]=temp;
-                                    temp.x=temp2.x;
-                                    temp.y=temp2.y;
-                                    break;
-                                 }
-                             }
-                             if (abs(spanningpath[num_put].x-temp2.x)+abs(spanningpath[num_put].y-temp2.y)<=1){
-                                 break;
-                             }
-                         }
-                     }
-                 }
+//                     if (abs(spanningpath[num_put].x-temp2.x)+abs(spanningpath[num_put].y-temp2.y)>1){
+//                         int temp_length=num_put;
+//                         for (int tp=0; tp<temp_length; tp++){
+//                             num_put=num_put+1;
+//                             spanningpath.push_back(spanningpath[temp_length-tp-1]);//
+//                             if (spanningpath.size()>maxspanninglength){
+//							 	break;
+//							 }
+
+//                             for (int ti=in; ti<num_n; ti++){ 
+//                                 temp2=neighbour[ti];
+//                                 if (abs(spanningpath[num_put].x-temp2.x)+abs(spanningpath[num_put].y-temp2.y)<=1){
+//                                    num_put=num_put+1;
+//                                    spanningpath.push_back(temp2);
+//                                    neighbour[in]=temp2;
+//                                    neighbour[ti]=temp;
+//                                    temp.x=temp2.x;
+//                                    temp.y=temp2.y;
+//                                    break;
+//                                 }
+//                             }
+//                             if (abs(spanningpath[num_put].x-temp2.x)+abs(spanningpath[num_put].y-temp2.y)<=1){
+//                                 break;
+//                             }
+//                         }
+//                     }
+//                 }
                
-				        for (int d = 0; d<4; d++){
-                  I_point point;
+				 for (int d = 0; d<4; d++){
+                  	I_point point;
 					        point.y=temp.y+rofs[d];
 					        point.x=temp.x+cofs[d];
+//					        printf("point (%d,%d) visited=%d, occupancy=%d\n",point.x,point.y,map[point.x][point.y].visited, map[point.x][point.y].occupancy);
                      if (point.x>0 && point.y>0 && point.x<MapSizeX && point.y<MapSizeY){
                          if ((map[point.x][point.y].occupancy==0)&&(map[point.x][point.y].visited==0)){
                              neighbour.push_back(point);//dodaj ga u skupinu povezanih
@@ -77,6 +87,7 @@ void GridMapCell::spanningTree(int r, int c){
                  num_n=neighbour.size();
                  temp_start=temp_start+1;
              }
+	printf("spanning tree size %d neighbour tree size %d\n",spanningpath.size(),neighbour.size());
 
   
 }

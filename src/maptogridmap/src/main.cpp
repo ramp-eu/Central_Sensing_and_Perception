@@ -1,5 +1,6 @@
 #include <gmap.h>
 
+#define USE_SPANNING_TREE 1
 //static boost::uuids::random_generator mUUIDGen;
 //static const std::wstring DNS_NAMESPACE_UUID = L"6ba7b810-9dad-11d1-80b4-00c04fd430c8";
 using namespace boost::uuids;
@@ -455,6 +456,10 @@ int main(int argc, char** argv)
             	gmap[is][js].theta=annotations.annotations[k].theta;
             	gmap[is][js].name=annotations.annotations[k].name;
 				gmap[is][js].uuid=annotations.annotations[k].uuid; 
+#if USE_SPANNING_TREE
+				if (gmap[is][js].visited==0)
+					GMC->spanningTree(js,is);
+#endif
 				//cells under the annotation arrow will be changed to occupied
 				for (int l=0; l<5; l++){
 					midx = annotations.annotations[k].x-l*0.2*annotations.annotations[k].distance*cos(annotations.annotations[k].theta*M_PI/180.);
@@ -506,6 +511,7 @@ int main(int argc, char** argv)
 						}					
 					}
 					if (i!=floor((gmap[i][j].x-xorigin)/cellsize) || j!=floor((gmap[i][j].y-yorigin)/cellsize)){
+						gmap[i][j].visited=0;
             			continue;
             		}
 
@@ -556,23 +562,33 @@ int main(int argc, char** argv)
 //            	if (i!=floor((gmap[i][j].x-xorigin)/cellsize) || j!=floor((gmap[i][j].y-yorigin)/cellsize)){
 //            		continue;
 //            	}
-					gmnode.x.push_back(gmap[i][j].x);
-					gmnode.y.push_back(gmap[i][j].y);
-					gmnode.theta.push_back(gmap[i][j].theta);
-					gmnode.name.push_back(gmap[i][j].name);
-					gmnode.uuid.push_back(gmap[i][j].uuid);
-					vertex.x=gmap[i][j].x;
-					vertex.y=gmap[i][j].y;
-					vertex.theta=gmap[i][j].theta;
-					vertex.name=gmap[i][j].name;
-					vertex.uuid=gmap[i][j].uuid;
-					//            	vertex.footprint.clear();
-					//            	for (int d=0; d<4; d++){
-					//            		p.x=vertex.x+cellsize/2.*xofs[d];
-					//            		p.y=vertex.y+cellsize/2.*yofs[d];
-					//            		vertex.footprint.push_back(p);
-					//            	}
-					graph.vertices.push_back(vertex);
+#if USE_SPANNING_TREE
+					if (gmap[i][j].visited==1){//only part of the graph that is connected to annotations
+						gmap[i][j].visited=0;
+#endif
+						gmnode.x.push_back(gmap[i][j].x);
+						gmnode.y.push_back(gmap[i][j].y);
+						gmnode.theta.push_back(gmap[i][j].theta);
+						gmnode.name.push_back(gmap[i][j].name);
+						gmnode.uuid.push_back(gmap[i][j].uuid);
+						vertex.x=gmap[i][j].x;
+						vertex.y=gmap[i][j].y;
+						vertex.theta=gmap[i][j].theta;
+						vertex.name=gmap[i][j].name;
+						vertex.uuid=gmap[i][j].uuid;
+						//            	vertex.footprint.clear();
+						//            	for (int d=0; d<4; d++){
+						//            		p.x=vertex.x+cellsize/2.*xofs[d];
+						//            		p.y=vertex.y+cellsize/2.*yofs[d];
+						//            		vertex.footprint.push_back(p);
+						//            	}
+						graph.vertices.push_back(vertex);
+#if USE_SPANNING_TREE
+					}else{ //the part of the graph disconnected from annotations is occupied
+						gmap[i][j].occupancy=1;
+            			gmap[i][j].staticcell=true;
+					}
+#endif
 		        }
 		   		gmcell.x=gmap[i][j].x;
 		   		gmcell.y=gmap[i][j].y;
@@ -584,7 +600,7 @@ int main(int argc, char** argv)
 
 			GMC->createEdges();
 //			std::cout << GMC->edges.size() <<std::endl;
-			std::cout << graph.vertices.size() <<std::endl;
+			std::cout << "number of vertices: "<<graph.vertices.size() <<std::endl;
 
 			for(int i=0; i<GMC->edges.size(); i++){
 				gmedge.uuid_src.push_back(gmap[GMC->edges[i].xs][GMC->edges[i].ys].uuid);
@@ -599,7 +615,7 @@ int main(int argc, char** argv)
 				gmedge.name.push_back(edge.name);
 				graph.edges.push_back(edge);
 			}
-	std::cout << graph.edges.size() <<std::endl;
+	std::cout << "number of edges: "<< graph.edges.size() <<std::endl;
 	gmap_pub.publish(gm);
 	nodes_pub.publish(gmnode);
 	edges_pub.publish(gmedge);
