@@ -177,6 +177,7 @@ int readAnnotations(std::string annotation_file)
 	char rdLine[36]="";
 	char *line;
 	char *word;
+	char illegalword[30]="<>\"\'=;()+-\* /";
 	maptogridmap::Annotation annt;
 	char * cstr = new char [annotation_file.length()+1];
   std::strcpy (cstr, annotation_file.c_str());
@@ -204,6 +205,15 @@ int readAnnotations(std::string annotation_file)
 			word = &word[1];
 			if (word != NULL){
 //				std::cout << word <<std::endl;
+				for (int it=0; word[it]!='\0'; it++){
+					for (int jt=0; illegalword[jt]!='\0';jt++){
+						if (word[it]==illegalword[jt]){
+							std::cout << "The annotation name \""<< word << "\" contains the illegal character \"" << word[it]<< "\". Please remove any charachter from the illegal charachters: " <<std::endl;
+							std::cout << illegalword <<std::endl;
+							return 0;
+						}
+					}
+				}
 				annt.name=word;
 //				annotations.name.push_back(word);
 				uuid lUUID = lUUIDNameGen(word);
@@ -219,7 +229,7 @@ int readAnnotations(std::string annotation_file)
 		}
 		if (word != NULL){
 //			std::cout << word <<std::endl;
-			if (strcmp(word,"point_x ")==0){
+			if ((strcmp(word,"point_x ")==0) || (strcmp(word,"point_x")==0)){
 				word = strtok (NULL," ");
 				if (word!= NULL){
 //					std::cout << word <<std::endl;
@@ -227,7 +237,7 @@ int readAnnotations(std::string annotation_file)
 					annt.x=(atof(word));
 				}
 			}
-			if (strcmp(word,"point_y ")==0){
+			if ((strcmp(word,"point_y ")==0)||(strcmp(word,"point_y")==0)){
 				word = strtok (NULL," ");
 				if (word!= NULL){
 //					std::cout << word <<std::endl;
@@ -235,7 +245,7 @@ int readAnnotations(std::string annotation_file)
 					annt.y=(atof(word));
 				}
 			}
-			if (strcmp(word,"theta ")==0){
+			if ((strcmp(word,"theta ")==0)||(strcmp(word,"theta")==0)){
 				word = strtok (NULL," ");
 				if (word!= NULL){
 //					std::cout << word <<std::endl;
@@ -243,7 +253,7 @@ int readAnnotations(std::string annotation_file)
 					annt.theta=(atof(word));
 				}
 			}
-			if (strcmp(word,"distance ")==0){
+			if ((strcmp(word,"distance ")==0)||(strcmp(word,"distance")==0)){
 				word = strtok (NULL," ");
 				if (word!= NULL){
 //					std::cout << word <<std::endl;
