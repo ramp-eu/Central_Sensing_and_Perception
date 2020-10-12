@@ -208,6 +208,7 @@ int readAnnotations(std::string annotation_file)
 				for (int it=0; word[it]!='\0'; it++){
 					for (int jt=0; illegalword[jt]!='\0';jt++){
 						if (word[it]==illegalword[jt]){
+							ROS_ERROR("Annotation name contains an illegal character. Here are the details:");
 							std::cout << "The annotation name \""<< word << "\" contains the illegal character \"" << word[it]<< "\"."<< std::endl;
 							std::cout << "Please name annotations only with a combination of letters, numbers and _ (underscore)."<< std::endl;
 							std::cout << "Do not use any character from the list of illegal characters: " <<std::endl;
