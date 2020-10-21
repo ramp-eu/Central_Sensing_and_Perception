@@ -5,7 +5,7 @@
 //#include <algorithm>
 
 //#include <maptogridmap/GetMap.h>
-#include <maptogridmap/Gridmap.h>
+//#include <maptogridmap/Gridmap.h>
 #include <maptogridmap/Graph.h>
 #include <maptogridmap/Nodes.h>
 #include <maptogridmap/Edges.h>
@@ -24,35 +24,35 @@ protected:
   std::string target_frame_;
 
 public:
-  ros::Publisher gridmapls_pub, graphvs_pub, stc_pub, globalpoints_pub, graph_pub;
+  ros::Publisher graphvs_pub, stc_pub, globalpoints_pub, graph_pub;
  	ros::Subscriber gml_sub, nodes_sub, edges_sub, newobs_sub, graph_sub;
 
 
-    visualization_msgs::Marker gridmapls, graphvs, stc, glp, graphvertex;
+    visualization_msgs::Marker graphvs, stc, glp, graphvertex;
 
   VisualizationPublisherGML(ros::NodeHandle n) :
       nh_(n),  target_frame_("map") 
   {
 
-	 	gml_sub = nh_.subscribe("map/topology",1,&VisualizationPublisherGML::gridmapCallback, this);
+//	 	gml_sub = nh_.subscribe("map/topology",1,&VisualizationPublisherGML::gridmapCallback, this);
 	 	graph_sub = nh_.subscribe("map/graph",1,&VisualizationPublisherGML::graphCallback, this);
 	 	nodes_sub = nh_.subscribe("map/nodes",1,&VisualizationPublisherGML::nodesCallback, this);
 	 	edges_sub = nh_.subscribe("map/edges",1,&VisualizationPublisherGML::edgesCallback, this);
 	 	newobs_sub = nh_.subscribe("/robot_0/newObstacles",1,&VisualizationPublisherGML::newObstaclesCallback, this);
-		gridmapls_pub=nh_.advertise<visualization_msgs::Marker>("/gridmap_markerListener",10);
+//		gridmapls_pub=nh_.advertise<visualization_msgs::Marker>("/gridmap_markerListener",10);
 
-    gridmapls.header.frame_id = target_frame_;
-    gridmapls.header.stamp = ros::Time::now();
-    gridmapls.ns =  "maplistener";
-    gridmapls.action = visualization_msgs::Marker::ADD;
-    gridmapls.pose.orientation.w  = 1.0;
-    gridmapls.type = visualization_msgs::Marker::POINTS; //LINE_STRIP;
-    gridmapls.scale.x = 0.25; 
-    gridmapls.scale.y = 0.25; 
-    gridmapls.color.r = 0.8;
-    gridmapls.color.g = 0.;
-    gridmapls.color.b = 0.8;
-    gridmapls.color.a = 1.0;
+//    gridmapls.header.frame_id = target_frame_;
+//    gridmapls.header.stamp = ros::Time::now();
+//    gridmapls.ns =  "maplistener";
+//    gridmapls.action = visualization_msgs::Marker::ADD;
+//    gridmapls.pose.orientation.w  = 1.0;
+//    gridmapls.type = visualization_msgs::Marker::POINTS; //LINE_STRIP;
+//    gridmapls.scale.x = 0.25; 
+//    gridmapls.scale.y = 0.25; 
+//    gridmapls.color.r = 0.8;
+//    gridmapls.color.g = 0.;
+//    gridmapls.color.b = 0.8;
+//    gridmapls.color.a = 1.0;
       
 	globalpoints_pub=nh_.advertise<visualization_msgs::Marker>("/newobstacles_markerListener",10);
 
@@ -117,7 +117,7 @@ public:
   }
 
   void visualizationduringmotion();
-  void gridmapCallback(const maptogridmap::GridmapConstPtr& gmMsg);
+//  void gridmapCallback(const maptogridmap::GridmapConstPtr& gmMsg);
   void graphCallback(const maptogridmap::GraphConstPtr& gmMsg);
   void nodesCallback(const maptogridmap::NodesConstPtr& gmMsg);
   void edgesCallback(const maptogridmap::EdgesConstPtr& gmMsg);
@@ -154,7 +154,7 @@ int main(int argc, char** argv)
 
 void VisualizationPublisherGML::visualizationduringmotion(){
 
-			gridmapls_pub.publish(gridmapls);
+//			gridmapls_pub.publish(gridmapls);
 			graphvs_pub.publish(graphvs);
 			globalpoints_pub.publish(glp);
 			stc_pub.publish(stc);
@@ -163,24 +163,24 @@ void VisualizationPublisherGML::visualizationduringmotion(){
 
 }
 
-void VisualizationPublisherGML::gridmapCallback(const maptogridmap::GridmapConstPtr& gmMsg)
-{
-	int width = gmMsg->info.width;
-	int height = gmMsg->info.height;
-  double resolution = gmMsg->info.resolution;
-//  printf("listening message occupancy map data: res=%f, width=%d, height=%d\n", resolution, width, height);
-  gridmapls.points.clear();
-  geometry_msgs::Point p; 
-  int sizex=width;
-  int sizey=height;
-	for (int i=0; i<sizex*sizey; i++){
-		p.x=gmMsg->x[i];
-	  p.y=gmMsg->y[i];
-		if ((gmMsg->occupancy[i]>0)){
-			gridmapls.points.push_back(p);
-		}
-	}
-}
+//void VisualizationPublisherGML::gridmapCallback(const maptogridmap::GridmapConstPtr& gmMsg)
+//{
+//	int width = gmMsg->info.width;
+//	int height = gmMsg->info.height;
+//  double resolution = gmMsg->info.resolution;
+////  printf("listening message occupancy map data: res=%f, width=%d, height=%d\n", resolution, width, height);
+//  gridmapls.points.clear();
+//  geometry_msgs::Point p; 
+//  int sizex=width;
+//  int sizey=height;
+//	for (int i=0; i<sizex*sizey; i++){
+//		p.x=gmMsg->x[i];
+//	  p.y=gmMsg->y[i];
+//		if ((gmMsg->occupancy[i]>0)){
+//			gridmapls.points.push_back(p);
+//		}
+//	}
+//}
 
 void VisualizationPublisherGML::graphCallback(const maptogridmap::GraphConstPtr& gmMsg)
 {

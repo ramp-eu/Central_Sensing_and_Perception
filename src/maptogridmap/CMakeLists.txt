@@ -20,8 +20,6 @@ find_package(catkin REQUIRED COMPONENTS
 )
 add_message_files(
   FILES
-  Gridmap.msg
-  GridmapCell.msg
   Nodes.msg
   Edges.msg
   Annotations.msg
@@ -29,10 +27,6 @@ add_message_files(
   Vertex.msg
   Edge.msg
   Graph.msg
-)
-add_service_files(
-  FILES
-  GetMap.srv
 )
 
 generate_messages(

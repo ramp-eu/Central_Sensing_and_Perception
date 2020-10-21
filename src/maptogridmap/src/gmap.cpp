@@ -99,6 +99,7 @@ void GridMapCell::createEdges(){
 	int cofs[4]={ 1, 0, -1, 0};
 //	printf("size_cell = %f, origin = (%f, %f)\n",size_cell, xorigin, yorigin);
 	int is,js,ig,jg;
+	bool duplicate_edge;
 	for (int i=0; i<MapSizeX; i++){
 				for (int j=0; j<MapSizeY; j++){
 				
@@ -133,12 +134,24 @@ void GridMapCell::createEdges(){
 //											printf("realne koordinate (%f,%f) (%f,%f)\n",map[edge.xs][edge.ys].x,map[edge.xs][edge.ys].y,map[edge.xg][edge.yg].x,map[edge.xg][edge.yg].y);
 //											printf("indeks u gridmapi (%d,%d) (%d,%d)\n",edge.xs,edge.ys,edge.xg,edge.yg);
 //											printf("provjera indeksa iz realnih koordinata (%d,%d) (%d,%d)\n",is,js,ig,jg);
-											if ((map[is][js].occupancy==0) && (map[ig][jg].occupancy==0)){
+										//added condition that start and goal vertices are not equal
+											if ((map[is][js].occupancy==0) && (map[ig][jg].occupancy==0) && ((is!=ig) || (js!=jg))){
 												edge.xs=is;
 												edge.ys=js;
 												edge.xg=ig;
 												edge.yg=jg;
-												edges.push_back(edge);
+												//test for duplicates
+												duplicate_edge=false;
+												for (int k=0; k<edges.size();k++){
+													if ((edges[k].xs==edge.xs) && (edges[k].ys==edge.ys) && (edges[k].xg==edge.xg) && (edges[k].yg==edge.yg)){
+//														printf("duplicate edge exists (%d,%d) (%d,%d)\n",is,js,ig,jg);
+														duplicate_edge=true;
+														break;
+													}
+												}
+												if (!duplicate_edge){
+													edges.push_back(edge);
+												}
 											}
 					        			}else{
                             				edges.push_back(edge);

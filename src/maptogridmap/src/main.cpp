@@ -10,7 +10,7 @@ name_generator lUUIDNameGen(string_generator()("6ba7b810-9dad-11d1-80b4-00c04fd4
 //boost::uuids::name_generator lUUIDNameGen = boost::uuids::name_generator(mUUIDStringGen(DNS_NAMESPACE_UUID));
 
 GridMapCell *GMC;
-maptogridmap::GetMap::Response map_resp_;
+//maptogridmap::GetMap::Response map_resp_;
 int cycle_number;
 double cellsize=2.;
 mapupdates::NewObstacles obstacles;
@@ -128,16 +128,16 @@ public:
 
 };
 
-bool mapCallback(maptogridmap::GetMap::Request  &req, maptogridmap::GetMap::Response &res )
-     {
-       // request is empty; we ignore it
- 
-       // = operator is overloaded to make deep copy (tricky!)
-       res = map_resp_;
-       ROS_INFO("Sending map");
- 
-       return true;
-     }
+//bool mapCallback(maptogridmap::GetMap::Request  &req, maptogridmap::GetMap::Response &res )
+//     {
+//       // request is empty; we ignore it
+// 
+//       // = operator is overloaded to make deep copy (tricky!)
+//       res = map_resp_;
+//       ROS_INFO("Sending map");
+// 
+//       return true;
+//     }
 void newObstaclesCallback(const mapupdates::NewObstaclesConstPtr& msg)
 {
 //	std::cout << msg->x.size()<<std::endl;
@@ -359,7 +359,7 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "maptogridmap");
   ros::NodeHandle nh;
   
-  ros::Publisher gmap_pub = nh.advertise<maptogridmap::Gridmap>("map/topology",1);
+//  ros::Publisher gmap_pub = nh.advertise<maptogridmap::Gridmap>("map/topology",1);
   ros::Publisher graph_pub = nh.advertise<maptogridmap::Graph>("map/graph",1);
   ros::Publisher nodes_pub = nh.advertise<maptogridmap::Nodes>("map/nodes",1);
   ros::Publisher edges_pub = nh.advertise<maptogridmap::Edges>("map/edges",1);
@@ -368,7 +368,7 @@ int main(int argc, char** argv)
   ros::Subscriber gmu_sub1 = nh.subscribe("/robot_1/newObstacles",1,newObstaclesCallback1);
   ros::Subscriber gmu_sub2 = nh.subscribe("/robot_2/newObstacles",1,newObstaclesCallback2);
 
-  ros::ServiceServer service = nh.advertiseService("grid_map", mapCallback);
+//  ros::ServiceServer service = nh.advertiseService("grid_map", mapCallback);
   VisualizationPublisherGM visualGM(nh);
   nav_msgs::GetMap map;
   ros::service::waitForService("static_map", 5000);
@@ -427,25 +427,29 @@ int main(int argc, char** argv)
 		return 0;
 	}
 	
-	maptogridmap::GridmapCell gmcell;
-	maptogridmap::Gridmap gm;
+//	maptogridmap::GridmapCell gmcell;
+//	maptogridmap::Gridmap gm;
 	maptogridmap::Nodes gmnode;
 	maptogridmap::Edges gmedge;
 	maptogridmap::Vertex vertex;
 	maptogridmap::Edge edge;
 	maptogridmap::Graph graph;
-	gm.info.width=sizex;
-	gm.info.height=sizey;
-	gm.info.resolution=cellsize;
-	gm.info.map_load_time = ros::Time::now();
-	gm.header.frame_id = "map";
-	gm.header.stamp = ros::Time::now();
-	gmnode.header=gm.header;
-	gmnode.info=gm.info;
-	gmedge.header=gm.header;
-	graph.header=gm.header;
-	map_resp_.map.header=gm.header;
-	map_resp_.map.info=gm.info;
+//	gm.info.width=sizex;
+//	gm.info.height=sizey;
+//	gm.info.resolution=cellsize;
+//	gm.info.map_load_time = ros::Time::now();
+//	gm.header.frame_id = "map";
+//	gm.header.stamp = ros::Time::now();
+	graph.header.frame_id = "map";
+	graph.header.stamp = ros::Time::now();
+	gmnode.header=graph.header;
+	gmnode.info.width=sizex;
+	gmnode.info.height=sizey;
+	gmnode.info.resolution=cellsize;
+	gmnode.info.map_load_time = ros::Time::now();
+	gmedge.header=graph.header;
+//	map_resp_.map.header=gm.header;
+//	map_resp_.map.info=gm.info;
 	double tempx,tempy,midx,midy;
 //  double thirdx,thirdy;
 	geometry_msgs::Point p;
@@ -499,9 +503,9 @@ int main(int argc, char** argv)
 	for (int i=0; i<sizex; i++){
 		for (int j=0; j<sizey; j++){
 			if (1){
-				gm.x.push_back(gmap[i][j].x);
-	            gm.y.push_back(gmap[i][j].y);
-	            gm.occupancy.push_back(gmap[i][j].occupancy);
+//				gm.x.push_back(gmap[i][j].x);
+//	            gm.y.push_back(gmap[i][j].y);
+//	            gm.occupancy.push_back(gmap[i][j].occupancy);
 	            if (gmap[i][j].occupancy==0){
 
 
@@ -603,10 +607,10 @@ int main(int argc, char** argv)
 					}
 #endif
 		        }
-		   		gmcell.x=gmap[i][j].x;
-		   		gmcell.y=gmap[i][j].y;
-		   		gmcell.occupancy=gmap[i][j].occupancy;
-				gm.gmc.push_back(gmcell);
+//		   		gmcell.x=gmap[i][j].x;
+//		   		gmcell.y=gmap[i][j].y;
+//		   		gmcell.occupancy=gmap[i][j].occupancy;
+//				gm.gmc.push_back(gmcell);
 			}
 		}
 	}
@@ -614,22 +618,40 @@ int main(int argc, char** argv)
 			GMC->createEdges();
 //			std::cout << GMC->edges.size() <<std::endl;
 			std::cout << "number of vertices: "<<graph.vertices.size() <<std::endl;
+			std::cout << "number of Nodes: "<<gmnode.name.size() <<std::endl;
+			//test for duplicates
+			for (int i=0; i<gmnode.name.size()-1;i++){
+				for (int j=i+1; j<gmnode.name.size();j++){
+					if (gmnode.name[i].compare(gmnode.name[j])==0){
+						std::cout << "duplicate name of vertices: "<<gmnode.name[i] <<std::endl;
+					}
+				}
+			}
 
 			for(int i=0; i<GMC->edges.size(); i++){
-				gmedge.uuid_src.push_back(gmap[GMC->edges[i].xs][GMC->edges[i].ys].uuid);
-				gmedge.uuid_dest.push_back(gmap[GMC->edges[i].xg][GMC->edges[i].yg].uuid);
 //				boost::uuids::uuid lUUID=mUUIDGen();
 				edge.uuid_src=gmap[GMC->edges[i].xs][GMC->edges[i].ys].uuid;
 				edge.uuid_dest=gmap[GMC->edges[i].xg][GMC->edges[i].yg].uuid;
 				edge.name="edge_"+std::to_string(GMC->edges[i].xs*sizey+GMC->edges[i].ys)+"_"+std::to_string(GMC->edges[i].xg*sizey+GMC->edges[i].yg);
 				uuid lUUID = lUUIDNameGen(edge.name);
 				edge.uuid=to_string(lUUID);
+				gmedge.uuid_src.push_back(edge.uuid_src);
+				gmedge.uuid_dest.push_back(edge.uuid_dest);
 				gmedge.uuid.push_back(edge.uuid);
 				gmedge.name.push_back(edge.name);
 				graph.edges.push_back(edge);
 			}
 	std::cout << "number of edges: "<< graph.edges.size() <<std::endl;
-	gmap_pub.publish(gm);
+	std::cout << "number of Edges: "<< gmedge.name.size() <<std::endl;
+	//test for duplicates
+	for (int i=0; i<gmedge.name.size()-1;i++){
+		for (int j=i+1; j<gmedge.name.size();j++){
+			if (gmedge.name[i].compare(gmedge.name[j])==0){
+				std::cout << "duplicate name of edges: "<<gmedge.name[i] <<std::endl;
+			}
+		}
+	}
+//	gmap_pub.publish(gm);
 	nodes_pub.publish(gmnode);
 	edges_pub.publish(gmedge);
 	graph_pub.publish(graph);
@@ -653,7 +675,7 @@ int main(int argc, char** argv)
 				{
 	//				std::cout <<pointx[i]<<" "<<pointy[i]<<std::endl;
 					gmap[ii][jj].occupancy = 100;
-					gm.occupancy[ii*sizey+jj] = 1;
+//					gm.occupancy[ii*sizey+jj] = 1;
 					update_nodes_edges = 1;
 				}
 			}	
@@ -667,7 +689,7 @@ int main(int argc, char** argv)
 				{
 	//				std::cout <<pointx[i]<<" "<<pointy[i]<<std::endl;
 					gmap[ii][jj].occupancy = 100;
-					gm.occupancy[ii*sizey+jj] = 1;
+//					gm.occupancy[ii*sizey+jj] = 1;
 					update_nodes_edges = 1;
 				}
 			}	
@@ -681,7 +703,7 @@ int main(int argc, char** argv)
 				{
 	//				std::cout <<pointx[i]<<" "<<pointy[i]<<std::endl;
 					gmap[ii][jj].occupancy = 100;
-					gm.occupancy[ii*sizey+jj] = 1;
+//					gm.occupancy[ii*sizey+jj] = 1;
 					update_nodes_edges = 1;
 				}
 			}	
@@ -735,14 +757,14 @@ int main(int argc, char** argv)
 			gmedge.uuid.clear();
 			gmedge.name.clear();
 			for(int i=0; i<GMC->edges.size(); i++){
-						gmedge.uuid_src.push_back(gmap[GMC->edges[i].xs][GMC->edges[i].ys].uuid);
-						gmedge.uuid_dest.push_back(gmap[GMC->edges[i].xg][GMC->edges[i].yg].uuid);
 //						boost::uuids::uuid lUUID=mUUIDGen();
 						edge.uuid_src=gmap[GMC->edges[i].xs][GMC->edges[i].ys].uuid;
 						edge.uuid_dest=gmap[GMC->edges[i].xg][GMC->edges[i].yg].uuid;
 						edge.name="edge_"+std::to_string(GMC->edges[i].xs*sizey+GMC->edges[i].ys)+"_"+std::to_string(GMC->edges[i].xg*sizey+GMC->edges[i].yg);
 						uuid lUUID = lUUIDNameGen(edge.name);
 						edge.uuid=to_string(lUUID);
+						gmedge.uuid_src.push_back(edge.uuid_src);
+						gmedge.uuid_dest.push_back(edge.uuid_dest);
 						gmedge.uuid.push_back(edge.uuid);
 						gmedge.name.push_back(edge.name);
 						graph.edges.push_back(edge);
@@ -751,10 +773,10 @@ int main(int argc, char** argv)
 
 		if ((cycle_number % 20)==0) { // || update_nodes_edges){
 		gmnode.header.stamp = ros::Time::now();
-		gm.header.stamp = ros::Time::now();
+//		gm.header.stamp = ros::Time::now();
 		gmedge.header.stamp = ros::Time::now();
 		graph.header.stamp = ros::Time::now();
-		gmap_pub.publish(gm);
+//		gmap_pub.publish(gm);
 		nodes_pub.publish(gmnode);
 		edges_pub.publish(gmedge);
 		graph_pub.publish(graph);
