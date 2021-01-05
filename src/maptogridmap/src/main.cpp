@@ -10,14 +10,14 @@ name_generator lUUIDNameGen(string_generator()("6ba7b810-9dad-11d1-80b4-00c04fd4
 //boost::uuids::name_generator lUUIDNameGen = boost::uuids::name_generator(mUUIDStringGen(DNS_NAMESPACE_UUID));
 
 GridMapCell *GMC;
-//maptogridmap::GetMap::Response map_resp_;
 int cycle_number;
 double cellsize=2.;
 mapupdates::NewObstacles obstacles;
 mapupdates::NewObstacles obstacles1; //for robot_1
 mapupdates::NewObstacles obstacles2; //for robot_2
-//maptogridmap::Nodes annotations;
 maptogridmap::Annotations annotations;
+maptogridmap::Graph graph;
+
 
 class VisualizationPublisherGM
 {
@@ -108,13 +108,6 @@ public:
     annt.scale.x = 0.5; 
     annt.scale.y = 0.3; 
     annt.scale.z = 0.3;
-//		annt.points.resize(2);
-//		annt.points[0].x = 0.;
-//		annt.points[0].y = 0.;
-//		annt.points[0].z = 0.;
-//		annt.points[1].x = 0.;
-//		annt.points[1].y = 0.;
-//		annt.points[1].z = 0.5;
     annt.color.r = 1.;
     annt.color.g = 1.;
     annt.color.b = 0.;
@@ -128,16 +121,6 @@ public:
 
 };
 
-//bool mapCallback(maptogridmap::GetMap::Request  &req, maptogridmap::GetMap::Response &res )
-//     {
-//       // request is empty; we ignore it
-// 
-//       // = operator is overloaded to make deep copy (tricky!)
-//       res = map_resp_;
-//       ROS_INFO("Sending map");
-// 
-//       return true;
-//     }
 void newObstaclesCallback(const mapupdates::NewObstaclesConstPtr& msg)
 {
 //	std::cout << msg->x.size()<<std::endl;
@@ -178,6 +161,7 @@ int readAnnotations(std::string annotation_file)
 	char *line;
 	char *word;
 	char illegalword[35]="<>\"\'=;()+-\* /#$&,.!:?@[]^`{|}~";
+	bool validname, unchanged=true;
 	maptogridmap::Annotation annt;
 	char * cstr = new char [annotation_file.length()+1];
   std::strcpy (cstr, annotation_file.c_str());
@@ -205,23 +189,44 @@ int readAnnotations(std::string annotation_file)
 			word = &word[1];
 			if (word != NULL){
 //				std::cout << word <<std::endl;
+				validname=true;
 				for (int it=0; word[it]!='\0'; it++){
 					for (int jt=0; illegalword[jt]!='\0';jt++){
 						if (word[it]==illegalword[jt]){
-							ROS_ERROR("Annotation name contains an illegal character. Here are the details:");
+//							ROS_ERROR("Annotation name contains an illegal character. Here are the details:");
+							ROS_WARN("Annotation name contains an illegal character. Here are the details:");
 							std::cout << "The annotation name \""<< word << "\" contains the illegal character \"" << word[it]<< "\"."<< std::endl;
 							std::cout << "Please name annotations only with a combination of letters, numbers and _ (underscore)."<< std::endl;
 							std::cout << "Do not use any character from the list of illegal characters: " <<std::endl;
 							std::cout << illegalword <<std::endl;
-							return 0;
+							annt.name = "location_"+std::to_string(annotations.annotations.size());
+							std::cout << "Renaming to " << annt.name << std::endl;
+							validname=false;
+							unchanged=false;
+							break;
+//							return 0;
 						}
 					}
+					if (!validname)
+						break;
 				}
-				annt.name=word;
-//				annotations.name.push_back(word);
+				if (validname)
+					annt.name=word;
+				for (int k=0; k<annotations.annotations.size(); k++){
+						if (annotations.annotations[k].name.compare(annt.name)==0){
+							ROS_WARN("Two annotations have the same name! Names must be unique! Here are the details:");
+							std::cout << "The annotation " << annotations.annotations.size()+1 <<" has the same name as the annotation " << k+1 << std::endl;
+							std::cout << annt <<std::endl;
+							std::cout << annotations.annotations[k] <<std::endl;
+							validname=false;
+							unchanged=false;
+							annt.name = "location_"+std::to_string(annotations.annotations.size());
+							std::cout << "Renaming to " << annt.name << std::endl;
+							break;
+						}
+				}
 				uuid lUUID = lUUIDNameGen(word);
 				annt.uuid=to_string(lUUID);
-//				annotations.uuid.push_back(to_string(lUUID));
 				continue;
 			}
 		}
@@ -236,7 +241,6 @@ int readAnnotations(std::string annotation_file)
 				word = strtok (NULL," ");
 				if (word!= NULL){
 //					std::cout << word <<std::endl;
-//					annotations.x.push_back(atof(word));
 					annt.x=(atof(word));
 				}
 			}
@@ -244,7 +248,6 @@ int readAnnotations(std::string annotation_file)
 				word = strtok (NULL," ");
 				if (word!= NULL){
 //					std::cout << word <<std::endl;
-//					annotations.y.push_back(atof(word));
 					annt.y=(atof(word));
 				}
 			}
@@ -252,7 +255,6 @@ int readAnnotations(std::string annotation_file)
 				word = strtok (NULL," ");
 				if (word!= NULL){
 //					std::cout << word <<std::endl;
-//					annotations.theta.push_back(atof(word));
 					annt.theta=(atof(word));
 				}
 			}
@@ -260,29 +262,7 @@ int readAnnotations(std::string annotation_file)
 				word = strtok (NULL," ");
 				if (word!= NULL){
 //					std::cout << word <<std::endl;
-//					annotations.distance.push_back(atof(word));
 					annt.distance=(atof(word));
-					float annttempx = annt.x-annt.distance*cos(annt.theta*M_PI/180.);
-					float annttempy = annt.y-annt.distance*sin(annt.theta*M_PI/180.);
-					for (int k=0; k<annotations.annotations.size(); k++){
-						if (annotations.annotations[k].name.compare(annt.name)==0){
-							ROS_ERROR("Annotations have the same name! Names must be unique! Here are the details:");
-							std::cout << "The annotation " << annotations.annotations.size()+1 <<" has the same name as the annotation " << k+1 << std::endl;
-							std::cout << annt <<std::endl;
-							std::cout << annotations.annotations[k] <<std::endl;
-							return 0;
-						}
-						float tempx = annotations.annotations[k].x-annotations.annotations[k].distance*cos(annotations.annotations[k].theta*M_PI/180.);
-						float tempy = annotations.annotations[k].y-annotations.annotations[k].distance*sin(annotations.annotations[k].theta*M_PI/180.);
-						if ((fabs(tempx-annttempx)<cellsize) && (fabs(tempy-annttempy)<cellsize)){
-							ROS_ERROR("Annotations are too close!!! Change the coordinates of the annotation or decrease the cell size. Here are the details:");
-							std::cout << "The annotation " << annt.name <<" is too close to the annotation " << annotations.annotations[k].name << std::endl;
-							std::cout << annt <<std::endl;
-							std::cout << annotations.annotations[k] <<std::endl;
-							std::cout << "The annotation "<< annt.name <<" has the topology vertex at ("<<annttempx<<", "<<annttempy<<" ), which is closer than the cell_size "<< cellsize <<" of the topology vertex at ("<<tempx<<", "<<tempy<<" ) of the annotation " << annotations.annotations[k].name <<std::endl;
-							return 0;
-						}
-					}
 					annotations.annotations.push_back(annt);
 				}
 			}
@@ -290,85 +270,250 @@ int readAnnotations(std::string annotation_file)
 
   }
 
-//this stays for debugging when running the code from the devel/lib/maptogridmap	
-//	if ( (F = fopen("annotations.ini","r")) == NULL ){
-//		std::cout << "no file to read "<<std::endl;
-//	}else{
-//		while (fgets(rdLine,35,F) != NULL)
-//		{
-//			line=&rdLine[0];
-////			std::cout << line <<std::endl;
-//			if (line[0] == '#' || line[0] == '\n')
-//			{
-//				std::cout << "comment or empty row "<<std::endl;
-//				continue;
-//			}
-//			if (line[0] == '['){
-//				std::cout << "annotation" <<std::endl;
-//				word = strtok(line,"]");
-//				if (word != NULL){
-//					std::cout << word <<std::endl;
-//				}
-//				word = &word[1];
-//				if (word != NULL){
-//					std::cout << word <<std::endl;
-//					annotations.name.push_back(word);
-//					continue;
-//				}
-//			}
-//			word = strtok (line,"=");
-//			if (word == NULL){
-//				std::cout << "no input" <<std::endl;
-//				continue;
-//			}
-////			validconv = 0;
-//			if (word != NULL){
-//				std::cout << word <<std::endl;
-//				if (strcmp(word,"point_x ")==0){
-//					word = strtok (NULL," ");
-//					if (word!= NULL){
-//						std::cout << word <<std::endl;
-//						annotations.x.push_back(atof(word));
-//					}
-//				}
-//				if (strcmp(word,"point_y ")==0){
-//					word = strtok (NULL," ");
-//					if (word!= NULL){
-//						std::cout << word <<std::endl;
-//						annotations.y.push_back(atof(word));
-//					}
-//				}
-//				if (strcmp(word,"theta ")==0){
-//					word = strtok (NULL," ");
-//					if (word!= NULL){
-//						std::cout << word <<std::endl;
-//						annotations.theta.push_back(atof(word));
-//					}
-//				}
-//			}
-//		}
-//		fclose(F);
-//	}
 	std::cout << annotations <<std::endl;
-	return 1;
+	return (unchanged);
 }
+
+int annotationsToGraph(int file_flag){
+
+	maptogridmap::Vertex vertex;
+	maptogridmap::Edge edge;
+
+	GMcell **gmap=GMC->GetMap();
+  int sizex=GMC->GetMapSizeX();
+  int sizey=GMC->GetMapSizeY();
+	double cellsize=GMC->GetSizeCell();
+  double xorigin=GMC->GetOriginX();
+  double yorigin=GMC->GetOriginY(); 
+
+	double tempx,tempy,midx,midy;
+	double distance;
+	int is,js,ig,jg;
+  int rofs[8]={ 0, -1, 0, 1, 1, -1, 1, -1};   
+	int cofs[8]={ 1, 0, -1, 0, 1, 1, -1, -1};
+	
+	bool unchanged=true;
+	bool validdistance=true;
+
+	graph.header.frame_id = "map";
+	graph.header.stamp = ros::Time::now();
+	graph.vertices.clear();
+	graph.edges.clear();
+	
+  //write down the annotations into gridmap first
+	int k=0;
+	while (k<annotations.annotations.size()){
+		tempx = annotations.annotations[k].x-annotations.annotations[k].distance*cos(annotations.annotations[k].theta*M_PI/180.);
+		tempy = annotations.annotations[k].y-annotations.annotations[k].distance*sin(annotations.annotations[k].theta*M_PI/180.);
+		is=floor((tempx-xorigin)/cellsize);
+		js=floor((tempy-yorigin)/cellsize);
+		validdistance=true;
+		if (is>=0 && js>=0 && is<sizex && js<sizey){
+			//check if annotation vertex is occupied - do not do anything for the occupied annotations
+			if (gmap[is][js].occupancy==0){
+			
+				//check if any other annotation falls into the same grid cell and if annotations are closer than the cell size (requirement from TP)
+				for (int l=k+1; l<annotations.annotations.size(); l++){
+					midx = annotations.annotations[l].x-annotations.annotations[l].distance*cos(annotations.annotations[l].theta*M_PI/180.);
+					midy = annotations.annotations[l].y-annotations.annotations[l].distance*sin(annotations.annotations[l].theta*M_PI/180.);
+					ig=floor((midx-xorigin)/cellsize);
+					jg=floor((midy-yorigin)/cellsize);
+					if ((ig==is) && (jg==js)){
+						ROS_WARN("Annotations fall into the same grid cell!!! Deleting this annotation... Change the coordinates of the annotation or decrease the cell size. Here are the details:");
+						std::cout << "The annotation " << annotations.annotations[k].name <<" is too close to the annotation " << annotations.annotations[l].name << std::endl;
+						std::cout << annotations.annotations[k] <<std::endl;
+						std::cout << annotations.annotations[l] <<std::endl;
+						std::cout << "Both annotations fall into the same topology vertex at ("<<is<<", "<<js<<" )" <<std::endl;
+						annotations.annotations.erase(annotations.annotations.begin()+l);
+						validdistance=false;
+						unchanged=false;
+						break;
+					}
+//					std::cout << "The annotation "<< annotations.annotations[k].name <<" has the topology vertex at ("<<tempx<<", "<<tempy<<" ), while the topology vertex at ("<<midx<<", "<<midy<<" ) of the annotation " << annotations.annotations[l].name <<std::endl;
+					distance=sqrt(pow((tempx-midx),2)+pow((tempy-midy),2));
+//					std::cout << distance << std::endl;
+					if (distance<cellsize){
+						ROS_WARN("Annotations are too close!!! Deleting this annotation... Change the coordinates of the annotation or decrease the cell size. Here are the details:");
+						std::cout << "The annotation " << annotations.annotations[k].name <<" is too close to the annotation " << annotations.annotations[l].name << std::endl;
+						std::cout << annotations.annotations[k] <<std::endl;
+						std::cout << annotations.annotations[l] <<std::endl;
+						std::cout << "The annotation "<< annotations.annotations[k].name <<" has the topology vertex at ("<<tempx<<", "<<tempy<<" ), which is distanced for " << distance << "(less than the cell_size = "<< cellsize <<") from the topology vertex at ("<<midx<<", "<<midy<<" ) of the annotation " << annotations.annotations[l].name <<std::endl;
+						annotations.annotations.erase(annotations.annotations.begin()+l);
+						validdistance=false;
+						unchanged=false;
+						break;
+					}
+					
+				}
+//				if (!validdistance)
+//					continue;
+					
+				gmap[is][js].annotation=true;
+				gmap[is][js].x=tempx;
+        gmap[is][js].y=tempy;
+        gmap[is][js].theta=annotations.annotations[k].theta;
+        gmap[is][js].name=annotations.annotations[k].name;
+				gmap[is][js].uuid=annotations.annotations[k].uuid; 
+//				std::cout << "is= "<< is << "js= "<<js << std::endl;
+#if USE_SPANNING_TREE
+				if (gmap[is][js].visited==0)
+					GMC->spanningTree(js,is);
+#endif
+				//cells under the annotation arrow will be changed to occupied
+				for (int l=0; l<5; l++){
+					midx = annotations.annotations[k].x-l*0.2*annotations.annotations[k].distance*cos(annotations.annotations[k].theta*M_PI/180.);
+					midy = annotations.annotations[k].y-l*0.2*annotations.annotations[k].distance*sin(annotations.annotations[k].theta*M_PI/180.);
+					ig=floor((midx-xorigin)/cellsize);
+					jg=floor((midy-yorigin)/cellsize);
+					if (ig>=0 && jg>=0 && ig<sizex && jg<sizey){
+						if (gmap[ig][jg].annotation==false) 
+						{
+							gmap[ig][jg].occupancy=1;
+            	gmap[ig][jg].staticcell=true;
+						}
+					}
+				}
+			}else{
+				std::cout << annotations.annotations[k] <<std::endl;
+				if (file_flag){
+					ROS_WARN("Annotation is occupied!!! Deleting occupied annotation... Add new annotation by pressing the 2D Nav Goal button in RViz or exit and edit manually annotations.ini file or decrease the cell size. Here are the details:");
+					printf("The vertex of the annotation in the topology graph is at the occupied position (%f,%f) for the cell_size = %f m.\n",tempx,tempy,cellsize);
+					annotations.annotations.erase(annotations.annotations.begin()+k);
+					unchanged=false;
+					continue;
+				}else{
+					ROS_WARN("Annotation is occupied!!! Deleting occupied annotation... Change the coordinates or exit and edit manually annotations.ini file or decrease the cell size. Here are the details:");
+					printf("The vertex of the annotation in the topology graph is at the occupied position (%f,%f) for the cell_size = %f m.\n",tempx,tempy,cellsize);
+					annotations.annotations.erase(annotations.annotations.begin()+k);
+					unchanged=false;
+					continue;
+				}
+			}
+		}
+		k++;
+	}
+	
+	if (annotations.annotations.size()){
+		for (int i=0; i<sizex; i++){
+			for (int j=0; j<sizey; j++){
+        if (gmap[i][j].occupancy==0){
+
+					if (gmap[i][j].annotation==false){
+//check if this cell is neighbor of the annotation vertex
+						for (int d=0; d<8; d++){
+							I_point point;
+					        js=j+rofs[d];
+					        is=i+cofs[d];
+					        if (is>=0 && js>=0 && is<sizex && js<sizey){
+					        	if ((gmap[is][js].occupancy==0) && (gmap[is][js].annotation)){
+					        	//if neighbor cells are closer than the cellsize from the annotation vertex, hide them under the annotation vertex -- reqirement from TP
+					        		if ((gmap[i][j].x-gmap[is][js].x)*(gmap[i][j].x-gmap[is][js].x)+(gmap[i][j].y-gmap[is][js].y)*(gmap[i][j].y-gmap[is][js].y)<cellsize*cellsize){
+					        			gmap[i][j].x=gmap[is][js].x;
+        								gmap[i][j].y=gmap[is][js].y;
+        								continue;
+					        		}
+					        	}
+					        }
+						}					
+					}
+					if (i!=floor((gmap[i][j].x-xorigin)/cellsize) || j!=floor((gmap[i][j].y-yorigin)/cellsize)){
+						gmap[i][j].visited=0;
+//						std::cout << "i= "<< is << "j= "<<js << std::endl;
+            continue;
+          }
+
+
+#if USE_SPANNING_TREE
+					if (gmap[i][j].visited==1){//only part of the graph that is connected to annotations
+						gmap[i][j].visited=0;
+#endif
+						vertex.x=gmap[i][j].x;
+						vertex.y=gmap[i][j].y;
+						vertex.theta=gmap[i][j].theta;
+						vertex.name=gmap[i][j].name;
+						vertex.uuid=gmap[i][j].uuid;
+						graph.vertices.push_back(vertex);
+#if USE_SPANNING_TREE
+					}else{ //the part of the graph disconnected from annotations is occupied
+						gmap[i][j].occupancy=1;
+            gmap[i][j].staticcell=true;
+					}
+#endif
+		    }
+			}
+		}
+	}
+	if (annotations.annotations.size()){
+			GMC->createEdges();
+	}
+//			std::cout << GMC->edges.size() <<std::endl;
+			std::cout << "number of vertices: "<<graph.vertices.size() <<std::endl;
+
+			for(int i=0; i<GMC->edges.size(); i++){
+//				boost::uuids::uuid lUUID=mUUIDGen();
+				edge.uuid_src=gmap[GMC->edges[i].xs][GMC->edges[i].ys].uuid;
+				edge.uuid_dest=gmap[GMC->edges[i].xg][GMC->edges[i].yg].uuid;
+				edge.name="edge_"+std::to_string(GMC->edges[i].xs*sizey+GMC->edges[i].ys)+"_"+std::to_string(GMC->edges[i].xg*sizey+GMC->edges[i].yg);
+				uuid lUUID = lUUIDNameGen(edge.name);
+				edge.uuid=to_string(lUUID);
+				graph.edges.push_back(edge);
+			}
+	std::cout << "number of edges: "<< graph.edges.size() <<std::endl;
+
+	return unchanged;
+}
+
+void newAnnotationCallback(const geometry_msgs::PoseStamped::ConstPtr& goal){
+
+	maptogridmap::Annotation annt;
+	double cellsize=GMC->GetSizeCell();
+	annt.x = goal->pose.position.x; //this is already postion of the vertex in the graph and needs to be transformed to tail of the arrow
+	annt.y = goal->pose.position.y;
+	annt.theta = tf::getYaw(goal->pose.orientation);
+	annt.name = "location_"+std::to_string(annotations.annotations.size());
+	annt.distance = 2.;
+	uuid lUUID = lUUIDNameGen(annt.name);
+  annt.uuid=to_string(lUUID);
+	
+	//input annotations into graph
+	annt.x = annt.x + annt.distance*cos(annt.theta); //calculating the tail of the arrow
+	annt.y = annt.y + annt.distance*sin(annt.theta);
+	annt.theta = annt.theta*180/M_PI; //the user sets degrees in annotations.ini file
+	annotations.annotations.push_back(annt);
+	if (annotationsToGraph(0)){
+	//print into annotation ini file:
+		std::ofstream out("annotationsRviz.ini");
+		for (int k=0; k<annotations.annotations.size(); k++){
+			out << "["<<annotations.annotations[k].name<<"]" <<std::endl;
+			out << "point_x = "<<annotations.annotations[k].x<<std::endl;
+			out << "point_y = "<<annotations.annotations[k].y<<std::endl;
+			out << "theta = "<<annotations.annotations[k].theta<<std::endl;
+			out << "distance = "<<annotations.annotations[k].distance<<std::endl<<std::endl;
+		}
+		out.close();
+
+		std::cout << "New selected annotation:" <<std::endl<<std::endl;
+		std::cout << annt <<std::endl;
+		
+	}
+}
+
 
 int main(int argc, char** argv)
 {
   
   ros::init(argc, argv, "maptogridmap");
   ros::NodeHandle nh;
-  
-//  ros::Publisher gmap_pub = nh.advertise<maptogridmap::Gridmap>("map/topology",1);
+  maptogridmap::Vertex vertex;
+	maptogridmap::Edge edge;
+
   ros::Publisher graph_pub = nh.advertise<maptogridmap::Graph>("map/graph",1);
-  ros::Publisher nodes_pub = nh.advertise<maptogridmap::Nodes>("map/nodes",1);
-  ros::Publisher edges_pub = nh.advertise<maptogridmap::Edges>("map/edges",1);
   ros::Publisher annotation_pub = nh.advertise<maptogridmap::Annotations>("map/annotations",1);
   ros::Subscriber gmu_sub = nh.subscribe("/robot_0/newObstacles",1,newObstaclesCallback);
   ros::Subscriber gmu_sub1 = nh.subscribe("/robot_1/newObstacles",1,newObstaclesCallback1);
   ros::Subscriber gmu_sub2 = nh.subscribe("/robot_2/newObstacles",1,newObstaclesCallback2);
+  ros::Subscriber annt_sub = nh.subscribe("/annotation/goal",1,newAnnotationCallback);
 
-//  ros::ServiceServer service = nh.advertiseService("grid_map", mapCallback);
   VisualizationPublisherGM visualGM(nh);
   nav_msgs::GetMap map;
   ros::service::waitForService("static_map", 5000);
@@ -419,245 +564,25 @@ int main(int argc, char** argv)
 				}
 			}
 	}
-//	GMC->spanningTree(13,13);
 	
 	//read annotations from file
 	if (readAnnotations(annotation_file)!=1){
-		std::cout << "shutting down the topology calculation..." <<'\n';
-		return 0;
+		ROS_WARN("Read the output carefully since some annotations from the file were renamed due to illegal character or duplicate naming! Add new annotation by pressing the 2D Nav Goal button in RViz and select the position and hold to select the orientation of the goal!");
 	}
-	
-//	maptogridmap::GridmapCell gmcell;
-//	maptogridmap::Gridmap gm;
-	maptogridmap::Nodes gmnode;
-	maptogridmap::Edges gmedge;
-	maptogridmap::Vertex vertex;
-	maptogridmap::Edge edge;
-	maptogridmap::Graph graph;
-//	gm.info.width=sizex;
-//	gm.info.height=sizey;
-//	gm.info.resolution=cellsize;
-//	gm.info.map_load_time = ros::Time::now();
-//	gm.header.frame_id = "map";
-//	gm.header.stamp = ros::Time::now();
-	graph.header.frame_id = "map";
-	graph.header.stamp = ros::Time::now();
-	gmnode.header=graph.header;
-	gmnode.info.width=sizex;
-	gmnode.info.height=sizey;
-	gmnode.info.resolution=cellsize;
-	gmnode.info.map_load_time = ros::Time::now();
-	gmedge.header=graph.header;
-//	map_resp_.map.header=gm.header;
-//	map_resp_.map.info=gm.info;
-	double tempx,tempy,midx,midy;
-//  double thirdx,thirdy;
-	geometry_msgs::Point p;
-	int is,js,ig,jg;
-//  double gx,gy;
-  	int rofs[8]={ 0, -1, 0, 1, 1, -1, 1, -1};   
-	int cofs[8]={ 1, 0, -1, 0, 1, 1, -1, -1};
-
-  //write down the annotations into gridmap first
-	for (int k=0; k<annotations.annotations.size(); k++){
-		tempx = annotations.annotations[k].x-annotations.annotations[k].distance*cos(annotations.annotations[k].theta*M_PI/180.);
-		tempy = annotations.annotations[k].y-annotations.annotations[k].distance*sin(annotations.annotations[k].theta*M_PI/180.);
-		is=floor((tempx-xorigin)/cellsize);
-		js=floor((tempy-yorigin)/cellsize);
-		if (is>=0 && js>=0 && is<sizex && js<sizey){
-			//check if annotation vertex is occupied - do not do anything for the occupied annotations
-			if (gmap[is][js].occupancy==0){
-				gmap[is][js].annotation=true;
-				gmap[is][js].x=tempx;
-            	gmap[is][js].y=tempy;
-            	gmap[is][js].theta=annotations.annotations[k].theta;
-            	gmap[is][js].name=annotations.annotations[k].name;
-				gmap[is][js].uuid=annotations.annotations[k].uuid; 
-#if USE_SPANNING_TREE
-				if (gmap[is][js].visited==0)
-					GMC->spanningTree(js,is);
-#endif
-				//cells under the annotation arrow will be changed to occupied
-				for (int l=0; l<5; l++){
-					midx = annotations.annotations[k].x-l*0.2*annotations.annotations[k].distance*cos(annotations.annotations[k].theta*M_PI/180.);
-					midy = annotations.annotations[k].y-l*0.2*annotations.annotations[k].distance*sin(annotations.annotations[k].theta*M_PI/180.);
-					ig=floor((midx-xorigin)/cellsize);
-					jg=floor((midy-yorigin)/cellsize);
-					if (ig>=0 && jg>=0 && ig<sizex && jg<sizey){
-						if (gmap[ig][jg].annotation==false)
-						{
-							gmap[ig][jg].occupancy=1;
-            				gmap[ig][jg].staticcell=true;
-						}
-					}
-				}
-			}else{
-				ROS_ERROR("Annotations are occupied!!! Change the coordinates or distance of the annotation or decrease the cell size. Here are the details:");
-				std::cout << annotations.annotations[k] <<std::endl;
-				printf("Annotation vertex in the topology graph is at the occupied position (%f,%f) for the cell_size = %f m. Shutting down...\n",tempx,tempy,cellsize);
-				return 0;
-			}
+	//input annotations into graph
+	if (annotationsToGraph(1)!=1){
+//		std::cout << annotations <<std::endl;
+		ROS_WARN("Read the output carefully since some annotations from the file were deleted. Add new annotation by pressing the 2D Nav Goal button in RViz and select the position and hold to select the orientation of the goal!");
+	}else{
+		if (annotations.annotations.size()==0){
+			ROS_WARN("No annotations yet! Add new annotation by pressing the 2D Nav Goal button in RViz and select the position and hold to select the orientation of the goal!");
+		} else {
+			std::cout << "All annotations from the annotations.ini file are valid! You can add more annotations by pressing the 2D Nav Goal button in RViz and select the position and hold to select the orientation of the goal!" << std::endl;
 		}
 	}
 	
-	for (int i=0; i<sizex; i++){
-		for (int j=0; j<sizey; j++){
-			if (1){
-//				gm.x.push_back(gmap[i][j].x);
-//	            gm.y.push_back(gmap[i][j].y);
-//	            gm.occupancy.push_back(gmap[i][j].occupancy);
-	            if (gmap[i][j].occupancy==0){
-
-
-					if (gmap[i][j].annotation==false){
-//check the cell is neighbor of the annotation vertex
-						for (int d=0; d<8; d++){
-							I_point point;
-					        js=j+rofs[d];
-					        is=i+cofs[d];
-					        if (is>=0 && js>=0 && is<sizex && js<sizey){
-					        	if ((gmap[is][js].occupancy==0) && (gmap[is][js].annotation)){
-					        	//if neighbor cells are closer than the cellsize from the annotation vertex, hide them under the annotation vertex
-					        		if ((fabs(gmap[i][j].x-gmap[is][js].x)<cellsize) && (fabs(gmap[i][j].y-gmap[is][js].y)<cellsize)){
-					        			gmap[i][j].x=gmap[is][js].x;
-        								gmap[i][j].y=gmap[is][js].y;
-        								continue;
-					        		}
-					        	}
-					        }
-						}					
-					}
-					if (i!=floor((gmap[i][j].x-xorigin)/cellsize) || j!=floor((gmap[i][j].y-yorigin)/cellsize)){
-						gmap[i][j].visited=0;
-            			continue;
-            		}
-
-
-//            	for (int k=0; k<annotations.annotations.size(); k++){
-//            			tempx = annotations.annotations[k].x-annotations.annotations[k].distance*cos(annotations.annotations[k].theta*M_PI/180.);
-//						tempy = annotations.annotations[k].y-annotations.annotations[k].distance*sin(annotations.annotations[k].theta*M_PI/180.);
-//            			midx = annotations.annotations[k].x-0.2*annotations.annotations[k].distance*cos(annotations.annotations[k].theta*M_PI/180.);
-//						midy = annotations.annotations[k].y-0.2*annotations.annotations[k].distance*sin(annotations.annotations[k].theta*M_PI/180.);
-//            			thirdx = annotations.annotations[k].x-0.7*annotations.annotations[k].distance*cos(annotations.annotations[k].theta*M_PI/180.);
-//						thirdy = annotations.annotations[k].y-0.7*annotations.annotations[k].distance*sin(annotations.annotations[k].theta*M_PI/180.);
-
-//        				is=floor((tempx-xorigin)/cellsize);
-//						js=floor((tempy-yorigin)/cellsize);
-//						if (is>=0 && js>=0 && is<sizex && js<sizey){
-//						//check if annotation vertex is occupied - do not do anything for the occupied annotations
-//							if (gmap[is][js].occupancy==0){
-//							//coordinates of the cell centre (some cells have changed centre - close to annotations)
-//								gx=i*cellsize+cellsize/2.+xorigin;
-//								gy=j*cellsize+cellsize/2.+yorigin;
-//        			if (((fabs(tempx-gx)<=cellsize) && (fabs(tempy-gy)<=cellsize)) && ((fabs(tempx-gx)>cellsize/2) || (fabs(tempy-gy)>cellsize/2)))
-//        			{//neighbor cell to annotation cell
-//        				gmap[i][j].x=tempx;
-//        				gmap[i][j].y=tempy;
-//        				continue;
-//        			}
-//            		if ( ((fabs(tempx-gx)<=cellsize/2) && (fabs(tempy-gy)<=cellsize/2)) || ((fabs(midx-gx)<=cellsize/2) && (fabs(midy-gy)<=cellsize/2)) || ((fabs(thirdx-gx)<=cellsize/2) && (fabs(thirdy-gy)<=cellsize/2))){
-//            		//cells "under" the annotation arrow are skipped - artificial obstacle
-//            			if ((fabs(tempx-gx)>cellsize/2) || (fabs(tempy-gy)>cellsize/2)){
-//            				gmap[i][j].occupancy=1;
-//            				gmap[i][j].staticcell=true;
-//            				continue;
-//            			}
-//            			gmap[i][j].x=tempx;
-//            			gmap[i][j].y=tempy;
-//            			gmap[i][j].theta=annotations.annotations[k].theta;
-//            			gmap[i][j].name=annotations.annotations[k].name;
-////            			uuid lUUID = lUUIDNameGen(gmap[i][j].name);
-//						gmap[i][j].uuid=annotations.annotations[k].uuid; //to_string(lUUID);
-////						std::cout << gmap[i][j].uuid <<std::endl;
-//            		}
-//							}
-//						}
-//            	}
-//            	if (gmap[i][j].occupancy){
-//            		continue;
-//            	}
-//            	if (i!=floor((gmap[i][j].x-xorigin)/cellsize) || j!=floor((gmap[i][j].y-yorigin)/cellsize)){
-//            		continue;
-//            	}
-#if USE_SPANNING_TREE
-					if (gmap[i][j].visited==1){//only part of the graph that is connected to annotations
-						gmap[i][j].visited=0;
-#endif
-						gmnode.x.push_back(gmap[i][j].x);
-						gmnode.y.push_back(gmap[i][j].y);
-						gmnode.theta.push_back(gmap[i][j].theta);
-						gmnode.name.push_back(gmap[i][j].name);
-						gmnode.uuid.push_back(gmap[i][j].uuid);
-						vertex.x=gmap[i][j].x;
-						vertex.y=gmap[i][j].y;
-						vertex.theta=gmap[i][j].theta;
-						vertex.name=gmap[i][j].name;
-						vertex.uuid=gmap[i][j].uuid;
-						//            	vertex.footprint.clear();
-						//            	for (int d=0; d<4; d++){
-						//            		p.x=vertex.x+cellsize/2.*xofs[d];
-						//            		p.y=vertex.y+cellsize/2.*yofs[d];
-						//            		vertex.footprint.push_back(p);
-						//            	}
-						graph.vertices.push_back(vertex);
-#if USE_SPANNING_TREE
-					}else{ //the part of the graph disconnected from annotations is occupied
-						gmap[i][j].occupancy=1;
-            			gmap[i][j].staticcell=true;
-					}
-#endif
-		        }
-//		   		gmcell.x=gmap[i][j].x;
-//		   		gmcell.y=gmap[i][j].y;
-//		   		gmcell.occupancy=gmap[i][j].occupancy;
-//				gm.gmc.push_back(gmcell);
-			}
-		}
-	}
-
-			GMC->createEdges();
-//			std::cout << GMC->edges.size() <<std::endl;
-			std::cout << "number of vertices: "<<graph.vertices.size() <<std::endl;
-			std::cout << "number of Nodes: "<<gmnode.name.size() <<std::endl;
-			//test for duplicates
-			for (int i=0; i<gmnode.name.size()-1;i++){
-				for (int j=i+1; j<gmnode.name.size();j++){
-					if (gmnode.name[i].compare(gmnode.name[j])==0){
-						std::cout << "duplicate name of vertices: "<<gmnode.name[i] <<std::endl;
-					}
-				}
-			}
-
-			for(int i=0; i<GMC->edges.size(); i++){
-//				boost::uuids::uuid lUUID=mUUIDGen();
-				edge.uuid_src=gmap[GMC->edges[i].xs][GMC->edges[i].ys].uuid;
-				edge.uuid_dest=gmap[GMC->edges[i].xg][GMC->edges[i].yg].uuid;
-				edge.name="edge_"+std::to_string(GMC->edges[i].xs*sizey+GMC->edges[i].ys)+"_"+std::to_string(GMC->edges[i].xg*sizey+GMC->edges[i].yg);
-				uuid lUUID = lUUIDNameGen(edge.name);
-				edge.uuid=to_string(lUUID);
-				gmedge.uuid_src.push_back(edge.uuid_src);
-				gmedge.uuid_dest.push_back(edge.uuid_dest);
-				gmedge.uuid.push_back(edge.uuid);
-				gmedge.name.push_back(edge.name);
-				graph.edges.push_back(edge);
-			}
-	std::cout << "number of edges: "<< graph.edges.size() <<std::endl;
-	std::cout << "number of Edges: "<< gmedge.name.size() <<std::endl;
-	//test for duplicates
-	for (int i=0; i<gmedge.name.size()-1;i++){
-		for (int j=i+1; j<gmedge.name.size();j++){
-			if (gmedge.name[i].compare(gmedge.name[j])==0){
-				std::cout << "duplicate name of edges: "<<gmedge.name[i] <<std::endl;
-			}
-		}
-	}
-//	gmap_pub.publish(gm);
-	nodes_pub.publish(gmnode);
-	edges_pub.publish(gmedge);
 	graph_pub.publish(graph);
 	annotation_pub.publish(annotations);
-	//map_resp_.map.gmc=gm.gmc;
-//	std::cout << gm <<std::endl;
 
   ros::Rate rate(10.0);
   cycle_number=0;
@@ -670,12 +595,9 @@ int main(int argc, char** argv)
 			ii=(int)floor((obstacles.x[i]-xorigin)/cellsize);
 			jj=(int)floor((obstacles.y[i]-yorigin)/cellsize);
 			if (ii>=0 && jj>=0 && ii<sizex && jj<sizey){
-	//			if ((gmap[ii][jj].occupancy==0) && (gmap[ii][jj].visited!=cycle_number))
 				if ((gmap[ii][jj].occupancy<=50))
 				{
-	//				std::cout <<pointx[i]<<" "<<pointy[i]<<std::endl;
 					gmap[ii][jj].occupancy = 100;
-//					gm.occupancy[ii*sizey+jj] = 1;
 					update_nodes_edges = 1;
 				}
 			}	
@@ -684,12 +606,9 @@ int main(int argc, char** argv)
 			ii=(int)floor((obstacles1.x[i]-xorigin)/cellsize);
 			jj=(int)floor((obstacles1.y[i]-yorigin)/cellsize);
 			if (ii>=0 && jj>=0 && ii<sizex && jj<sizey){
-	//			if ((gmap[ii][jj].occupancy==0) && (gmap[ii][jj].visited!=cycle_number))
 				if ((gmap[ii][jj].occupancy<=50))
 				{
-	//				std::cout <<pointx[i]<<" "<<pointy[i]<<std::endl;
 					gmap[ii][jj].occupancy = 100;
-//					gm.occupancy[ii*sizey+jj] = 1;
 					update_nodes_edges = 1;
 				}
 			}	
@@ -698,12 +617,9 @@ int main(int argc, char** argv)
 			ii=(int)floor((obstacles2.x[i]-xorigin)/cellsize);
 			jj=(int)floor((obstacles2.y[i]-yorigin)/cellsize);
 			if (ii>=0 && jj>=0 && ii<sizex && jj<sizey){
-	//			if ((gmap[ii][jj].occupancy==0) && (gmap[ii][jj].visited!=cycle_number))
 				if ((gmap[ii][jj].occupancy<=50))
 				{
-	//				std::cout <<pointx[i]<<" "<<pointy[i]<<std::endl;
 					gmap[ii][jj].occupancy = 100;
-//					gm.occupancy[ii*sizey+jj] = 1;
 					update_nodes_edges = 1;
 				}
 			}	
@@ -720,42 +636,22 @@ int main(int argc, char** argv)
 		}
 
 		if (update_nodes_edges){
-			gmnode.x.clear();
-			gmnode.y.clear();	
-			gmnode.theta.clear();
-			gmnode.uuid.clear();
-			gmnode.name.clear();
 			graph.vertices.clear();
 			graph.edges.clear();
 			for (int i=0; i<sizex; i++){
-						for (int j=0; j<sizey; j++){
-								gmap[i][j].visited=0;
-				        if (gmap[i][j].occupancy==0){
-				        	gmnode.x.push_back(gmap[i][j].x);
-				        	gmnode.y.push_back(gmap[i][j].y);
-		            	gmnode.theta.push_back(gmap[i][j].theta);
-				        	gmnode.name.push_back(gmap[i][j].name);
-				        	gmnode.uuid.push_back(gmap[i][j].uuid);
-				        	vertex.x=gmap[i][j].x;
-							vertex.y=gmap[i][j].y;
-							vertex.theta=gmap[i][j].theta;
-							vertex.name=gmap[i][j].name;
-							vertex.uuid=gmap[i][j].uuid;
-//							vertex.footprint.clear();
-//							for (int d=0; d<4; d++){
-//								p.x=vertex.x+cellsize/2.*xofs[d];
-//								p.y=vertex.y+cellsize/2.*yofs[d];
-//								vertex.footprint.push_back(p);
-//							}
-							graph.vertices.push_back(vertex);
-				        }
-						}
+				for (int j=0; j<sizey; j++){
+					gmap[i][j].visited=0;
+	        if (gmap[i][j].occupancy==0){
+	        	vertex.x=gmap[i][j].x;
+						vertex.y=gmap[i][j].y;
+						vertex.theta=gmap[i][j].theta;
+						vertex.name=gmap[i][j].name;
+						vertex.uuid=gmap[i][j].uuid;
+						graph.vertices.push_back(vertex);
+	        }
+				}
 			}
 			GMC->createEdges();
-			gmedge.uuid_src.clear();
-			gmedge.uuid_dest.clear();
-			gmedge.uuid.clear();
-			gmedge.name.clear();
 			for(int i=0; i<GMC->edges.size(); i++){
 //						boost::uuids::uuid lUUID=mUUIDGen();
 						edge.uuid_src=gmap[GMC->edges[i].xs][GMC->edges[i].ys].uuid;
@@ -763,22 +659,12 @@ int main(int argc, char** argv)
 						edge.name="edge_"+std::to_string(GMC->edges[i].xs*sizey+GMC->edges[i].ys)+"_"+std::to_string(GMC->edges[i].xg*sizey+GMC->edges[i].yg);
 						uuid lUUID = lUUIDNameGen(edge.name);
 						edge.uuid=to_string(lUUID);
-						gmedge.uuid_src.push_back(edge.uuid_src);
-						gmedge.uuid_dest.push_back(edge.uuid_dest);
-						gmedge.uuid.push_back(edge.uuid);
-						gmedge.name.push_back(edge.name);
 						graph.edges.push_back(edge);
 			}	
 		}
 
 		if ((cycle_number % 20)==0) { // || update_nodes_edges){
-		gmnode.header.stamp = ros::Time::now();
-//		gm.header.stamp = ros::Time::now();
-		gmedge.header.stamp = ros::Time::now();
 		graph.header.stamp = ros::Time::now();
-//		gmap_pub.publish(gm);
-		nodes_pub.publish(gmnode);
-		edges_pub.publish(gmedge);
 		graph_pub.publish(graph);
 		annotation_pub.publish(annotations);
 		}
@@ -807,19 +693,17 @@ void VisualizationPublisherGM::visualizationduringmotion(){
       GMcell **gmap=GMC->GetMap();
       int sizex=GMC->GetMapSizeX();
       int sizey=GMC->GetMapSizeY();
-//			double cellsize=GMC->GetSizeCell();
+      if ((cycle_number % 20)==0){
 			for (int i=0; i<sizex; i++){
 				for (int j=0; j<sizey; j++){
-					if ((gmap[i][j].occupancy>0)||(gmap[i][j].visited==cycle_number)){
+					if ((gmap[i][j].occupancy>0)){
 						p.x=gmap[i][j].x;
-            			p.y=gmap[i][j].y;
+            p.y=gmap[i][j].y;
 						gridmapvs.points.push_back(p);
 					}else{
-						if (gmap[i][j].visited!=cycle_number){
-							p.x=gmap[i][j].x;
-		          			p.y=gmap[i][j].y;
-							graphvs.points.push_back(p);
-						}					
+						p.x=gmap[i][j].x;
+	          p.y=gmap[i][j].y;
+						graphvs.points.push_back(p);
 					}
 				}
 			}
@@ -831,21 +715,19 @@ void VisualizationPublisherGM::visualizationduringmotion(){
 			if(GMC->edges.size()>0){
 				int temp_length=GMC->edges.size();
 				for(int pathLength=0; pathLength<temp_length;pathLength++){
-//			        	p.x = GMC->edges[pathLength].xs*cellsize+0.5*cellsize;
-//	    				p.y = GMC->edges[pathLength].ys*cellsize+0.5*cellsize;
 	    				p.x = gmap[GMC->edges[pathLength].xs][GMC->edges[pathLength].ys].x;
 	    				p.y = gmap[GMC->edges[pathLength].xs][GMC->edges[pathLength].ys].y;
     					stc.points.push_back(p);
-//			        	p.x = GMC->edges[pathLength].xg*cellsize+0.5*cellsize;
-//	    				p.y = GMC->edges[pathLength].yg*cellsize+0.5*cellsize;
 	    				p.x = gmap[GMC->edges[pathLength].xg][GMC->edges[pathLength].yg].x;
 	    				p.y = gmap[GMC->edges[pathLength].xg][GMC->edges[pathLength].yg].y;
     					stc.points.push_back(p);
     					
 				}
-			//publish path			
+			//publish path	
+				stc_pub.publish(stc);
 			}
-			stc_pub.publish(stc);
+		}
+		
 			//points from newObstacles
 			for(int i = 0; i<obstacles.x.size(); i++){
 				p.x = obstacles.x[i];
@@ -862,6 +744,7 @@ void VisualizationPublisherGM::visualizationduringmotion(){
 				p.y = obstacles2.y[i];
 				glp.points.push_back(p);
 			}
+			if (glp.points.size()>0)
 			globalpoints_pub.publish(glp);
 
 			//points from annotations
@@ -871,7 +754,7 @@ void VisualizationPublisherGM::visualizationduringmotion(){
 				pose.position.y = annotations.annotations[i].y-annotations.annotations[i].distance*sin(annotations.annotations[i].theta*M_PI/180.);
 				pose.position.z = 0;
 				pose.orientation = tf::createQuaternionMsgFromYaw(annotations.annotations[i].theta*M_PI/180.);
-				annt.scale.x = annotations.annotations[i].distance;
+				annt.scale.x = std::max(annotations.annotations[i].distance,0.5);
 				annt.pose = pose;
 		    annt.header.stamp = ros::Time::now();
 		    annt.id = i;

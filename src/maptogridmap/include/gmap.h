@@ -6,11 +6,8 @@
 #include "nav_msgs/GetMap.h"
 
 #include <visualization_msgs/Marker.h>
-//#include <maptogridmap/Gridmap.h>
-//#include <maptogridmap/GridmapCell.h>
-//#include <maptogridmap/GetMap.h>
-#include <maptogridmap/Nodes.h>
-#include <maptogridmap/Edges.h>
+//#include <maptogridmap/Nodes.h>
+//#include <maptogridmap/Edges.h>
 #include <maptogridmap/Edge.h>
 #include <maptogridmap/Vertex.h>
 #include <maptogridmap/Graph.h>
@@ -24,8 +21,10 @@
 #include <boost/uuid/string_generator.hpp>
 #include <boost/config.hpp>
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <tf/transform_listener.h>
+#include <geometry_msgs/PoseStamped.h>
 
 
 struct I_point{
@@ -94,6 +93,8 @@ class GridMapCell{
    int GetMapSizeX() {return MapSizeX;};
    int GetMapSizeY(){return MapSizeY;};
    double GetSizeCell() {return size_cell;};
+   double GetOriginX() {return xorigin;};
+   double GetOriginY() {return yorigin;};
    GMcell **GetMap(){return map;};
    void spanningTree(int r, int c);
    void createEdges();

@@ -15,6 +15,7 @@ Panels:
         - /Marker2
         - /Marker3
         - /Marker4
+        - /Marker4/Status1
         - /Marker5
       Splitter Ratio: 0.581027985
     Tree Height: 403
@@ -24,7 +25,6 @@ Panels:
     Expanded:
       - /2D Pose Estimate1
       - /2D Nav Goal1
-      - /Publish Point1
     Name: Tool Properties
     Splitter Ratio: 0.588679016
   - Class: rviz/Views
@@ -37,6 +37,8 @@ Panels:
     Name: Time
     SyncMode: 0
     SyncSource: ""
+Toolbars:
+  toolButtonStyle: 2
 Visualization Manager:
   Class: ""
   Displays:
@@ -108,13 +110,12 @@ Visualization Manager:
         maptogridmap: true
       Queue Size: 100
       Value: true
-    - Class: rviz/Marker
+    - Class: rviz/Axes
       Enabled: true
-      Marker Topic: /footprint_markerListener
-      Name: Marker
-      Namespaces:
-        maplistener: true
-      Queue Size: 100
+      Length: 1
+      Name: Axes
+      Radius: 0.100000001
+      Reference Frame: <Fixed Frame>
       Value: true
   Enabled: true
   Global Options:
@@ -133,10 +134,7 @@ Visualization Manager:
     - Class: rviz/SetInitialPose
       Topic: /initialpose
     - Class: rviz/SetGoal
-      Topic: /move_base_simple/goal
-    - Class: rviz/PublishPoint
-      Single click: true
-      Topic: /clicked_point
+      Topic: /annotation/goal
   Value: true
   Views:
     Current:
@@ -150,11 +148,11 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Scale: 46.348587
+      Scale: 41.8587799
       Target Frame: <Fixed Frame>
       Value: TopDownOrtho (rviz)
-      X: 21.5650482
-      Y: 8.60290813
+      X: -3.6394515
+      Y: -4.11519051
     Saved: ~
 Window Geometry:
   Displays:

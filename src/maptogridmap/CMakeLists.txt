@@ -20,8 +20,6 @@ find_package(catkin REQUIRED COMPONENTS
 )
 add_message_files(
   FILES
-  Nodes.msg
-  Edges.msg
   Annotations.msg
   Annotation.msg
   Vertex.msg
