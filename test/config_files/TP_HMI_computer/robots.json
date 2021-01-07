@@ -1,22 +1,10 @@
 {
    "map":{
-       "topics": {
-	            "graph": {
-	                "msg": "maptogridmap.msg.Graph",
-	                "type": "publisher"
-	            }
-       }
-   },
-   "robot_0":{
-       "topics": {
-            	"pose_channel": {
-                		"msg": "geometry_msgs.msg.PoseWithCovarianceStamped",
-                		"type": "publisher"
-            	},
-            	"newObstacles": {
-                	"msg": "mapupdates.msg.NewObstacles",
-                	"type": "publisher"
-            	}
-       }
-   }
+        "topics": {
+            "graph": {
+                "msg": "maptogridmap.msg.Graph",
+                "type": "publisher"
+            }
+        }
+    }
 }

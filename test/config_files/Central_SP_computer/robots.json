@@ -1,21 +1,33 @@
 {
     "map":{
         "topics": {
-            "nodes": {
-                "msg": "maptogridmap.msg.Nodes",
-                "type": "subscriber"
-            },
             "graph": {
                 "msg": "maptogridmap.msg.Graph",
                 "type": "subscriber"
             },
-            "edges": {
-                "msg": "maptogridmap.msg.Edges",
+            "annotations": {
+                "msg": "maptogridmap.msg.Annotations",
                 "type": "subscriber"
             }
         }
     },
     "robot_0":{
+        "topics": {
+            "newObstacles": {
+                "msg": "mapupdates.msg.NewObstacles",
+                "type": "publisher"
+            }
+        }
+    },
+    "robot_1":{
+        "topics": {
+            "newObstacles": {
+                "msg": "mapupdates.msg.NewObstacles",
+                "type": "publisher"
+            }
+        }
+    },
+    "robot_2":{
         "topics": {
             "newObstacles": {
                 "msg": "mapupdates.msg.NewObstacles",

@@ -1,16 +1,8 @@
 {
     "map":{
         "topics": {
-            "nodes": {
-                "msg": "maptogridmap.msg.Nodes",
-                "type": "subscriber"
-            },
             "graph": {
                 "msg": "maptogridmap.msg.Graph",
-                "type": "subscriber"
-            },
-            "edges": {
-                "msg": "maptogridmap.msg.Edges",
                 "type": "subscriber"
             }
         }
@@ -25,6 +17,6 @@
         "pose_channel": {
 				"msg": "geometry_msgs.msg.PoseWithCovarianceStamped",
 				"type": "subscriber"
-		},
+				}
     }
 }

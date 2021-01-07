@@ -1,9 +1,17 @@
 {
     "map": {
-        "subscriber": ["nodes","edges","graph"],
+        "subscriber": ["graph","annotations"],
         "publisher": []
     },
     "robot_0": {
+        "subscriber": [],
+        "publisher": ["newObstacles"]
+    },
+    "robot_1": {
+        "subscriber": [],
+        "publisher": ["newObstacles"]
+    },
+    "robot_2": {
         "subscriber": [],
         "publisher": ["newObstacles"]
     }

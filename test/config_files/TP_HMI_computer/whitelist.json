@@ -2,8 +2,5 @@
     "map": {
         "publisher": ["graph"],
         "subscriber": []
-    },
-    "robot_0": {
-        "publisher": ["pose_channel","newObstacles"]
     }
 }

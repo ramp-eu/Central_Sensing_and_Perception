@@ -1,22 +1,22 @@
 {
-  "environment": "fof_lab",
-
-  "fof_lab": {
+  "environment": "docker",
+  "docker": {
     "server": {
-        "address"   : "127.0.0.1",
-        "port"      : 10100
+      "port": 10101
     },
     "contextbroker": {
-        "address"   : "127.0.0.1",
-        "port"      : 1026,
-        "subscription": {
-          "throttling": 3, 
-          "subscription_length": 300,
-          "subscription_refresh_delay": 0.5
-        }
+      "address": "127.0.0.1",
+      "port": 1026,
+      "subscription": {
+        "throttling": 0,
+        "subscription_length": 300,
+        "subscription_refresh_delay": 0.5
+      }
     },
-    "log_level": "INFO",
-    "interface": "lo"
+    "endpoint": {
+      "address": "127.0.0.1",
+      "port": 39000
+    },
+    "log_level": "INFO"
   }
 }
-
