@@ -1,10 +1,16 @@
 {
+    "robot_opil_v2": {
+        "publisher": [
+            "cancel_order",
+            "motion_assignment",
+            "action_assignment"
+        ],
+        "subscriber": [
+            "current_motion",
+            "robot_description"
+        ]
+    },
     "robot_0": {
         "subscriber": ["pose_channel","newObstacles"]
-    },
-    "robot_opil_v2": {
-        "subscriber": ["status_channel","description_channel","error_channel","action_channel_AGV","assignment_channel", "movement_channel"],
-		"publisher": ["action_channel","motion_channel","task_management_channel","status_channel_AGV","description_channel_AGV","error_channel_AGV"]
     }
-
 }

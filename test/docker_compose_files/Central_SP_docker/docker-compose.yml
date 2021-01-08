@@ -3,7 +3,6 @@ services:
     #Context Broker
 
 
-
     mongo:
         image: mongo:3.4
         command: --nojournal
@@ -23,19 +22,23 @@ services:
         ports:
             - 1026:1026
         command:
-            -dbhost mongo -corsOrigin __ALL
+            -dbhost mongo -corsOrigin __ALL -inReqPayloadMaxSize 2097152
 
 
 
     sp:
         restart: always
-        image: l4ms/opil.sw.sp.central:3.0.7-beta
+        image: docker.ramp.eu/opil/opil.sw.sp.central:3.1.5
+#        image: centralsp:test
         volumes:
             #- path on the host : path inside the container
             - /tmp/.X11-unix:/tmp/.X11-unix:rw
+#comment the line below if you want to create annotations from scratch
             - ./annotations.ini:/annotations.ini:ro
-            - ./demo.yaml:/map.yaml:ro
-            - ./demo.png:/map.png:ro
+#the file must exist otherwise it creates empty folder with that name
+            - ./annotations.ini:/root/.ros/annotationsRviz.ini:rw
+            - ./demo_map.yaml:/map.yaml:ro
+            - ./demo_map.png:/map.png:ro
             - ./topology.launch:/topology.launch:ro
         environment:
             - FIWAREHOST=orion
@@ -43,7 +46,9 @@ services:
             - DISPLAY=$DISPLAY
         ports: 
             - "39002:39002"
-                   
+        depends_on:
+            - orion
+
 
 
 

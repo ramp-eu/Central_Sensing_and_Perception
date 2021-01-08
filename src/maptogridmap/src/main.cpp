@@ -126,7 +126,7 @@ void newObstaclesCallback(const mapupdates::NewObstaclesConstPtr& msg)
 //	std::cout << msg->x.size()<<std::endl;
 	obstacles.x.clear();
 	obstacles.y.clear();
-	for (int i =0; i<msg->x.size(); i++){
+	for (uint i =0; i<msg->x.size(); i++){
 		obstacles.x.push_back(msg->x[i]);
 		obstacles.y.push_back(msg->y[i]);
 	}
@@ -137,7 +137,7 @@ void newObstaclesCallback1(const mapupdates::NewObstaclesConstPtr& msg)
 //	std::cout << msg->x.size()<<std::endl;
 	obstacles1.x.clear();
 	obstacles1.y.clear();
-	for (int i =0; i<msg->x.size(); i++){
+	for (uint i =0; i<msg->x.size(); i++){
 		obstacles1.x.push_back(msg->x[i]);
 		obstacles1.y.push_back(msg->y[i]);
 	}
@@ -148,7 +148,7 @@ void newObstaclesCallback2(const mapupdates::NewObstaclesConstPtr& msg)
 //	std::cout << msg->x.size()<<std::endl;
 	obstacles2.x.clear();
 	obstacles2.y.clear();
-	for (int i =0; i<msg->x.size(); i++){
+	for (uint i =0; i<msg->x.size(); i++){
 		obstacles2.x.push_back(msg->x[i]);
 		obstacles2.y.push_back(msg->y[i]);
 	}
@@ -156,11 +156,9 @@ void newObstaclesCallback2(const mapupdates::NewObstaclesConstPtr& msg)
 
 int readAnnotations(std::string annotation_file)
 {
-	FILE	*F;
-	char rdLine[36]="";
 	char *line;
 	char *word;
-	char illegalword[35]="<>\"\'=;()+-\* /#$&,.!:?@[]^`{|}~";
+	char illegalword[35]="<>\"\'=;()+-\\* /#$&,.!:?@[]^`{|}~";
 	bool validname, unchanged=true;
 	maptogridmap::Annotation annt;
 	char * cstr = new char [annotation_file.length()+1];
@@ -212,7 +210,7 @@ int readAnnotations(std::string annotation_file)
 				}
 				if (validname)
 					annt.name=word;
-				for (int k=0; k<annotations.annotations.size(); k++){
+				for (uint k=0; k<annotations.annotations.size(); k++){
 						if (annotations.annotations[k].name.compare(annt.name)==0){
 							ROS_WARN("Two annotations have the same name! Names must be unique! Here are the details:");
 							std::cout << "The annotation " << annotations.annotations.size()+1 <<" has the same name as the annotation " << k+1 << std::endl;
@@ -293,7 +291,6 @@ int annotationsToGraph(int file_flag){
 	int cofs[8]={ 1, 0, -1, 0, 1, 1, -1, -1};
 	
 	bool unchanged=true;
-	bool validdistance=true;
 
 	graph.header.frame_id = "map";
 	graph.header.stamp = ros::Time::now();
@@ -301,19 +298,18 @@ int annotationsToGraph(int file_flag){
 	graph.edges.clear();
 	
   //write down the annotations into gridmap first
-	int k=0;
+	uint k=0;
 	while (k<annotations.annotations.size()){
 		tempx = annotations.annotations[k].x-annotations.annotations[k].distance*cos(annotations.annotations[k].theta*M_PI/180.);
 		tempy = annotations.annotations[k].y-annotations.annotations[k].distance*sin(annotations.annotations[k].theta*M_PI/180.);
 		is=floor((tempx-xorigin)/cellsize);
 		js=floor((tempy-yorigin)/cellsize);
-		validdistance=true;
 		if (is>=0 && js>=0 && is<sizex && js<sizey){
 			//check if annotation vertex is occupied - do not do anything for the occupied annotations
 			if (gmap[is][js].occupancy==0){
 			
 				//check if any other annotation falls into the same grid cell and if annotations are closer than the cell size (requirement from TP)
-				for (int l=k+1; l<annotations.annotations.size(); l++){
+				for (uint l=k+1; l<annotations.annotations.size(); l++){
 					midx = annotations.annotations[l].x-annotations.annotations[l].distance*cos(annotations.annotations[l].theta*M_PI/180.);
 					midy = annotations.annotations[l].y-annotations.annotations[l].distance*sin(annotations.annotations[l].theta*M_PI/180.);
 					ig=floor((midx-xorigin)/cellsize);
@@ -325,7 +321,6 @@ int annotationsToGraph(int file_flag){
 						std::cout << annotations.annotations[l] <<std::endl;
 						std::cout << "Both annotations fall into the same topology vertex at ("<<is<<", "<<js<<" )" <<std::endl;
 						annotations.annotations.erase(annotations.annotations.begin()+l);
-						validdistance=false;
 						unchanged=false;
 						break;
 					}
@@ -339,14 +334,11 @@ int annotationsToGraph(int file_flag){
 						std::cout << annotations.annotations[l] <<std::endl;
 						std::cout << "The annotation "<< annotations.annotations[k].name <<" has the topology vertex at ("<<tempx<<", "<<tempy<<" ), which is distanced for " << distance << "(less than the cell_size = "<< cellsize <<") from the topology vertex at ("<<midx<<", "<<midy<<" ) of the annotation " << annotations.annotations[l].name <<std::endl;
 						annotations.annotations.erase(annotations.annotations.begin()+l);
-						validdistance=false;
 						unchanged=false;
 						break;
 					}
 					
 				}
-//				if (!validdistance)
-//					continue;
 					
 				gmap[is][js].annotation=true;
 				gmap[is][js].x=tempx;
@@ -354,7 +346,6 @@ int annotationsToGraph(int file_flag){
         gmap[is][js].theta=annotations.annotations[k].theta;
         gmap[is][js].name=annotations.annotations[k].name;
 				gmap[is][js].uuid=annotations.annotations[k].uuid; 
-//				std::cout << "is= "<< is << "js= "<<js << std::endl;
 #if USE_SPANNING_TREE
 				if (gmap[is][js].visited==0)
 					GMC->spanningTree(js,is);
@@ -401,7 +392,6 @@ int annotationsToGraph(int file_flag){
 					if (gmap[i][j].annotation==false){
 //check if this cell is neighbor of the annotation vertex
 						for (int d=0; d<8; d++){
-							I_point point;
 					        js=j+rofs[d];
 					        is=i+cofs[d];
 					        if (is>=0 && js>=0 && is<sizex && js<sizey){
@@ -449,7 +439,7 @@ int annotationsToGraph(int file_flag){
 //			std::cout << GMC->edges.size() <<std::endl;
 			std::cout << "number of vertices: "<<graph.vertices.size() <<std::endl;
 
-			for(int i=0; i<GMC->edges.size(); i++){
+			for(uint i=0; i<GMC->edges.size(); i++){
 //				boost::uuids::uuid lUUID=mUUIDGen();
 				edge.uuid_src=gmap[GMC->edges[i].xs][GMC->edges[i].ys].uuid;
 				edge.uuid_dest=gmap[GMC->edges[i].xg][GMC->edges[i].yg].uuid;
@@ -466,7 +456,6 @@ int annotationsToGraph(int file_flag){
 void newAnnotationCallback(const geometry_msgs::PoseStamped::ConstPtr& goal){
 
 	maptogridmap::Annotation annt;
-	double cellsize=GMC->GetSizeCell();
 	annt.x = goal->pose.position.x; //this is already postion of the vertex in the graph and needs to be transformed to tail of the arrow
 	annt.y = goal->pose.position.y;
 	annt.theta = tf::getYaw(goal->pose.orientation);
@@ -483,7 +472,7 @@ void newAnnotationCallback(const geometry_msgs::PoseStamped::ConstPtr& goal){
 	if (annotationsToGraph(0)){
 	//print into annotation ini file:
 		std::ofstream out("annotationsRviz.ini");
-		for (int k=0; k<annotations.annotations.size(); k++){
+		for (uint k=0; k<annotations.annotations.size(); k++){
 			out << "["<<annotations.annotations[k].name<<"]" <<std::endl;
 			out << "point_x = "<<annotations.annotations[k].x<<std::endl;
 			out << "point_y = "<<annotations.annotations[k].y<<std::endl;
@@ -591,7 +580,7 @@ int main(int argc, char** argv)
   while (nh.ok()) {
     cycle_number++;
     update_nodes_edges = 0;
-		for(int i = 0; i<obstacles.x.size(); i++){
+		for(uint i = 0; i<obstacles.x.size(); i++){
 			ii=(int)floor((obstacles.x[i]-xorigin)/cellsize);
 			jj=(int)floor((obstacles.y[i]-yorigin)/cellsize);
 			if (ii>=0 && jj>=0 && ii<sizex && jj<sizey){
@@ -602,7 +591,7 @@ int main(int argc, char** argv)
 				}
 			}	
 		}
-		for(int i = 0; i<obstacles1.x.size(); i++){
+		for(uint i = 0; i<obstacles1.x.size(); i++){
 			ii=(int)floor((obstacles1.x[i]-xorigin)/cellsize);
 			jj=(int)floor((obstacles1.y[i]-yorigin)/cellsize);
 			if (ii>=0 && jj>=0 && ii<sizex && jj<sizey){
@@ -613,7 +602,7 @@ int main(int argc, char** argv)
 				}
 			}	
 		}
-		for(int i = 0; i<obstacles2.x.size(); i++){
+		for(uint i = 0; i<obstacles2.x.size(); i++){
 			ii=(int)floor((obstacles2.x[i]-xorigin)/cellsize);
 			jj=(int)floor((obstacles2.y[i]-yorigin)/cellsize);
 			if (ii>=0 && jj>=0 && ii<sizex && jj<sizey){
@@ -652,7 +641,7 @@ int main(int argc, char** argv)
 				}
 			}
 			GMC->createEdges();
-			for(int i=0; i<GMC->edges.size(); i++){
+			for(uint i=0; i<GMC->edges.size(); i++){
 //						boost::uuids::uuid lUUID=mUUIDGen();
 						edge.uuid_src=gmap[GMC->edges[i].xs][GMC->edges[i].ys].uuid;
 						edge.uuid_dest=gmap[GMC->edges[i].xg][GMC->edges[i].yg].uuid;
@@ -713,8 +702,8 @@ void VisualizationPublisherGM::visualizationduringmotion(){
 
 //edges
 			if(GMC->edges.size()>0){
-				int temp_length=GMC->edges.size();
-				for(int pathLength=0; pathLength<temp_length;pathLength++){
+				uint temp_length=GMC->edges.size();
+				for(uint pathLength=0; pathLength<temp_length;pathLength++){
 	    				p.x = gmap[GMC->edges[pathLength].xs][GMC->edges[pathLength].ys].x;
 	    				p.y = gmap[GMC->edges[pathLength].xs][GMC->edges[pathLength].ys].y;
     					stc.points.push_back(p);
@@ -729,17 +718,17 @@ void VisualizationPublisherGM::visualizationduringmotion(){
 		}
 		
 			//points from newObstacles
-			for(int i = 0; i<obstacles.x.size(); i++){
+			for(uint i = 0; i<obstacles.x.size(); i++){
 				p.x = obstacles.x[i];
 				p.y = obstacles.y[i];
 				glp.points.push_back(p);
 			}
-			for(int i = 0; i<obstacles1.x.size(); i++){
+			for(uint i = 0; i<obstacles1.x.size(); i++){
 				p.x = obstacles1.x[i];
 				p.y = obstacles1.y[i];
 				glp.points.push_back(p);
 			}
-			for(int i = 0; i<obstacles2.x.size(); i++){
+			for(uint i = 0; i<obstacles2.x.size(); i++){
 				p.x = obstacles2.x[i];
 				p.y = obstacles2.y[i];
 				glp.points.push_back(p);
@@ -749,7 +738,7 @@ void VisualizationPublisherGM::visualizationduringmotion(){
 
 			//points from annotations
 			geometry_msgs::Pose pose; 
-			for(int i = 0; i<annotations.annotations.size(); i++){
+			for(uint i = 0; i<annotations.annotations.size(); i++){
 				pose.position.x = annotations.annotations[i].x-annotations.annotations[i].distance*cos(annotations.annotations[i].theta*M_PI/180.);
 				pose.position.y = annotations.annotations[i].y-annotations.annotations[i].distance*sin(annotations.annotations[i].theta*M_PI/180.);
 				pose.position.z = 0;

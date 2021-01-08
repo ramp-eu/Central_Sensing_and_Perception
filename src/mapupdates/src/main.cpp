@@ -23,7 +23,7 @@ public:
 
 
 
-    visualization_msgs::Marker gridmapvs, graphvs, stc, glp;
+  visualization_msgs::Marker gridmapvs, glp;
 
   VisualizationPublisherGM(ros::NodeHandle n) :
       nh_(n),  target_frame_(map_frame) 
@@ -70,16 +70,6 @@ public:
 };
 
 
-//void globalPointsCallback(const mapupdates::NewObstaclesConstPtr& msg)
-//{
-////	std::cout << msg->x.size()<<std::endl;
-//	pointx.clear();
-//	pointy.clear();
-//	for (int i =0; i<msg->x.size(); i++){
-//		pointx.push_back(msg->x[i]);
-//		pointy.push_back(msg->y[i]);
-//	}
-//}
 double loc2glob_x(double Rx, double Rth, double X, double Y){
 	double globX;
 	globX=Rx+cos(Rth)*X-sin(Rth)*Y;
@@ -98,7 +88,7 @@ void laserCallback(const sensor_msgs::LaserScanConstPtr& msg)
 	locy.clear();
 	laser_tf_frame=msg->header.frame_id; // Take frame name form msg header 
 	double ranges;
-	for(int i_LS=0;i_LS<msg->ranges.size();i_LS++){
+	for(uint i_LS=0;i_LS<msg->ranges.size();i_LS++){
 		if (laser_inverted){
 	        ranges=msg->ranges[msg->ranges.size()-1-i_LS];
         }else{
@@ -132,7 +122,6 @@ int main(int argc, char** argv)
   ros::NodeHandle nh;
   
   ros::Publisher newObstacles_pub = nh.advertise<mapupdates::NewObstacles>("/robot_"+ss.str()+"/newObstacles",1); 
-//  ros::Subscriber read_global_points = nh.subscribe("/global_points", 1, globalPointsCallback);
   scan_topic_="/base_scan";
   map_service_name="/static_map";
   nh.getParam("/mapup/scan_topic", scan_topic_);
@@ -140,7 +129,6 @@ int main(int argc, char** argv)
   nh.getParam("/mapup/map_frame", map_frame);
   nh.getParam("/mapup/map_service_name", map_service_name);
 
-  //nh.getParam("/mapup/scan_frame", laser_tf_frame);
   tf::TransformListener tf_listener;
   tf::StampedTransform transform;
 
@@ -198,7 +186,6 @@ int main(int argc, char** argv)
   while (nh.ok()) {
     ros::spinOnce(); 
     cycle_number++;
-//    std::cout << "main " << cycle_number <<std::endl;
     try {
         tf_listener.waitForTransform(map_frame, laser_tf_frame, ros::Time(0), ros::Duration(0.1));
         tf_listener.lookupTransform(map_frame, laser_tf_frame, ros::Time(0), transform);
@@ -208,7 +195,7 @@ int main(int argc, char** argv)
 				tfy=transform.getOrigin().y();
 				pointx.clear();
 				pointy.clear();
-				for (int i=0; i<locx.size(); i++){
+				for (uint i=0; i<locx.size(); i++){
 					pointx.push_back(loc2glob_x(tfx, yaw,locx[i],locy[i]));
 					pointy.push_back(loc2glob_y(tfy, yaw,locx[i],locy[i]));
 				}
@@ -223,17 +210,14 @@ int main(int argc, char** argv)
 								}
 						}
 				}
-				for(int i = 0; i<pointx.size(); i++){
+				for(uint i = 0; i<pointx.size(); i++){
 					ii=(int)floor((pointx[i]-xorigin)/cellsize);
 					jj=(int)floor((pointy[i]-yorigin)/cellsize);
 					if (ii>0 && jj>0 && ii<sizex && jj<sizey){
-			//			if ((gmap[ii][jj].occupancy==0) && (gmap[ii][jj].visited!=cycle_number))
 						if ((gmap[ii][jj].occupancy<=50))
 						{
-			//				std::cout <<pointx[i]<<" "<<pointy[i]<<std::endl;
 							gmobstacles.x.push_back(gmap[ii][jj].x);
 							gmobstacles.y.push_back(gmap[ii][jj].y);
-			//				gmap[ii][jj].visited = cycle_number;
 							gmap[ii][jj].occupancy = 100;
 						}
 					}	
@@ -265,7 +249,6 @@ void VisualizationPublisherGM::visualizationduringmotion(){
       GMcell **gmap=GMU->GetMap();
       int sizex=GMU->GetMapSizeX();
       int sizey=GMU->GetMapSizeY();
-			int cellsize=GMU->GetSizeCell();
 			for (int i=0; i<sizex; i++){
 				for (int j=0; j<sizey; j++){
 					if ((gmap[i][j].occupancy>0)||(gmap[i][j].visited==cycle_number)){
@@ -277,7 +260,7 @@ void VisualizationPublisherGM::visualizationduringmotion(){
 			}
 			gridmapvs_pub.publish(gridmapvs);
 			//points from global lasers
-			for(int i = 0; i<pointx.size(); i++){
+			for(uint i = 0; i<pointx.size(); i++){
 				p.x = pointx[i];
 				p.y = pointy[i];
 				glp.points.push_back(p);

@@ -3,8 +3,8 @@
     <node name="mapup" pkg="mapupdates" type="mapup" output="screen" args="0" >
         <param name="cell_size" type="double" value="0.1" />
         <param name="laser_inverted" type="bool" value="0" />
+        <param name="map_frame" value="map" />
         <param name="scan_topic" value="/base_scan" />
-        <param name="map_frame" value="/map" />
         <param name="map_service_name" value="/static_map" />
     </node>
 

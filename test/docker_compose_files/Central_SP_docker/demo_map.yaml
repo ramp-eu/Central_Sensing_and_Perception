@@ -1,0 +1,8 @@
+image: map.png
+resolution: 0.0196
+origin: [-12.8854, -7.4888, 0.0] #657 382 calculated as: #12.8854/0.0196=657, 7.4888/0.0196=382
+#origin: [0, 0, 0.0]
+negate: 0
+occupied_thresh: 0.65
+free_thresh: 0.196
+

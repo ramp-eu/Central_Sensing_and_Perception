@@ -126,15 +126,15 @@ void VisualizationPublisherGML::graphCallback(const maptogridmap::GraphConstPtr&
   graphvertex.points.clear();
   stc.points.clear();
   geometry_msgs::Point p; 
-	for (int i=0; i<gmMsg->vertices.size(); i++){
+	for (uint i=0; i<gmMsg->vertices.size(); i++){
 		p.x=gmMsg->vertices[i].x;
 		p.y=gmMsg->vertices[i].y;
 		graphvertex.points.push_back(p);
 	}
 	int foundsrcdest;
-	for (int i=0; i<gmMsg->edges.size(); i++){
+	for (uint i=0; i<gmMsg->edges.size(); i++){
 		foundsrcdest=0;
-		for (int j=0; j<gmMsg->vertices.size(); j++){
+		for (uint j=0; j<gmMsg->vertices.size(); j++){
 			if (gmMsg->vertices[j].uuid==gmMsg->edges[i].uuid_src){
 				p.x=gmMsg->vertices[j].x;
 				p.y=gmMsg->vertices[j].y;
@@ -160,7 +160,7 @@ void VisualizationPublisherGML::newObstaclesCallback(const mapupdates::NewObstac
 {
   glp.points.clear();
   geometry_msgs::Point p; 
-	for (int i =0; i<msg->x.size(); i++){
+	for (uint i =0; i<msg->x.size(); i++){
 		p.x=msg->x[i];
 		p.y=msg->y[i];
 		glp.points.push_back(p);

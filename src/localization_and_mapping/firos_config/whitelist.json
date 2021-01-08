@@ -1,6 +1,0 @@
-{
-    "robot_opil_v1": {
-        "subscriber": ["pose_channel"]
-    }
-}
-
