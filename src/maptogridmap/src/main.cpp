@@ -11,7 +11,6 @@ name_generator lUUIDNameGen(string_generator()("6ba7b810-9dad-11d1-80b4-00c04fd4
 
 GridMapCell *GMC;
 int cycle_number;
-double cellsize=2.;
 mapupdates::NewObstacles obstacles;
 mapupdates::NewObstacles obstacles1; //for robot_1
 mapupdates::NewObstacles obstacles2; //for robot_2
@@ -495,6 +494,7 @@ int main(int argc, char** argv)
   ros::NodeHandle nh;
   maptogridmap::Vertex vertex;
 	maptogridmap::Edge edge;
+	double cellsize=2.;
 
   ros::Publisher graph_pub = nh.advertise<maptogridmap::Graph>("map/graph",1);
   ros::Publisher annotation_pub = nh.advertise<maptogridmap::Annotations>("map/annotations",1);
