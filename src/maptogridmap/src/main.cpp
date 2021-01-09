@@ -32,7 +32,7 @@ public:
 
     visualization_msgs::Marker gridmapvs, graphvs, stc, glp, annt;
 
-  VisualizationPublisherGM(ros::NodeHandle n) :
+  explicit VisualizationPublisherGM(ros::NodeHandle n) :
       nh_(n),  target_frame_("map") 
   {
 
@@ -155,7 +155,6 @@ void newObstaclesCallback2(const mapupdates::NewObstaclesConstPtr& msg)
 
 int readAnnotations(std::string annotation_file)
 {
-	char *line;
 	char *word;
 	char illegalword[35]="<>\"\'=;()+-\\* /#$&,.!:?@[]^`{|}~";
 	bool validname, unchanged=true;
@@ -165,8 +164,9 @@ int readAnnotations(std::string annotation_file)
   char * p = strsep (&cstr,"\n");
   while (p!=0)
   {
+		char *line=&p[0];
 //    std::cout << p << '\n';
-    line = &p[0];
+//    line = &p[0];
 //    std::cout << line << '\n';
     p = strsep(&cstr,"\n");
 
@@ -283,11 +283,7 @@ int annotationsToGraph(int file_flag){
   double xorigin=GMC->GetOriginX();
   double yorigin=GMC->GetOriginY(); 
 
-	double tempx,tempy,midx,midy;
-	double distance;
 	int is,js,ig,jg;
-  int rofs[8]={ 0, -1, 0, 1, 1, -1, 1, -1};   
-	int cofs[8]={ 1, 0, -1, 0, 1, 1, -1, -1};
 	
 	bool unchanged=true;
 
@@ -299,8 +295,8 @@ int annotationsToGraph(int file_flag){
   //write down the annotations into gridmap first
 	uint k=0;
 	while (k<annotations.annotations.size()){
-		tempx = annotations.annotations[k].x-annotations.annotations[k].distance*cos(annotations.annotations[k].theta*M_PI/180.);
-		tempy = annotations.annotations[k].y-annotations.annotations[k].distance*sin(annotations.annotations[k].theta*M_PI/180.);
+		double tempx = annotations.annotations[k].x-annotations.annotations[k].distance*cos(annotations.annotations[k].theta*M_PI/180.);
+		double tempy = annotations.annotations[k].y-annotations.annotations[k].distance*sin(annotations.annotations[k].theta*M_PI/180.);
 		is=floor((tempx-xorigin)/cellsize);
 		js=floor((tempy-yorigin)/cellsize);
 		if (is>=0 && js>=0 && is<sizex && js<sizey){
@@ -309,8 +305,8 @@ int annotationsToGraph(int file_flag){
 			
 				//check if any other annotation falls into the same grid cell and if annotations are closer than the cell size (requirement from TP)
 				for (uint l=k+1; l<annotations.annotations.size(); l++){
-					midx = annotations.annotations[l].x-annotations.annotations[l].distance*cos(annotations.annotations[l].theta*M_PI/180.);
-					midy = annotations.annotations[l].y-annotations.annotations[l].distance*sin(annotations.annotations[l].theta*M_PI/180.);
+					double midx = annotations.annotations[l].x-annotations.annotations[l].distance*cos(annotations.annotations[l].theta*M_PI/180.);
+					double midy = annotations.annotations[l].y-annotations.annotations[l].distance*sin(annotations.annotations[l].theta*M_PI/180.);
 					ig=floor((midx-xorigin)/cellsize);
 					jg=floor((midy-yorigin)/cellsize);
 					if ((ig==is) && (jg==js)){
@@ -324,7 +320,7 @@ int annotationsToGraph(int file_flag){
 						break;
 					}
 //					std::cout << "The annotation "<< annotations.annotations[k].name <<" has the topology vertex at ("<<tempx<<", "<<tempy<<" ), while the topology vertex at ("<<midx<<", "<<midy<<" ) of the annotation " << annotations.annotations[l].name <<std::endl;
-					distance=sqrt(pow((tempx-midx),2)+pow((tempy-midy),2));
+					double distance=sqrt(pow((tempx-midx),2)+pow((tempy-midy),2));
 //					std::cout << distance << std::endl;
 					if (distance<cellsize){
 						ROS_WARN("Annotations are too close!!! Deleting this annotation... Change the coordinates of the annotation or decrease the cell size. Here are the details:");
@@ -351,8 +347,8 @@ int annotationsToGraph(int file_flag){
 #endif
 				//cells under the annotation arrow will be changed to occupied
 				for (int l=0; l<5; l++){
-					midx = annotations.annotations[k].x-l*0.2*annotations.annotations[k].distance*cos(annotations.annotations[k].theta*M_PI/180.);
-					midy = annotations.annotations[k].y-l*0.2*annotations.annotations[k].distance*sin(annotations.annotations[k].theta*M_PI/180.);
+					double midx = annotations.annotations[k].x-l*0.2*annotations.annotations[k].distance*cos(annotations.annotations[k].theta*M_PI/180.);
+					double midy = annotations.annotations[k].y-l*0.2*annotations.annotations[k].distance*sin(annotations.annotations[k].theta*M_PI/180.);
 					ig=floor((midx-xorigin)/cellsize);
 					jg=floor((midy-yorigin)/cellsize);
 					if (ig>=0 && jg>=0 && ig<sizex && jg<sizey){
@@ -379,6 +375,22 @@ int annotationsToGraph(int file_flag){
 					continue;
 				}
 			}
+		}else{
+			std::cout << annotations.annotations[k] <<std::endl;
+			if (file_flag){
+				ROS_WARN("Annotation is out of map borders!!! Deleting invalid annotation... Add new annotation by pressing the 2D Nav Goal button in RViz or exit and edit manually annotations.ini file or decrease the cell size. Here are the details:");
+				printf("The vertex of the annotation in the topology graph is out of map borders with negative indices (%d,%d)\n",is,js);
+				annotations.annotations.erase(annotations.annotations.begin()+k);
+				unchanged=false;
+				continue;
+			}else{
+				ROS_WARN("Annotation is out of map borders!!! Deleting invalid annotation... Change the coordinates or exit and edit manually annotations.ini file or decrease the cell size. Here are the details:");
+				printf("The vertex of the annotation in the topology graph is out of map borders with negative indices (%d,%d)\n",is,js);
+				annotations.annotations.erase(annotations.annotations.begin()+k);
+				unchanged=false;
+				continue;
+			}
+		
 		}
 		k++;
 	}
@@ -390,6 +402,9 @@ int annotationsToGraph(int file_flag){
 
 					if (gmap[i][j].annotation==false){
 //check if this cell is neighbor of the annotation vertex
+						int rofs[8]={ 0, -1, 0, 1, 1, -1, 1, -1};   
+						int cofs[8]={ 1, 0, -1, 0, 1, 1, -1, -1};
+
 						for (int d=0; d<8; d++){
 					        js=j+rofs[d];
 					        is=i+cofs[d];
@@ -575,11 +590,10 @@ int main(int argc, char** argv)
 
   ros::Rate rate(10.0);
   cycle_number=0;
-  int update_nodes_edges;
 
   while (nh.ok()) {
     cycle_number++;
-    update_nodes_edges = 0;
+    int update_nodes_edges = 0;
 		for(uint i = 0; i<obstacles.x.size(); i++){
 			ii=(int)floor((obstacles.x[i]-xorigin)/cellsize);
 			jj=(int)floor((obstacles.y[i]-yorigin)/cellsize);

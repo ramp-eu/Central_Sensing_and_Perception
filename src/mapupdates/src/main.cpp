@@ -25,7 +25,7 @@ public:
 
   visualization_msgs::Marker gridmapvs, glp;
 
-  VisualizationPublisherGM(ros::NodeHandle n) :
+  explicit VisualizationPublisherGM(ros::NodeHandle n) :
       nh_(n),  target_frame_(map_frame) 
   {
 
@@ -223,7 +223,7 @@ int main(int argc, char** argv)
 					}	
 				}
     }
-    catch (tf::TransformException ex) {
+    catch (tf::TransformException& ex) {
         ROS_INFO("Local Map Updates: %s", ex.what());
     }
 		newObstacles_pub.publish(gmobstacles); 

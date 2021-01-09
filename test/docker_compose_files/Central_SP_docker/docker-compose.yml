@@ -28,8 +28,8 @@ services:
 
     sp:
         restart: always
-        image: docker.ramp.eu/opil/opil.sw.sp.central:3.1.5
-#        image: centralsp:test
+#        image: docker.ramp.eu/opil/opil.sw.sp.central:3.1.6
+        image: centralsp:test
         volumes:
             #- path on the host : path inside the container
             - /tmp/.X11-unix:/tmp/.X11-unix:rw
